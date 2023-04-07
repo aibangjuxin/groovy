@@ -559,3 +559,37 @@ while (true) {
     }
 }
 
+In Groovy, you can use the withTimeout method from the groovy.concurrent package to execute a code block with a specified timeout. If the code block takes longer than the specified timeout, it will be interrupted and an exception will be thrown.
+Here's an example:
+import groovy.concurrent.*
+
+def result = withTimeout(1000) {
+    // Code block to be executed within 1 second (1000 milliseconds)
+    Thread.sleep(2000) // Simulate a long-running operation
+    return "Done"
+}
+
+println result // This line will not be reached due to the timeout
+
+In this example, we use the withTimeout method to execute a code block that simulates a long-running operation using the Thread.sleep method. We specify a timeout of 1000 milliseconds (1 second) for the code block.
+Since the code block takes longer than the specified timeout, it will be interrupted, and the withTimeout method will throw a TimeoutException. As a result, the program will not reach the println statement at the end.
+You can catch the TimeoutException and handle it as needed, for example:
+
+import groovy.concurrent.*
+
+try {
+    def result = withTimeout(1000) {
+        // Code block to be executed within 1 second (1000 milliseconds)
+        Thread.sleep(500) // Simulate a short-running operation
+        return "Done"
+    }
+
+    println result // This line will be reached since the code block finishes within the timeout
+
+} catch (TimeoutException ex) {
+    println "Timeout occurred: ${ex.message}"
+}
+
+In this example, the code block finishes within the specified timeout, so the result variable will contain the string "Done", and the program will print it to the console. However, if the code block takes longer than the specified timeout, the withTimeout method will throw a TimeoutException, and the program will catch it and print a message to the console.
+
+
