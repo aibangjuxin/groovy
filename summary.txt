@@ -592,4 +592,37 @@ try {
 
 In this example, the code block finishes within the specified timeout, so the result variable will contain the string "Done", and the program will print it to the console. However, if the code block takes longer than the specified timeout, the withTimeout method will throw a TimeoutException, and the program will catch it and print a message to the console.
 
+try
+
+Try
+
+In Groovy, the try statement is used for exception handling. The basic syntax of a try block is as follows:
+try {
+    // Code that might throw an exception
+} catch (ExceptionType1 ex1) {
+    // Exception handler for ExceptionType1
+} catch (ExceptionType2 ex2) {
+    // Exception handler for ExceptionType2
+} finally {
+    // Code that will be executed regardless of whether an exception occurred or not
+}
+
+Here's how the try statement works in general:
+1. The code that might throw an exception is enclosed within the try block.
+2. If an exception occurs within the try block, the program jumps immediately to the appropriate catch block that matches the type of the thrown exception.
+3. If no matching catch block is found for the thrown exception, the program jumps to any enclosing try blocks that might handle the exception.
+4. If no try block handles the thrown exception, the program terminates with an error message.
+5. The finally block, if present, contains code that will be executed regardless of whether an exception occurred or not. This is useful for releasing resources, closing files, or performing other cleanup tasks.
+Here's an example of using the try statement:
+
+try {
+    def num = 10 / 0 // Divide by zero, which will throw an arithmetic exception
+    println "Result: ${num}"
+} catch (ArithmeticException ex) {
+    println "Error: ${ex.message}"
+} finally {
+    println "Done"
+}
+
+In this example, the try block calculates the result of dividing 10 by 0, which will throw an ArithmeticException. The program then jumps to the corresponding catch block and prints an error message. Finally, the program executes the finally block and prints a "Done" message
 
