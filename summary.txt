@@ -626,3 +626,30 @@ try {
 
 In this example, the try block calculates the result of dividing 10 by 0, which will throw an ArithmeticException. The program then jumps to the corresponding catch block and prints an error message. Finally, the program executes the finally block and prints a "Done" message
 
+
+Assert
+
+In Groovy, the assert statement is used to test a condition and throw an exception if the condition is false. The basic syntax of an assert statement is as follows:
+
+assert condition : message
+
+Here's how the assert statement works in general:
+1. The condition is a boolean expression that should evaluate to true. If it evaluates to false, the program will throw an assertion error.
+2. The message, if provided, is an optional string that will be included in the assertion error message. It can be used to provide additional information about the error.
+Here's an example of using the assert statement:
+
+def num1 = 10
+def num2 = 5
+
+assert num1 > num2 : "num1 should be greater than num2"
+println "Assertion passed"
+
+
+In this example, the assert statement tests whether num1 is greater than num2. Since the condition is true, the program continues to execute and prints a message indicating that the assertion passed.
+Here's another example that demonstrates what happens when the condition is false:
+
+def num1 = 5
+def num2 = 10
+
+assert
+
