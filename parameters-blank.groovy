@@ -29,7 +29,6 @@ pipeline {
   }
 }
 ```
-
 在这个示例中，我们定义了一个
 名为`PARAMETER_NAME`的字符串参数，并将其默认值设置为空字符串。
 在`Example`阶段中，我们使用Groovy的null合并运算符`?:`来检查参数是否为空。如果参数为空，则将其替换为`default_value`。
@@ -70,21 +69,58 @@ pipeline {
           def variableB = ''
           if (params.PARAMETER_NAME) {
             variableA = params.PARAMETER_NAME
+            //crnumber = params.PARAMETER_NAME
           } else {
             variableB = 'default_value'
+            //crnumber = 'default_value'
           }
           echo "Variable A: ${variableA}"
           echo "Variable B: ${variableB}"
+          // echo "crnumber#: ${variableA ?: variableB}"
+          // echo "crnumber#: ${crnumber}"
         }
       }
     }
   }
 }
 ```
-
+using variableA ==> crnumber
+variableB == > null
 在这个示例中，我们定义了一个名为`PARAMETER_NAME`的字符串参数，并将其默认值设置为空字符串。
 在`Example`阶段中，我们使用Groovy的if-else语句来检查参数是否为空。
 如果参数不为空，则将其赋值给`variableA`。
 如果参数为空，则将`'default_value'`赋值给`variableB`。最后，我们将变量值打印到控制台。
 
 您可以根据需要修改示例中的变量名和默认值。
+如果稍后需要在脚本中更新variableA的值，只需使用相同的语法为其分配一个新值：
+If you need to update the value of variableA later in the script, you can simply assign a new value to it using the same syntax:
+variableA = 'new_value'
+variableA = 'crnumber'
+
+def body = "abc ${variableA}"
+
+上面的例子中其实我可以把VariableA和VariableB 输出为同一个变量
+
+
+
+pipeline传入参数 groovy
+判断不为空则赋值给A 结果为a+参数
+判断为空则也赋值给A 结果为b
+The code block you have provided is a simple variable assignment in Groovy.
+variableA = params.PARAMETER_NAME
+This line of code assigns the value of the PARAMETER_NAME parameter to the variableA variable.
+
+In the context of the larger codebase you provided, this code block is part of a Jenkins Pipeline script that checks if a parameter is empty or not and assigns its value to different variables accordingly.
+
+If the PARAMETER_NAME parameter is not empty, its value is assigned to variableA. If it is empty, the string 'default_value' is assigned to variableB.
+
+To concatenate a string to the value of variableA, you can use the + operator:
+
+variableA = 'a' + params.PARAMETER_NAME
+
+这行代码检查PARAMETER_NAME是否为空。
+如果它不为空，它会将“a”连接到其值，并将结果字符串分配给variableA。
+如果它为空，它会将“b”分配给变量A。
+This line of code checks if PARAMETER_NAME is empty. If it is not empty, 
+it concatenates 'a' to its value and assigns the resulting string to variableA. 
+If it is empty, it assigns 'b' to variableA.
