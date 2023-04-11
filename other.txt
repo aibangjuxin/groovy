@@ -1,0 +1,9 @@
+string="csrs1234"
+
+if [[ $string == csrs* ]]; then
+    result=${string:4} # 如果以 "csrs" 开头，从第五个字符开始截取到结尾
+else
+    result=${string:0:5} # 如果不以 "csrs" 开头，截取前五个字符
+fi
+
+echo
