@@ -103,8 +103,8 @@ def body = "abc ${variableA}"
 
 
 
-pipeline传入参数 groovy
-判断不为空则赋值给A 结果为a+参数
+pipeline传入一个参数 groovy
+判断参数不为空则赋值给A 结果为a+参数
 判断为空则也赋值给A 结果为b
 The code block you have provided is a simple variable assignment in Groovy.
 variableA = params.PARAMETER_NAME
@@ -124,3 +124,42 @@ variableA = 'a' + params.PARAMETER_NAME
 This line of code checks if PARAMETER_NAME is empty. If it is not empty, 
 it concatenates 'a' to its value and assigns the resulting string to variableA. 
 If it is empty, it assigns 'b' to variableA.
+
+////
+pipeline传入一个参数 groovy
+判断参数不为空则赋值给A 结果为a+参数
+判断为空则也赋值给A 结果为b
+可以使用如下的Groovy语法来实现这个逻辑：
+def param = params.MY_PARAM_NAME ?: '' // 获取pipeline传入的参数，如果为空则设置为''
+def A = param ? 'a' + param : 'b' // 根据参数是否为空来赋值A
+///
+在Jenkins Pipeline中，您可以使用Groovy语言来判断参数是否为空，并将其赋值给不同的变量。以下是一个示例：
+
+```
+pipeline {
+  agent any
+  parameters {
+    string(name: 'PARAMETER_NAME', defaultValue: '', description: 'Description of parameter')
+  }
+  stages {
+    stage('Example') {
+      steps {
+        script {
+          def variableA = ''
+          if (params.PARAMETER_NAME) {
+            variableA = "a${params.PARAMETER_NAME}"
+          } else {
+            variableA = 'b'
+          }
+          echo "Variable A: ${variableA}"
+        }
+      }
+    }
+  }
+}
+```
+
+在这个示例中，我们定义了一个名为`PARAMETER_NAME`的字符串参数，并将其默认值设置为空字符串。在`Example`阶段中，我们使用Groovy的if-else语句来检查参数是否为空。
+如果参数不为空，则将`a`和参数值拼接起来赋值给`variableA`。如果参数为空，则将`'b'`赋值给`variableA`。最后，我们将变量值打印到控制台。
+
+您可以根据需要修改示例中的变量名和默认值。
