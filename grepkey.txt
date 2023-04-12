@@ -60,4 +60,14 @@ node(node) {
     // do something on the selected node
 }
 
-这个脚本假设有以下三个Jenkins节点：production-node，test-node和default-node。它使用正则表达式从构建URL中提取environment参数，并将其与switch语句中的可能值进行匹配以选择适当的节点。如果environment是production，则选择production-node节点运行构建；如果是test，则选择test-node节点运行构建；否则，默认选择default-node节点。
+这个脚本假设有以下三个Jenkins节点：production-node
+，test-node和default-node。它使用正则表达式从构建URL中提取environment参数，并将其与switch语句中的可能值进行匹配以选择适当的节点。如果environment是production，则选择production-node节点运行构建；如果是test，则选择test-node节点运行构建；否则，默认选择default-node节点。
+
+
+if (field1 && field2) {
+    // both fields have a value, do something
+} else {
+    // at least one field is null or empty, handle the case
+}
+
+
