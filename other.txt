@@ -53,3 +53,32 @@ reviews.each { review ->
 }
 
 在这些示例中，您需要替换 <token>, owner, repo, pullRequestNumber 和 group_member_X，以便与您自己的 GitHub 帐户和存储库匹配。请注意，您需要提供一个有效的 GitHub 访问令牌以进行 API 调用。
+
+使用groovy 对获取的review.json文件分析 是否某个组的成员进行了评论或者审核
+
+可以使用Groovy语言读取review.json文件并解析其中的内容，判断是否某个组的成员进行了评论或审核。以下是一个示例代码：
+import groovy.json.JsonSlurper
+
+// 读取review.json文件并解析成JSON对象
+def jsonSlurper = new JsonSlurper()
+def reviewJson = jsonSlurper.parseText(new File("review.json").text)
+
+// 获取评论或审核人列表
+def reviewers = []
+reviewJson.each { review ->
+    if (review.state == "COMMENTED" || review.state == "APPROVED") {
+        reviewers << review.user.login
+    }
+}
+
+// 判断某个组的成员是否进行了评论或审核
+def groupName = "example-group"
+def isGroupReviewer = reviewers.any { reviewer ->
+    reviewer in groupName
+}
+
+// 输出结果
+println "Group $groupName has " + (isGroupReviewer ? "" : "not ") + "reviewed or commented on this review."
+
+在这个示例代码中，我们使用Groovy语言中的JsonSlurper类读取review.json文件，并将其解析成JSON对象。然后，我们遍历每个审核记录，将评论或审核的人添加到一个名为reviewers的列表中。接下来，我们判断列表中是否存在来自指定组的成员，如果存在则表示该组的成员进行了评论或审核，否则表示没有进行评论或审核。最后，我们输出结果。
+
