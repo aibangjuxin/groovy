@@ -1,0 +1,55 @@
+Groovy 可以通过 GitHub API 获取 pull request 的评论信息和审核信息。在获取这些信息后，可以使用 Groovy 代码来解析它们以查找某个组的成员是否进行了评论或审核。
+以下是一些示例代码，可以用来获取 pull request 的评论和审核信息，并检查是否来自特定组的成员：
+获取 pull request 的评论信息：
+import groovy.json.JsonSlurper
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.util.EntityUtils
+
+def getPullRequestComments(String owner, String repo, Integer pullRequestNumber) {
+    def url = "https://api.github.com/repos/${owner}/${repo}/pulls/${pullRequestNumber}/comments"
+    def client = HttpClientBuilder.create().build()
+    def request = new HttpGet(url)
+    request.setHeader("Authorization", "Bearer <token>")
+    def response = client.execute(request)
+    def json = new JsonSlurper().parseText(EntityUtils.toString(response.entity))
+    return json
+}
+
+def comments = getPullRequestComments("owner", "repo", 123)
+comments.each { comment ->
+    def user = comment.user.login
+    def body = comment.body
+    def groupMembers = ["group_member_1", "group_member_2", "group_member_3"]
+    if (groupMembers.contains(user)) {
+        println("The comment '${body}' was made by a member of the group.")
+    }
+}
+
+获取 pull request 的审核信息
+import groovy.json.JsonSlurper
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClientBuilder
+import org.apache.http.util.EntityUtils
+
+def getPullRequestReviews(String owner, String repo, Integer pullRequestNumber) {
+    def url = "https://api.github.com/repos/${owner}/${repo}/pulls/${pullRequestNumber}/reviews"
+    def client = HttpClientBuilder.create().build()
+    def request = new HttpGet(url)
+    request.setHeader("Authorization", "Bearer <token>")
+    def response = client.execute(request)
+    def json = new JsonSlurper().parseText(EntityUtils.toString(response.entity))
+    return json
+}
+
+def reviews = getPullRequestReviews("owner", "repo", 123)
+reviews.each { review ->
+    def user = review.user.login
+    def state = review.state
+    def groupMembers = ["group_member_1", "group_member_2", "group_member_3"]
+    if (groupMembers.contains(user)) {
+        println("The review is '${state}' and was made by a member of the group.")
+    }
+}
+
+在这些示例中，您需要替换 <token>, owner, repo, pullRequestNumber 和 group_member_X，以便与您自己的 GitHub 帐户和存储库匹配。请注意，您需要提供一个有效的 GitHub 访问令牌以进行 API 调用。
