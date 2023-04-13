@@ -230,3 +230,18 @@ def output = sh(returnStdout: true, script: 'ls').trim()
 println "Output: ${output}"
 
 In this example, the trim method is called on the output string to remove any leading or trailing whitespace characters before it is printed to the console. This can be useful if you want to process the captured output further or compare it with other strings.
+
+
+using the sh method in Groovy with the returnStdout, toString, and trim methods to capture and process the output of a shell command:
+def output = sh(returnStdout: true, script: 'echo "   Hello, World!   "').toString().trim()
+println "Output: '${output}'"
+
+In this example, the sh method is called with the returnStdout: true option to capture the output of the echo command, which prints the string " Hello, World! " with leading and trailing whitespace characters. The toString method is then called on the output to convert it from a StringBuilder object to a string, and the trim method is called on the string to remove any leading or trailing whitespace characters.
+
+The resulting string is then stored in a variable called output, which is printed to the console using the println method with single quotes to show any leading or trailing whitespace characters. The output of this example will be:
+
+Output: 'Hello, World!'
+
+Note that the toString and trim methods are optional and depend on the specific use case. You may not need to call them if you only need to capture the output and use it as a string. However, it's always a good idea to be aware of them and use them as needed to ensure that your output is properly formatted and processed.
+
+
