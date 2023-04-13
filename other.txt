@@ -167,3 +167,30 @@ if (isSpecialGroupMember) {
 需要注意的是，这段代码使用了Groovy的映射和条件语句来实现一个简单的查找和替换操作。它可以用于根据项目ID设置执行节点的名称，以便在后续的代码中使用。
 
 
+您可以使用Groovy的FileReader类读取文件的内容，并将其写入Stackdriver logging。下面是一个示例代码：
+def file = new File('/path/to/your/file')
+def reader = new BufferedReader(new FileReader(file))
+
+while ((line = reader.readLine()) != null) {
+    def logEntry = [:]
+    logEntry["message"] = line
+    logEntry["severity"] = "INFO"
+    def json = new JsonBuilder(logEntry).toPrettyString()
+    def payload = json.getBytes('UTF-8')
+    def http = new URL("https://logging.googleapis.com/v2/entries:write?key=[YOUR_API_KEY]").openConnection()
+    http.setRequestMethod("POST")
+    http.setRequestProperty("Content-Type", "application/json; charset=UTF-8")
+    http.setRequestProperty("Content-Length", payload.size().toString())
+    http.setDoOutput(true)
+    http.getOutputStream().write(payload)
+    http.connect()
+    if (http.getResponseCode() != 200) {
+        throw new RuntimeException("Failed to write log entry: " + http.getResponseMessage())
+    }
+}
+
+reader.close()
+
+在上面的代码中，我们使用File类来打开文件，然后使用BufferedReader逐行读取文件的内容。对于每一行，我们创建一个logEntry Map，设置消息内容和日志级别，然后将其转换为JSON格式并将其写入Stackdriver logging。请注意，您需要替换[YOUR_API_KEY]为您的Google Cloud API密钥。最后，不要忘记关闭文件读取器
+
+
