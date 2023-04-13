@@ -193,4 +193,26 @@ reader.close()
 
 在上面的代码中，我们使用File类来打开文件，然后使用BufferedReader逐行读取文件的内容。对于每一行，我们创建一个logEntry Map，设置消息内容和日志级别，然后将其转换为JSON格式并将其写入Stackdriver logging。请注意，您需要替换[YOUR_API_KEY]为您的Google Cloud API密钥。最后，不要忘记关闭文件读取器
 
+修改上面代码用gcloud logging write 命令来写入stackdrive 
+以下是使用 gcloud logging write 命令将文件内容写入Stackdriver Logging 的示例代码：
+
+def file = new File('/path/to/your/file')
+def cmd = "gcloud logging write my-log --payload-type=json".execute()
+def writer = new BufferedWriter(new OutputStreamWriter(cmd.getOutputStream()))
+
+file.eachLine { line ->
+    def logEntry = [:]
+    logEntry["message"] = line
+    logEntry["severity"] = "INFO"
+    def json = new JsonBuilder(logEntry).toPrettyString()
+    writer.write(json)
+    writer.newLine()
+}
+
+writer.close()
+cmd.waitFor()
+if (cmd.exitValue() != 0) {
+    throw new RuntimeException("Failed to write log entry: " + cmd.err.text)
+}
+在上面的代码中，我们使用 gcloud logging write 命令来写入日志。首先使用 File 类来打开文件，然后使用 eachLine 方法逐行读取文件的内容。对于每一行，我们创建一个 logEntry Map，设置消息内容和日志级别，然后将其转换为 JSON 格式并写入到 BufferedWriter 中。最后，我们关闭 BufferedWriter，等待 gcloud logging write 命令执行完毕，如果命令执行成功则退出，否则抛出异常
 
