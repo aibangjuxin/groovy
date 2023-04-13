@@ -251,3 +251,42 @@ for ISSUE in ${ISSUES_ARRAY}; do
 done
 
 
+import requests
+import csv
+
+# Jira API settings
+JIRA_BASE_URL = "https://your-jira-instance.com"
+JIRA_USERNAME = "your-jira-username"
+JIRA_PASSWORD = "your-jira-password"
+
+# JQL query to retrieve issues
+JQL = "project = MYPROJECT AND updated > -1d ORDER BY updated DESC"
+
+# Output file
+OUTPUT_FILE = "output.csv"
+
+# Authenticate with Jira
+auth = (JIRA_USERNAME, JIRA_PASSWORD)
+
+# Make the API request to Jira
+url = f"{JIRA_BASE_URL}/rest/api/latest/search"
+params = {"jql": JQL, "fields": "*all"}
+response = requests.get(url, auth=auth, params=params)
+
+# Parse the JSON response and extract the issues array
+issues = response.json()["issues"]
+
+# Write issues to CSV file
+with open(OUTPUT_FILE, "w", newline="") as csvfile:
+    writer = csv.writer(csvfile)
+    writer.writerow(["Issue Key", "Summary", "Description", "Status", "Assignee"])
+    for issue in issues:
+        issue_key = issue["key"]
+        summary = issue["fields"]["summary"]
+        description = issue["fields"].get("description", "")
+        status = issue["fields"]["status"]["name"]
+        assignee = issue["fields"].get("assignee", {}).get("name", "")
+        writer.writerow([issue_key, summary, description, status, assignee])
+
+
+
