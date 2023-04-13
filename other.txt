@@ -216,3 +216,38 @@ if (cmd.exitValue() != 0) {
 }
 在上面的代码中，我们使用 gcloud logging write 命令来写入日志。首先使用 File 类来打开文件，然后使用 eachLine 方法逐行读取文件的内容。对于每一行，我们创建一个 logEntry Map，设置消息内容和日志级别，然后将其转换为 JSON 格式并写入到 BufferedWriter 中。最后，我们关闭 BufferedWriter，等待 gcloud logging write 命令执行完毕，如果命令执行成功则退出，否则抛出异常
 
+
+#!/bin/bash
+
+# Jira API settings
+JIRA_BASE_URL="https://your-jira-instance.com"
+JIRA_USERNAME="your-jira-username"
+JIRA_PASSWORD="your-jira-password"
+
+# JQL query to retrieve issues
+JQL="project = MYPROJECT AND updated > -1d ORDER BY updated DESC"
+
+# Output file
+OUTPUT_FILE="output.csv"
+
+# Authenticate with Jira
+AUTH=$(echo -n "${JIRA_USERNAME}:${JIRA_PASSWORD}" | base64)
+
+# Make the API request to Jira
+ISSUES=$(curl -sSL -H "Authorization: Basic ${AUTH}" "${JIRA_BASE_URL}/rest/api/latest/search?jql=${JQL}&fields=*")
+
+# Parse the JSON response and extract the issues array
+ISSUES_ARRAY=$(echo "${ISSUES}" | jq -r '.issues[]')
+
+# Write issues to CSV file
+echo "Issue Key,Summary,Description,Status,Assignee" > "${OUTPUT_FILE}"
+for ISSUE in ${ISSUES_ARRAY}; do
+    ISSUE_KEY=$(echo "${ISSUE}" | jq -r '.key')
+    SUMMARY=$(echo "${ISSUE}" | jq -r '.fields.summary')
+    DESCRIPTION=$(echo "${ISSUE}" | jq -r '.fields.description // empty')
+    STATUS=$(echo "${ISSUE}" | jq -r '.fields.status.name')
+    ASSIGNEE=$(echo "${ISSUE}" | jq -r '.fields.assignee.name // empty')
+    echo "${ISSUE_KEY},${SUMMARY},${DESCRIPTION},${STATUS},${ASSIGNEE}" >> "${OUTPUT_FILE}"
+done
+
+
