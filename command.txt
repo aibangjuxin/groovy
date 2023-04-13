@@ -187,61 +187,10 @@ println output
 The execute() method is not a built-in method of the Groovy language. 
 It is likely that the execute () method is a custom method defined in the approvalCommand object Or library that is being used in the code. However, if you are referring to the execute () method of the String class in Groovy, which is used to execute a command in the shell, 
 it is available in Groovy version 1.5 and later. Here is an example of using the execute () method in Groowy:
-execute（）方法不是Groovy语言的内置方法。execute（）方法很可能是在代码中使用的approvalCommand对象或库中定义的自定义方法。然而，如果您引用的是Groovy中String类的execute（）方法，该方法用于在shell中执行命令，那么它在Groovy 1.5版及更高版本中可用。以下是在Groowy中使用execute（）方法的示例：
+execute（）方法不是Groovy语言的内置方法。execute（）方法很可能是在代码中使用的approvalCommand对象或库中定义的自定义方法。然而，
+如果您引用的是Groovy中String类的execute（）方法，该方法用于在shell中执行命令，
+那么它在Groovy 1.5版及更高版本中可用。以下是在Groowy中使用execute（）方法的示例：
 */
 
-# 转换为jsonStr 
-       def viewjsonStr = sh(returnStdout: true,script:  "cat $fileName").toString().trim()
-        // def reviewresult = new utilsFile().parseJsonByFile(fileName) 这是一个object 不是一个string
-        println "jsonStr is "+ viewjsonStr
-	    sh("""gcloud logging write --payload-type=json projects/${repoName}/logs/infra_release_pr_audit '${viewjsonStr}' """)
-gcloud logging write --payload-type=json my-test-log '{ "message": "My second entry", "weather": "partly cloudy"}'
-
-
-
-       def viewjsonStr = sh(returnStdout: true,script:  "cat $fileName").toString().trim()
-        println "jsonStr is "+ viewjsonStr
-
-This code snippet is written in the Groovy programming language and is using the Jenkins Pipeline syntax.
-Here's what each line is doing:
-1. def viewjsonStr: This line is declaring a new variable viewjsonStr and initializing it with null. The def keyword is used to declare a new variable without specifying its type.
-2. sh(returnStdout: true,script: "cat $fileName"): This line is executing a shell command to read the contents of a file specified by the variable fileName. The returnStdout: true option tells Jenkins to capture the standard output of the command as a string.
-3. .toString(): This line is converting the captured standard output to a string.
-4. .trim(): This line is removing any leading or trailing whitespace from the captured string.
-5. println "jsonStr is "+ viewjsonStr: This line is printing the final value of viewjsonStr to the console, along with a descriptive message.
-In summary, this code is reading the contents of a file specified by the fileName variable, capturing the output as a string, and then trimming any leading or trailing whitespace. The resulting string is stored in the viewjsonStr variable and printed to the console for debugging purposes.
-
-
-Yes, that's correct! In Groovy, you can use the Jenkins sh step to execute shell commands, and you can use the returnStdout option to capture the standard output of the command as a string.
-Here's an example of using sh with returnStdout to capture the output of a shell command:
-
-def output = sh(returnStdout: true, script: 'ls -al')
-println "Output: ${output}"
-
-In this example, we're using the sh step to execute the ls -al command, which lists the contents of the current directory in long format. We're also specifying returnStdout: true, which tells Jenkins to capture the standard output of the command as a string.
-The output of the ls -al command is stored in the output variable, which we can then use in our script. In this case, we're simply printing the output to the console using println.
-You can use the returnStatus option to capture the exit status of the command as an integer, and you can also capture the standard error output of the command using the returnStderr option. By default, the sh step will throw an exception if the command returns a non-zero exit status, but you can use the returnStatus option to override this behavior and handle errors in your script.
-
-
-
-Note that the captured output may contain leading and/or trailing whitespace characters, such as spaces or newlines. To remove any leading or trailing whitespace, you can use the trim method, like this:
-
-def output = sh(returnStdout: true, script: 'ls').trim()
-println "Output: ${output}"
-
-In this example, the trim method is called on the output string to remove any leading or trailing whitespace characters before it is printed to the console. This can be useful if you want to process the captured output further or compare it with other strings.
-
-
-using the sh method in Groovy with the returnStdout, toString, and trim methods to capture and process the output of a shell command:
-def output = sh(returnStdout: true, script: 'echo "   Hello, World!   "').toString().trim()
-println "Output: '${output}'"
-
-In this example, the sh method is called with the returnStdout: true option to capture the output of the echo command, which prints the string " Hello, World! " with leading and trailing whitespace characters. The toString method is then called on the output to convert it from a StringBuilder object to a string, and the trim method is called on the string to remove any leading or trailing whitespace characters.
-
-The resulting string is then stored in a variable called output, which is printed to the console using the println method with single quotes to show any leading or trailing whitespace characters. The output of this example will be:
-
-Output: 'Hello, World!'
-
-Note that the toString and trim methods are optional and depend on the specific use case. You may not need to call them if you only need to capture the output and use it as a string. However, it's always a good idea to be aware of them and use them as needed to ensure that your output is properly formatted and processed.
 
 
