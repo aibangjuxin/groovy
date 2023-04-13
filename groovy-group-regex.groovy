@@ -145,3 +145,93 @@ if (isSpecialGroupMember) {
 ```
 
 这个代码首先使用`JsonSlurper`解析JSON文件，并使用`findAll`方法获取所有的审批和评论。然后，它使用`collect`方法获取所有审批和评论的用户，并使用`any`方法检查特殊组的成员是否在用户列表中。最后，它打印结果。
+
+
+
+Using groovy get github review request .and make sure the review owner at special group
+To get GitHub review requests using Groovy, you can use the GitHub API to fetch the pull requests that have review requests. Here's an example code block that demonstrates how to do this:
+import groovy.json.JsonSlurper
+import groovy.json.JsonOutput
+import org.apache.http.client.methods.HttpGet
+import org.apache.http.impl.client.HttpClients
+import org.apache.http.util.EntityUtils
+
+// Set up the GitHub API endpoint and authentication
+def apiUrl = "https://api.github.com"
+def authToken = "YOUR_AUTH_TOKEN"
+def headers = ["Authorization": "token ${authToken}"]
+
+// Get the pull requests with review requests
+def url = "${apiUrl}/search/issues?q=is:pr+review-requested:${YOUR_GITHUB_USERNAME}"
+def client = HttpClients.createDefault()
+def request = new HttpGet(url)
+headers.each { header ->
+    request.addHeader(header.key, header.value)
+}
+def response = client.execute(request)
+def responseBody = EntityUtils.toString(response.getEntity())
+def jsonSlurper = new JsonSlurper()
+def json = jsonSlurper.parseText(responseBody)
+
+// Filter the pull requests by review owner at special group
+def specialGroup = "SPECIAL_GROUP_NAME"
+def filteredPullRequests = json.items.findAll { pr ->
+    pr.requested_reviewers.any { reviewer ->
+        reviewer.login in specialGroup
+    }
+}
+
+// Print the filtered pull requests
+println(JsonOutput.prettyPrint(JsonOutput.toJson(filteredPullRequests)))
+This code block uses the GitHub API to search for pull requests that have review requests for your GitHub username. It then filters the pull requests by the review owner at a special group, which you can specify by setting the specialGroup variable. Finally, it prints the filtered pull requests in a pretty-printed JSON format.
+
+
+
+Here's an example of how to use Groovy to get GitHub pull requests that have review requests and ensure that the reviewers are in a specific group:
+
+```groovy
+@Grab('org.kohsuke.github:github-api:1.123')
+
+import org.kohsuke.github.*
+
+def github = GitHub.connect()
+
+// Replace with your GitHub username and repository name
+def user = 'my-username'
+def repo = 'my-repo'
+
+// Get the repository object
+def repository = github.getRepository("$user/$repo")
+
+// Get all pull requests with review requests
+def pullRequests = repository.queryPullRequests()
+    .state(GHIssueState.OPEN)
+    .reviewRequested()
+    .list()
+
+// Replace with the name of the group you want to check for
+def groupName = 'my-group'
+
+// Loop through each pull request
+pullRequests.each { pullRequest ->
+    // Get the list of requested reviewers
+    def requestedReviewers = pullRequest.getRequestedReviewers()
+
+    // Loop through each requested reviewer
+    requestedReviewers.each { reviewer ->
+        // Get the user object for the reviewer
+        def user = github.getUser(reviewer.getLogin())
+
+        // Check if the user is a member of the specified group
+        if (user.isMemberOf(groupName)) {
+            println "Pull request #${pullRequest.getNumber()} has a review request from a member of $groupName"
+        }
+    }
+}
+```
+
+In this example, we first connect to the GitHub API using the `GitHub.connect()` method. We then get the repository object for the specified repository using the `github.getRepository()` method.
+
+Next, we use the `queryPullRequests()` method to get all open pull requests with review requests. We then loop through each pull request and get the list of requested reviewers using the `getRequestedReviewers()` method.
+
+For each requested reviewer, we get the user object using the `github.getUser()` method. We then check if the user is a member of the specified group using the `isMemberOf()` method. If the user is a member of the group, we print a message indicating that the pull request has a review request from a member of the group.
