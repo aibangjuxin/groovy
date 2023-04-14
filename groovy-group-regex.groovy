@@ -287,3 +287,35 @@ def getTeamMembers(teamSlug) {
 Note that this code assumes that you have already authenticated with GitHub and have the necessary permissions to access the pull request and team information. You may need to modify the API URLs or add authentication
  headers depending on your use case.
 
+
+Here's an example of how to use utilsFile().parseJsonByFile() to parse the response from the GitHub API and check if the review status is "APPROVED" and if the approver is in a list defined in the script:
+def owner = "owner"
+def repo = "repo"
+def pullNumber = "1"
+def reviewStatus = "APPROVED"
+def approvers = ["user1", "user2", "user3"]
+
+def command = "curl -H 'Accept: application/vnd.github.v3+json' https://api.github.com/repos/${owner}/${repo}/pulls/${pullNumber}/reviews"
+def process = command.execute()
+process.waitFor()
+def response = process.text
+
+def reviews = utilsFile().parseJsonByFile(response)
+
+def approvedReview = reviews.find { it.state == reviewStatus }
+if (approvedReview) {
+  def approver = approvedReview.user.login
+  if (approvers.contains(approver)) {
+    println("The pull request has been approved by an approver in the list.")
+  } else {
+    println("The pull request has been approved, but the approver is not in the list.")
+  }
+} else {
+  println("The pull request has not been approved.")
+}
+This script is very similar to the previous one, but instead of using JsonSlurper to parse the JSON response, it uses utilsFile().parseJsonByFile(). This method takes a string containing JSON data as input and returns a parsed JSON object.
+
+The rest of the script is the same as before: it finds the first review with a status of "APPROVED", checks if the approver is in the list of approvers, and prints a message accordingly.
+
+
+
