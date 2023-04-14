@@ -235,3 +235,55 @@ In this example, we first connect to the GitHub API using the `GitHub.connect()`
 Next, we use the `queryPullRequests()` method to get all open pull requests with review requests. We then loop through each pull request and get the list of requested reviewers using the `getRequestedReviewers()` method.
 
 For each requested reviewer, we get the user object using the `github.getUser()` method. We then check if the user is a member of the specified group using the `isMemberOf()` method. If the user is a member of the group, we print a message indicating that the pull request has a review request from a member of the group.
+
+
+Here's an example of how you can use Groovy to check if a pull request review status is "APPROVED" and ensure that the reviewer is a member of a specific team:
+
+import groovy.json.JsonSlurper
+import javax.net.ssl.HttpsURLConnection
+
+def owner = "your-username"
+def repo = "your-repository"
+def pullRequestNumber = 1 // Replace with the number of your pull request
+def teamSlug = "your-team-slug" // Replace with the slug of your team
+
+// Set up the API URL
+def apiUrl = "https://api.github.com/repos/$owner/$repo/pulls/$pullRequestNumber/reviews"
+
+// Set up the API request
+def connection = apiUrl.toURL().openConnection() as HttpsURLConnection
+connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
+
+// Parse the API response
+def reviews = new JsonSlurper().parse(connection.inputStream)
+
+// Loop through the reviews and check if any are approved by a team member
+def approvedByTeamMember = false
+reviews.each { review ->
+    if (review.state == "APPROVED") {
+        def reviewer = review.user.login
+        def teamMembers = getTeamMembers(teamSlug)
+        if (teamMembers.contains(reviewer)) {
+            approvedByTeamMember = true
+        }
+    }
+}
+
+// Print the result
+if (approvedByTeamMember) {
+    println("The pull request has been approved by a member of the $teamSlug team.")
+} else {
+    println("The pull request has not been approved by a member of the $teamSlug team.")
+}
+
+// Helper function to get the members of a team
+def getTeamMembers(teamSlug) {
+    def apiUrl = "https://api.github.com/orgs/$owner/teams/$teamSlug/members"
+    def connection = apiUrl.toURL().openConnection() as HttpsURLConnection
+    connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
+    def members = new JsonSlurper().parse(connection.inputStream)
+    return members.collect { it.login }
+}
+Note that this code assumes that you have already authenticated with GitHub and have the necessary permissions to access the pull request and team information. You may need to modify the API URLs or add authentication
+ headers depending on your use case.
+
