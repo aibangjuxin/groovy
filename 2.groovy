@@ -189,3 +189,31 @@ done
 该命令将获取 GKE 集群中所有 Pod 中使用的镜像名称，并使用 `gcloud container images describe` 命令获取每个镜像的大小。然后，将结果输出到终端上。
 
 输出结果将包括每个 Pod 镜像的名称和大小（以 MB 为单位），以制表符（`\t`）分隔。
+
+How to check gcr image size .get image manifest all the layers and size sum size write a script
+
+获取 GCR 中镜像的总大小，可以使用 gcloud 命令行工具来获取镜像的 digest，然后使用 curl 命令来获取镜像的 manifest，最后使用 jq 命令解析 manifest 中的大小信息并将它们相加。
+以下是一个示例脚本，可以用来获取 GCR 中所有镜像的大小总和：
+
+#!/bin/bash
+
+# 设置变量
+PROJECT_ID=[PROJECT-ID]
+IMAGE_NAME=[IMAGE-NAME]
+TAG=[TAG]
+IMAGE_FULL_NAME=gcr.io/$PROJECT_ID/$IMAGE_NAME:$TAG
+
+# 获取每个层的大小，并将其存储在一个数组中
+LAYER_SIZES=($(curl -s -H "Authorization: Bearer $(gcloud auth print-access-token)" https://gcr.io/v2/$PROJECT_ID/$IMAGE_NAME/manifests/$TAG | jq -r '.layers[].size'))
+
+# 计算所有层的大小之和
+TOTAL_SIZE=$(echo "${LAYER_SIZES[@]}" | sed 's/ /+/g' | bc)
+
+# 输出结果
+echo "GCR Image Name: $IMAGE_FULL_NAME"
+echo "Total Size: $TOTAL_SIZE bytes"
+echo "Layer Sizes:"
+for i in "${!LAYER_SIZES[@]}"; do
+  echo "  Layer $i: ${LAYER_SIZES[$i]} bytes"
+done
+
