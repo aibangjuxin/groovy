@@ -158,3 +158,21 @@ echo "Total disk usage for all Pods: ${TOTAL_DISK_USAGE}"
 
 `ephemeral-storage` 的 `allocatable` 值通常以字节数为单位，但在 `kubectl describe node` 的输出中，它没有明确的单位。所以如果 `ephemeral-storage` 的 `allocatable` 值为 `104857600`，则表示节点上 ephemeral-storage 可用容量的数量为 100 GB。
 
+
+image size
+如果您要统计 Google GKE 中所有 Pod 的镜像大小，
+可以使用以下命令：
+
+```bash
+gcloud container images list --repository=gcr.io/[PROJECT_ID] --format='get(digest)' | while read digest; do
+  gcloud container images describe gcr.io/[PROJECT_ID]/[IMAGE_NAME]@$digest --format='value(image_summary.fully_qualified_digest, image_summary.image_size_bytes/1048576)' | sed "s/gcr.io\//$HOSTNAME\//g"
+done
+```
+
+这个命令会遍历 GCR 中项目 `[PROJECT_ID]` 
+下的所有镜像，并获取它们的完全限定摘要符（fully qualified digest）和镜像大小。
+然后，输出结果到终端上，其中包括每个镜像的完全限定摘要符、大小（以 MB 为单位）以及镜像所在的节点名称。
+
+请注意，此命令需要您在执行之前替换命令中的
+ `[PROJECT_ID]` 和 `[IMAGE_NAME]` 为实际的项目 ID 和镜像名称。
+
