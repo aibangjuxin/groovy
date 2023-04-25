@@ -114,3 +114,40 @@
    这意味着节点的磁盘使用率为 50%。
 
 请注意，这种方法仅适用于获取节点上可用磁盘空间的使用情况。如果您需要更详细的磁盘使用信息，例如每个文件系统的使用情况或每个进程的磁盘使用情况，您可能需要使用其他工具或方法。
+
+
+以下是一个可以用来获取 GKE 集群中所有 Pod 占用的磁盘大小的 Shell 脚本示例。您可以将该脚本保存为 `.sh` 文件，然后在终端中执行。
+
+```bash
+#!/bin/bash
+
+# 获取所有 Pod 名称
+POD_NAMES=$(kubectl get pods --all-namespaces -o=jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+
+# 初始化总磁盘使用量
+TOTAL_DISK_USAGE=0
+
+# 遍历每个 Pod
+for POD_NAME in ${POD_NAMES}; do
+  # 获取 Pod 所在节点的名称
+  NODE_NAME=$(kubectl get pod ${POD_NAME} -o=jsonpath='{.spec.nodeName}')
+
+  # 获取节点上所有磁盘分区的使用情况
+  DISK_USAGE=$(gcloud compute ssh ${NODE_NAME} --zone=<zone/region> -- df -h)
+
+  # 计算 Pod 占用的磁盘大小
+  POD_DISK_USAGE=$(echo ${DISK_USAGE} | grep /var/lib/docker/overlay2 | awk '{print $3}')
+
+  # 将 Pod 磁盘使用量添加到总磁盘使用量中
+  TOTAL_DISK_USAGE=$((${TOTAL_DISK_USAGE} + ${POD_DISK_USAGE}))
+
+  # 输出每个 Pod 的磁盘使用量
+  echo "Pod ${POD_NAME} uses ${POD_DISK_USAGE} disk space"
+done
+
+# 输出总磁盘使用量
+echo "Total disk usage for all Pods: ${TOTAL_DISK_USAGE}"
+```
+
+请注意，此脚本中的 `<zone/region>` 应替换为您的 GKE 集群所在的区域或地区。此外，为了能够正常运行脚本，您需要具有运行 `gcloud` 和 `kubectl` 命令的权限，并且您的计算机上已经安装了这些工具。
+
