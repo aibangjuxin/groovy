@@ -153,3 +153,8 @@ echo "Total disk usage for all Pods: ${TOTAL_DISK_USAGE}"
 在 `kubectl describe node` 命令的输出中，`ephemeral-storage` 的单位是 `Ki`. 
 
 例如，如果 `ephemeral-storage` 的值为 `104857600Ki`，则表示节点上 ephemeral-storage 容量的总大小为 100 GB，以 KiB 为单位。
+
+在 `kubectl describe node` 命令的输出中，`ephemeral-storage` 的 `allocatable` 值确实没有指定单位。这是因为 `allocatable` 中的 `ephemeral-storage` 值表示节点上 ephemeral-storage 可用容量的数量，而不是总容量。
+
+`ephemeral-storage` 的 `allocatable` 值通常以字节数为单位，但在 `kubectl describe node` 的输出中，它没有明确的单位。所以如果 `ephemeral-storage` 的 `allocatable` 值为 `104857600`，则表示节点上 ephemeral-storage 可用容量的数量为 100 GB。
+
