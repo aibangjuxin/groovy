@@ -150,4 +150,6 @@ echo "Total disk usage for all Pods: ${TOTAL_DISK_USAGE}"
 ```
 
 请注意，此脚本中的 `<zone/region>` 应替换为您的 GKE 集群所在的区域或地区。此外，为了能够正常运行脚本，您需要具有运行 `gcloud` 和 `kubectl` 命令的权限，并且您的计算机上已经安装了这些工具。
+在 `kubectl describe node` 命令的输出中，`ephemeral-storage` 的单位是 `Ki`. 
 
+例如，如果 `ephemeral-storage` 的值为 `104857600Ki`，则表示节点上 ephemeral-storage 容量的总大小为 100 GB，以 KiB 为单位。
