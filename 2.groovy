@@ -176,3 +176,16 @@ done
 请注意，此命令需要您在执行之前替换命令中的
  `[PROJECT_ID]` 和 `[IMAGE_NAME]` 为实际的项目 ID 和镜像名称。
 
+
+如果您无法登录到 GKE 节点并且需要获取 Pod 镜像大小的话，可以使用以下命令：
+
+```bash
+kubectl get pods --all-namespaces -o=jsonpath="{range .items[*]}{.metadata.name}{'\t'}{.spec.containers[*].image}{'\n'}{end}" | sort -u | while read pod_image; do
+  size=$(gcloud container images describe $pod_image --format='value(image_summary.image_size_bytes)')
+  printf "%s\t%s\n" "$pod_image" "$((size/1048576)) MB"
+done
+```
+
+该命令将获取 GKE 集群中所有 Pod 中使用的镜像名称，并使用 `gcloud container images describe` 命令获取每个镜像的大小。然后，将结果输出到终端上。
+
+输出结果将包括每个 Pod 镜像的名称和大小（以 MB 为单位），以制表符（`\t`）分隔。
