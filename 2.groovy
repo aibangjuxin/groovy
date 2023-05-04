@@ -30,4 +30,18 @@ Date:   Tue May 4 18:00:00 2023 +0800
     Add new feature
 ```
 
-在上面的示例中，commit ID 为 `4b5d6e1f8f9b1b2e4f2a5c7b3d4e5f6a7b8c9d0e`。您可以将其复制并在其他命令中使用。
+在上面的示例中，commit ID 为 `4b5d6e1f8f9b1b2e4f2a5c7b3d4e5f6a7b8c9d0e`。
+您可以将其复制并在其他命令中使用。
+
+在 Git 中，`cherry-pick` 
+是一种将指定的 commit 应用到当前分支的操作。
+它可以将一个或多个 commit 从一个分支复制到另一个分支，
+而不需要将整个分支合并。
+通常情况下，`cherry-pick` 操作用于将某个分支上的特定 
+commit 应用到另一个分支上，以便在不影响其他 commit 的情况下，
+将特定的更改合并到目标分支中。
+
+具体来说，`cherry-pick` 命令会将指定的 commit 的更改应用到当前分支上，并创建一个新的 commit 记录。这个新的 commit 记录包含了原始 commit 的更改，但是 commit ID 和提交时间等信息会有所不同。这意味着，`cherry-pick` 操作不会改变原始 commit 的历史记录，而是在当前分支上创建一个新的 commit 记录。
+
+需要注意的是，由于 `cherry-pick` 操作会将指定的 commit 应用到当前分支上，
+因此可能会导致代码冲突。如果出现冲突，您需要手动解决冲突，并重新提交更改。
