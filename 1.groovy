@@ -1,3 +1,6 @@
+iptables -t nat -A <CHAIN_NAME> -s 192.168.0.0/24 ! -s 192.168.0.100 -j MASQUERADE
+
+
 
 Here is the English translation:
 
