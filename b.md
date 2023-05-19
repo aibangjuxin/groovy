@@ -1,3 +1,92 @@
+Here is a markdown summary of using Helm to manage Deployments:
+
+# Helm 管理 Deployment
+
+## 安装 Deployment
+
+可以在 Helm Chart 中定义 Deployment 资源,例如:
+
+yaml
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: nginx-deployment  
+spec:  
+  replicas: 3  
+  selector:    
+    matchLabels:      
+      app: nginx  
+  template:    
+    metadata:      
+      labels:        
+        app: nginx    
+    spec:      
+      containers:      
+      - name: nginx        
+          image: nginx:1.14.2        
+          ports:        
+          - containerPort: 80
+
+
+## 设置replicas 扩缩容
+
+可以通过 replicas 字段设置 Pod 的复制数,实现 Deployment 的扩缩容。
+
+## 更新Deployment
+
+可以通过 helm upgrade 命令更新 Deployment,例如:
+
+- 更新镜像版本:
+
+yaml
+apiVersion: apps/v1  
+kind: Deployment  
+metadata:  
+  name: nginx-deployment
+spec:  
+  replicas: 3  
+  selector:    
+    matchLabels:      
+      app: nginx  
+  template:    
+    metadata:      
+      labels:        
+        app: nginx    
+    spec:      
+      containers:      
+      - name: nginx        
+          image: nginx:1.15.2  # 修改镜像版本        
+          ports:        
+          - containerPort: 80 
+
+
+然后执行`helm upgrade`。
+
+- 更新注解(Annotations):
+
+yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:  
+  name: nginx-deployment
+  annotations:  
+    some-annotation: "new value"  # 新增或修改注解
+# ...
+  
+
+然后执行`helm upgrade`。
+
+## 回滚Deployment
+
+可以通过 helm rollback 命令回滚 Deployment 到之前的版本。
+
+## 删除Deployment
+
+可以通过 helm delete 和 helm uninstall 命令删除 Deployment。
+
+所以总体来说,Helm 可以很好的配合 Kubernetes Deployment 资源进行管理,具有版本控制、扩缩容、回滚等能力。
+
+
 Helm 可以很方便的安装和管理 Kubernetes 的应用。对于 Deployment,主要有以下几个方面:
 
 1. 创建 Deployment 资源:在 Helm Chart 中可以定义 Deployment 资源,例如:
