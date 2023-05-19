@@ -5,8 +5,7 @@ Here is a markdown summary of using Helm to manage Deployments:
 ## 安装 Deployment
 
 可以在 Helm Chart 中定义 Deployment 资源,例如:
-
-yaml
+```yaml
 apiVersion: apps/v1  
 kind: Deployment  
 metadata:  
@@ -26,7 +25,7 @@ spec:
           image: nginx:1.14.2        
           ports:        
           - containerPort: 80
-
+```
 
 ## 设置replicas 扩缩容
 
@@ -37,8 +36,7 @@ spec:
 可以通过 helm upgrade 命令更新 Deployment,例如:
 
 - 更新镜像版本:
-
-yaml
+```yaml
 apiVersion: apps/v1  
 kind: Deployment  
 metadata:  
@@ -58,19 +56,21 @@ spec:
           image: nginx:1.15.2  # 修改镜像版本        
           ports:        
           - containerPort: 80 
-
+```
 
 然后执行`helm upgrade`。
 
 - 更新注解(Annotations):
 
 yaml 
+```yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:  
   name: nginx-deployment
   annotations:  
     some-annotation: "new value"  # 新增或修改注解
+```
 # ...
   
 
