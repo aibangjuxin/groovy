@@ -1,4 +1,77 @@
 
+这里是一个Deployment和HPA的YAML配置示例以及markdown格式输出:
+
+## Deployment YAML
+```yaml
+apiVersion: apps/v1  
+kind: Deployment
+metadata:
+  name: demo-deployment  
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: demo  
+  template:
+    metadata:
+      labels:
+        app: demo  
+    spec:
+      containers:  
+      - name: demo-container
+        image: nginx:1.16
+        resources:
+          limits:
+            cpu: "2"     
+            memory: 1Gi  
+          requests:
+            cpu: "1"  
+            memory: 512Mi
+```
+
+## HPA YAML
+```yaml
+apiVersion: autoscaling/v2beta2  
+kind: HorizontalPodAutoscaler
+metadata:
+  name: demo-hpa
+spec:
+  scaleTargetRef: 
+    apiVersion: apps/v1
+    kind: Deployment 
+    name: demo-deployment
+  minReplicas: 3 
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50 
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+## Deployment说明  
+- Deployment启动3个Pod副本 
+- 每个Pod设置CPU限制为2个核,内存限制1Gi,请求为1个核和512Mi
+
+## HPA说明
+- 监控Deployment的各个Pod资源使用情况
+- 当Pod的averageUtilization超过50%时,扩缩容Deployment的副本数 
+- 扩缩容后副本数范围 3到10之间
+- CPU和内存的扩缩容判断指标均为averageUtilization
+
+## 实现效果  
+此配置实现了Deployment资源的限制和弹性扩缩容,可以根据系统负载自动调节Pod数量,确保服务质量。通过HPA我们可以清楚看到各个Pod的资源使用统计指标,以及HPA执行的具体扩缩容操作,这为我们优化和调整Deployment资源配置提供了依据。
+
+理解并运用Deployment资源限制、HPA扩缩容等功能,可以让我们构建一个动态稳定的Kubernetes系统。希望上述示例和说明能对你有所帮助!
+
 这里是上面示例的markdown格式输出:
 
 # Deployment资源限制及弹性扩缩容
