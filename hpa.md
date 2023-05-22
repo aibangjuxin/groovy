@@ -3,7 +3,7 @@
 
 # Deployment资源限制及弹性扩缩容
 ## Deployment YAML
-yaml
+```yaml
 apiVersion: apps/v1  
 kind: Deployment
 metadata:
@@ -46,7 +46,7 @@ spec:
           type: Utilization 
           averageUtilization: 50
 
-
+```
 ## 说明
 
 - 该Deployment初始化启动3个Pod副本 
