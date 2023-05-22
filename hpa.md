@@ -64,7 +64,8 @@ spec:
 
 
 这里是一个设置了CPU和内存资源限制的Pod YAML示例:
-yaml
+
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -80,7 +81,7 @@ spec:
       requests:
         cpu: "500m"
         memory: 150Mi
-
+```
 
 说明:
 
