@@ -1,4 +1,68 @@
 
+这里是上面示例的markdown格式输出:
+
+# Deployment资源限制及弹性扩缩容
+## Deployment YAML
+yaml
+apiVersion: apps/v1  
+kind: Deployment
+metadata:
+  name: demo-deployment  
+spec:
+  replicas: 3 
+  selector:
+    matchLabels:
+      app: demo  
+  template:
+    metadata:
+      labels:
+        app: demo  
+    spec:
+      containers:  
+      - name: demo-container
+        image: nginx:1.16
+        resources:
+          limits:
+            cpu: "750m"     
+            memory: 200Mi  
+          requests:
+            cpu: "500m"  
+            memory: 150Mi
+  autoscaling:    
+    enabled: true 
+    minReplicas: 3
+    maxReplicas: 10
+    metrics:  
+    - type: Resource  
+      resource:
+        name: cpu
+        target:   
+          type: Utilization  
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:    
+          type: Utilization 
+          averageUtilization: 50
+
+
+## 说明
+
+- 该Deployment初始化启动3个Pod副本 
+- 每个Pod都设置了CPU和内存的requests和limits,用于资源管理和监控
+- 启用了HPA,当各个Pod的averageUtilization超过50%时,会自动扩缩容Deployment  
+- CPU的扩缩容判断指标为averageUtilization
+- 内存的扩缩容判断指标也为averageUtilization 
+- 扩缩容后的副本数范围为3到10之间  
+
+## 实现效果
+
+该Deployment配置实现了CPU和内存资源的限制及弹性扩缩容,可以确保资源不会过度或不足使用,总体Improving了系统的稳定性。通过观察各个Pod的averageUtilization指标,可以清楚地了解Deployment的资源使用情况,以及HPA执行的扩缩容行为,这为系统的优化提供了参考依据。
+
+总之,对Deployment进行资源限制及HPA配置,可以让其 Pod和副本数动态调节,从而实现资源的最优利用和服务质量的保障。理解和使用这些配置,对构建一个稳定高效的Kubernetes系统非常有帮助。
+
+
 这里是一个设置了CPU和内存资源限制的Pod YAML示例:
 yaml
 apiVersion: v1
