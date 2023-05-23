@@ -1,5 +1,60 @@
  
-当用户需要将对话输出为Markdown格式时，以下是整理为Markdown格式的对话内容：
+gke node-pools diskSize 
+Boot disk size (per node) 130 GB
+allocatable ephemeral-storage
+gcloud container node-pools describe $old_node_pool_name --cluster $cluster_name --region $gcp_region --project $project --format="value(config.diskSizeGb)
+
+130G 
+kubectl describe node Node-name
+Capacity:容量
+  attachable-volumes-gce-pd:  127
+  cpu:                        8
+  ephemeral-storage:          129797668Ki 临时存储
+  hugepages-1Gi:              0
+  hugepages-2Mi:              0
+  memory:                     32882796Ki
+  pods:                       110
+Allocatable:　可分配
+  attachable-volumes-gce-pd:  127
+  cpu:                        7910m
+  ephemeral-storage:          64860697607
+  hugepages-1Gi:              0
+  hugepages-2Mi:              0
+  memory:                     29087852Ki
+  pods:                       110
+Allocated resources:
+  (Total limits may be over 100 percent, i.e., overcommitted.)
+  Resource                   Requests      Limits
+  --------                   --------      ------
+  cpu                        1558m (19%)   13225m (167%)
+  memory                     9374Mi (32%)  21508Mi (75%)
+  ephemeral-storage          0 (0%)        0 (0%)
+  hugepages-1Gi              0 (0%)        0 (0%)
+  hugepages-2Mi              0 (0%)        0 (0%)
+  attachable-volumes-gce-pd  0             0
+Events:                      <none>
+
+https://cloud.google.com/kubernetes-engine/docs/concepts/plan-node-sizes?hl=zh-cn
+逐出阈值始终为总启动磁盘容量的10%
+系统预订SYSTEM　RESERVATION
+SYSTEM_RESERVATION = Min(50% * BOOT_DISK_CAPACITY, 6GiB + 35% * BOOT_DISK_CAPACITY, 100 GiB)
+公式
+系统预留数量是以上各项中的最低数量：那么我们是51G 
+50% 的启动磁盘容量
+35% 的启动磁盘容量 + 6 GiB
+100 GiB
+我们130G的计算
+min
+65G,
+6G+45.5G=51G
+100G
+系统预留数量是以上各项中的最低数量：那么我们是51G 
+
+
+最小值那就是５１G为系统预留的
+那就是130G-51G＝78G再减去逐出阈值13G＝65G左右
+我们的可用是60G左右
+那就是已经部署的那些Pod的占用了
 
 ---
 
