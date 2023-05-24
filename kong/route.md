@@ -90,12 +90,6 @@ Service定义了后端服务的细节，如它的地址、端口、协议等信�
 
 这个例子中，Route可以匹配`example.com`和`www.example.com`两个域名，请求将被转发到Service的`/`路径上。
 
-输出为Markdown格式的例子：
-
-## Route- Name: my-route- Protocols: http- Methods: GET- Hosts: example.com, www.example.com- Strip Path: true- Preserve Host: false### Service- Name: my-service- URL: http://my-service:8080- Protocol: http
-- Host: my-service.com- Port: 8080- Path:#### Healthcheck
-
-- Active  - HTTP Path: /health  - Healthy    - Interval: 5    - Successes: 2  - Unhealthy    - Interval: 5    - HTTP Failures: 2以上是一个输出为Markdown格式的例子，您可以根据需要进行调整。
 
 
 在Kong中，"route"和"service"是两个核心概念，用于定义API的路由和服务。
