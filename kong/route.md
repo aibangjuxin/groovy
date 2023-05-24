@@ -1,3 +1,37 @@
+在Kong中，"route"和"service"是两个核心概念，用于定义API的路由和服务。
+
+- **Route（路由）**：它定义了客户端如何访问Kong中的API。路由规定了API的路径、主机名、协议等信息，并将客户端请求转发到相应的后端服务。一个路由可以与一个或多个服务相关联。
+
+- **Service（服务）**：它代表了一个后端服务或API的实例。服务定义了实际的服务地址、端口、协议等信息，Kong会将客户端请求转发到这些服务。
+
+以下是一个关于route和service的JSON配置示例：
+
+```json
+{
+  "services": [
+    {
+      "name": "example-service",
+      "url": "http://example.com",
+      "port": 80,
+      "protocol": "http",
+      "routes": [
+        {
+          "name": "example-route",
+          "paths": ["/api"],
+          "methods": ["GET", "POST"],
+          "strip_path": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+这个示例中定义了一个名为"example-service"的服务，它指向"http://example.com"，使用HTTP协议，监听端口80。同时，这个服务关联了一个路由，该路由的路径为"/api"，允许的请求方法为GET和POST，而且不会剥离路径。
+
+希望这个示例对你有帮助！
+
+
 是的,Kong网关允许在一条路由上绑定多个域名。这可以通过几种方式实现:
 
 1. 在路由的hosts字段指定多个域名:
