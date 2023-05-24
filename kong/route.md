@@ -26,6 +26,90 @@
   ]
 }
 ```
+当您提到 "一个完整的 service 的 JSON 示例"，以下是一个包含常见字段的服务配置的示例：
+
+```json
+{
+  "name": "example-service",
+  "url": "http://example.com",
+  "protocol": "http",
+  "host": "example.com",
+  "port": 80,
+  "path": "/api",
+  "retries": 5,
+  "connect_timeout": 6000,
+  "write_timeout": 6000,
+  "read_timeout": 6000,
+  "tags": ["tag1", "tag2"],
+  "client_certificate": null,
+  "tls_verify": null,
+  "tls_verify_depth": null,
+  "ca_certificates": null,
+  "created_at": 1651747200,
+  "updated_at": 1651747200,
+  "id": "service-id-12345"
+}
+```
+
+这个示例中的`service.json`文件包含了以下字段：
+- `name`：服务的名称，例如 `"example-service"`。
+- `url`：服务的URL，例如 `"http://example.com"`。
+- `protocol`：服务的协议，例如 `"http"`。
+- `host`：服务的主机名，例如 `"example.com"`。
+- `port`：服务的端口号，例如 `80`。
+- `path`：服务的路径，例如 `"/api"`。
+- `retries`：在发生错误时的重试次数。
+- `connect_timeout`：连接超时时间（以毫秒为单位）。
+- `write_timeout`：写入超时时间（以毫秒为单位）。
+- `read_timeout`：读取超时时间（以毫秒为单位）。
+- `tags`：服务的标签列表，用于组织和管理服务。
+- `client_certificate`：客户端证书的配置。
+- `tls_verify`：TLS验证的配置。
+- `tls_verify_depth`：TLS验证深度的配置。
+- `ca_certificates`：CA证书的配置。
+- `created_at`：服务创建时间的时间戳。
+- `updated_at`：服务更新时间的时间戳。
+- `id`：服务的唯一标识符。
+
+请注意，某些字段可能根据实际情况略有不同，这只是一个示例。您可以根据您的具体需求进行调整和扩展。
+
+
+
+以下是一个完整的关于 `route` 的 JSON 配置示例，并附上相应的解释：
+
+```json
+{
+  "protocols": ["http", "https"],
+  "methods": ["GET", "POST"],
+  "hosts": ["example.com"],
+  "paths": ["/api"],
+  "strip_path": false,
+  "preserve_host": true,
+  "service": {
+    "name": "example-service"
+  },
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "tags": ["tag1", "tag2"],
+  "id": "route-id-12345"
+}
+```
+
+- `"protocols"`：定义支持的协议列表。在示例中，路由支持 `"http"` 和 `"https"` 协议。
+- `"methods"`：指定允许的请求方法。示例中允许 `"GET"` 和 `"POST"` 方法。
+- `"hosts"`：指定允许的主机名。在示例中，只有 `"example.com"` 的请求会匹配到该路由。
+- `"paths"`：定义可匹配的路径列表。示例中，只有 `"/api"` 的请求路径会匹配到该路由。
+- `"strip_path"`：指定是否剥离请求路径。在示例中，`false` 表示不剥离请求路径，保持原始路径。
+- `"preserve_host"`：指定是否保留原始主机名。在示例中，`true` 表示保留原始主机名。
+- `"service"`：关联的服务，通过 `"name"` 字段指定服务名称。示例中，关联的服务名称为 `"example-service"`。
+- `"headers"`：指定路由的请求头信息。在示例中，设置了 `"Content-Type"` 请求头为 `"application/json"`。
+- `"tags"`：定义标签，用于组织和管理路由。示例中，包含了 `"tag1"` 和 `"tag2"` 两个标签。
+- `"id"`：指定路由的唯一标识符。示例中，路由的唯一标识符为 `"route-id-12345"`。
+
+这个示例展示了如何使用不同的字段配置一个完整的 `route`，定义了路由的匹配条件、请求方法、协议等信息，并与一个特定的服务关联。
+
+希望这个例子能够帮助您更好地理解 `route` 的配置和含义！
 
 这个示例中定义了一个名为"example-service"的服务，它指向"http://example.com"，使用HTTP协议，监听端口80。同时，这个服务关联了一个路由，该路由的路径为"/api"，允许的请求方法为GET和POST，而且不会剥离路径。
 
