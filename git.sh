@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /Users/lex/Downloads/git/groovy
+#cd /Users/lex/Downloads/git/groovy
 riqi=$(date)
 echo "$riqi"
 git add .
