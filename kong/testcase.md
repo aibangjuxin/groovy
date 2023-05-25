@@ -106,4 +106,16 @@ other
 - 安全:检查Kong和K8S在安全方面是否有漏洞,例如鉴权漏洞、SQL注入漏洞等。
 - 高可用:测试Kong和K8S的高可用机制是否有效,例如在节点失效或其他异常情况下,能否平滑进行故障转移。
 
-除此之外,在测试过程中还需要考虑自动化测试、模拟真实流量、日志收集与分析等问题。总体来说,要全面测试Kong+K8S在功能、性能、稳定性、安全、高可用等方面的表现,并通过分析测试结果不断优化系统。
+除此之外,在测试过程中还需要考虑自动化测试、模拟真实流量、日志收集与分析等问题。
+总体来说,要全面测试Kong+K8S在功能、性能、稳定性、安全、高可用等方面的表现,并通过分析测试结果不断优化系统。
+
+Non-functional testing aspects.
+
+- Performance: Under high load, how does Kong+K8S perform and whether it will become a bottleneck in the system's performance.
+- Stability: in long-term high load or abnormal conditions, the system is stable operation, will not be down and crash.
+- Security: check Kong and K8S in the security aspects of whether there are vulnerabilities, such as authentication vulnerabilities, SQL injection vulnerabilities, etc.
+- High availability: test Kong and K8S high availability mechanism is effective, for example, in the case of node failure or other abnormalities, whether smooth failover.
+
+In addition, in the testing process also need to consider automation testing, simulation of real traffic, log collection and analysis. In general, the performance of Kong+K8S in terms of functionality, performance, stability, security, and high availability should be tested comprehensively, and the system should be continuously optimized by analyzing the test results.
+
+通过DeepL翻译 (https://www.deepl.com/app/?utm_source=ios&utm_medium=app&utm_campaign=share-translation
