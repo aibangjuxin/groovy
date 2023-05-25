@@ -131,3 +131,31 @@ HAProxy: HAProxy是一个开源的负载均衡器，它也支持CONNECT Tunnelin
 以上是一些常用的代理服务器软件和实现方式，根据具体的需求和场景可以选择合适的工具。
 ```
 
+是的,通过curl访问目标网址时使用的命令选项可以判断走的是哪种代理。
+
+- 正向代理:使用`--proxy`选项,指定正向代理的URL,curl会将所有请求转发到正向代理。例如:
+
+bash
+curl --proxy http://proxy.example.com:8080 http://example.com
+
+
+- 反向代理:不需要任何特殊选项,curl会直接访问反向代理指定的URL,反向代理再转发请求到后端服务器。例如:
+
+bash 
+curl http://proxy.example.com 
+
+
+- CONNECT隧道:使用`--proxy-tunnel`选项,curl会将请求连接到目标主机,CREATE创建TCP隧道,然后通过隧道发送HTTP请求。例如:
+
+bash
+curl --proxy-tunnel -x http://proxy.example.com:8080 https://example.com
+
+
+所以通过观察使用的curl选项,我们可以判断是走正向代理、反向代理还是CONNECT隧道:
+
+- --proxy选项表示正向代理 
+- 无特殊选项表示反向代理
+- --proxy-tunnel选项表示CONNECT隧道
+
+希望这个解释有帮助!请让我知道如果您有任何其他问题。
+
