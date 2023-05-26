@@ -13,6 +13,37 @@ for podname in `kubectl get pod -n kube-system|grep ip-masq-agent|awk '{print$1}
 ```bash
  kubectl describe cm ip-masq-agent -n kube-system && kubectl exec `kubectl get pod -n cap-core |grep pod-name|awk '{print$1}'` -n cap-core -- curl -v fqdn:22
 ```
+在Kubernetes中，如果你想在DaemonSet中使用ConfigMap并使其生效，以下是一些建议的操作步骤：
+
+1. 创建一个ConfigMap对象，其中包含你想要在DaemonSet中使用的配置数据。你可以使用`kubectl create configmap`命令或通过定义一个YAML文件来创建ConfigMap。
+
+2. 在DaemonSet的Pod模板中，将ConfigMap挂载为一个卷。你可以使用`volumeMounts`字段指定将ConfigMap挂载到Pod的哪个路径下。
+
+3. 在Pod模板的卷配置中，指定挂载的ConfigMap的名称和路径。你可以使用`volumes`字段来定义这个卷。
+
+4. 在DaemonSet的Pod模板的`spec`部分中，定义`volumeMounts`和`volumes`字段，以将ConfigMap挂载到Pod中。
+
+5. 在DaemonSet的更新策略中，确保配置更新会触发Pod的重启。你可以使用`rollingUpdate`策略并设置`maxUnavailable`和`maxSurge`字段来控制更新过程中的Pod可用性。
+
+验证ConfigMap是否已生效的一种方法是检查DaemonSet中的Pod是否重新启动以应用更新的配置。你可以使用以下步骤来验证：
+
+1. 运行`kubectl get daemonset <daemonset-name>`命令来获取DaemonSet的详细信息，确保它处于运行状态。
+
+2. 使用`kubectl describe daemonset <daemonset-name>`命令来查看DaemonSet的描述信息，确认Pod的重启策略是否已配置为使更新的ConfigMap生效。
+
+3. 运行`kubectl get pods -l <label-selector>`命令，其中`<label-selector>`是用于选择DaemonSet中Pod的标签选择器，以获取Pod的详细信息。
+
+4. 检查Pod的事件和日志，确保Pod已重新启动并成功应用了更新的ConfigMap。
+
+如果你想对DaemonSet的Pod进行重启操作，你可以使用以下步骤：
+
+1. 运行`kubectl get daemonset <daemonset-name>`命令来获取DaemonSet的详细信息，确保它处于运行状态。
+
+2. 运行`kubectl rollout restart daemonset <daemonset-name>`命令来重启DaemonSet中的所有Pod。
+
+请注意，重启操作会使DaemonSet中的所有Pod重新创建，因此确保在进行此操作时没有不可接受的服务中断。
+
+这些是使用ConfigMap在DaemonSet中进行配置更改和验证的一些建议操作。你可以根据你的具体需求和环境进行适当调整。
 # configmap
 对Kubernetes configmap资源的修改要想生效,通常有以下几种方法:
 - 1. 重启使用该ConfigMap的Pod。这是最简单的方法,修改ConfigMap后,Pod重启会自动加载新的ConfigMap,实现修改生效。
