@@ -233,3 +233,25 @@ A CONNECT tunnel is a type of forward proxy that allows clients to establish a d
 CONNECT tunnels are commonly used for bypassing firewalls or accessing restricted services. By encrypting the traffic between the client and the server, a CONNECT tunnel can evade detection or inspection by a firewall or an intrusion detection system. By using a direct connection to the server, a CONNECT tunnel can also avoid latency or interference caused by intermediate proxies or routers.
 
 Overall, Reverse Proxy, Forward Proxy, and CONNECT tunnel are powerful networking tools that can enhance performance, security, privacy, and connectivity in various scenarios.
+
+反向代理、正向代理和连接隧道是计算机网络中常见的三种代理类型。它们都充当客户端和服务器之间的中介，但它们在角色和工作方式上有所不同。
+
+## 反向代理
+
+反向代理是一种服务器，位于外部客户端和内部服务器之间，并代表服务器接收来自客户端的请求。当客户端发送请求到反向代理时，代理将请求转发到适当的服务器，然后将服务器的响应发送回客户端。客户端不知道内部服务器的存在，而服务器受到保护，不会直接暴露于互联网。
+
+反向代理通常用于负载均衡、安全性和缓存。通过在多个服务器间均匀分配传入请求，反向代理可以提高性能并防止过载。通过隐藏内部服务器，反向代理也可以增强安全性并防止攻击。
+
+## 正向代理
+
+正向代理是一种服务器，位于内部客户端和外部服务器之间，充当通往互联网的网关。当客户端向代理发送请求时，代理将请求转发到适当的服务器，然后将服务器的响应发送回客户端。外部服务器不知道客户端的存在，而客户端受到保护，不会直接暴露于互联网。
+
+正向代理通常用于 Web 过滤、访问控制和隐私保护。通过过滤或阻止某些 Web 内容，正向代理可以强制执行企业策略或保护用户免受危害。通过隐藏客户端的 IP 地址，正向代理也可以增强隐私和匿名性。
+
+## 连接隧道
+
+连接隧道是一种正向代理类型，允许客户端与外部服务器建立直接、安全的连接。当客户端使用 CONNECT 方法向代理发送请求时，代理在客户端和服务器之间建立一个隧道，然后让客户端直接与服务器通信。隧道是加密的，并且可用于任何使用 TCP 的协议，例如 HTTPS、SSH 或 FTP。
+
+连接隧道通常用于绕过防火墙或访问受限服务。通过加密客户端和服务器之间的流量，连接隧道可以躲避防火墙或入侵检测系统的检测或检查。通过使用与服务器的直接连接，连接隧道也可以避免中间代理或路由器产生的延迟或干扰。
+
+总的来说，反向代理、正向代理和连接隧道是强大的网络工具，在各种场景中可以增强性能、安全性、隐私和连通性。
