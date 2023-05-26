@@ -179,3 +179,57 @@ curl --proxy-tunnel -x http://proxy.example.com:8080 https://example.com
 
 希望这些信息能对您有所帮助！
 
+- Reverse Proxy
+```
+A reverse proxy is a server that sits between clients and servers. It receives requests from clients and forwards them to the appropriate servers. Reverse proxies can be used to improve performance, security, and scalability.
+
+Benefits of using a reverse proxy:
+
+Improved performance: Reverse proxies can improve performance by caching static content and by load balancing traffic across multiple servers.
+Improved security: Reverse proxies can improve security by filtering traffic and by hiding the identities of internal servers.
+Improved scalability: Reverse proxies can improve scalability by offloading requests from internal servers.
+Forward Proxy
+A forward proxy is a server that sits between clients and the internet. It receives requests from clients and forwards them to the internet. Forward proxies can be used to improve security and privacy.
+
+Benefits of using a forward proxy:
+
+Improved security: Forward proxies can improve security by filtering traffic and by hiding the identities of clients.
+Improved privacy: Forward proxies can improve privacy by hiding the identities of clients and by encrypting traffic.
+CONNECT Tunnel
+A CONNECT tunnel is a type of proxy that is used to establish a secure connection between a client and a server. CONNECT tunnels are often used to access resources that are behind a firewall.
+
+How a CONNECT tunnel works:
+
+The client connects to the proxy and sends a CONNECT request to the server that it wants to connect to.
+The proxy establishes a connection to the server and sends a 200 OK response to the client.
+The client and the server then communicate directly through the proxy.
+Benefits of using a CONNECT tunnel:
+
+Security: CONNECT tunnels can improve security by encrypting traffic between the client and the server.
+Privacy: CONNECT tunnels can improve privacy by hiding the identities of the client and the server.
+I hope this explanation was helpful. Please let me know if you have any other questions.
+```
+
+# Reverse Proxy, Forward Proxy, and CONNECT tunnel
+
+Reverse Proxy, Forward Proxy, and CONNECT tunnel are three common types of proxies in computer networking. They all act as intermediaries between clients and servers, but they differ in their roles and how they work.
+
+## Reverse Proxy
+
+A reverse proxy is a server that sits between external clients and internal servers, and it receives requests from clients on behalf of the servers. When a client sends a request to the reverse proxy, the proxy forwards the request to the appropriate server, and then sends the server's response back to the client. The client is unaware of the internal servers, and the servers are protected from direct exposure to the internet.
+
+Reverse proxies are commonly used for load balancing, security, and caching. By distributing incoming requests evenly across multiple servers, a reverse proxy can improve performance and prevent overload. By masking the internal servers, a reverse proxy can also enhance security and protect against attacks.
+
+## Forward Proxy
+
+A forward proxy is a server that sits between internal clients and external servers, and it acts as a gateway to the internet. When a client sends a request to the proxy, the proxy forwards the request to the appropriate server, and then sends the server's response back to the client. The external servers are unaware of the clients, and the clients are protected from direct exposure to the internet.
+
+Forward proxies are commonly used for web filtering, access control, and privacy. By filtering or blocking certain web content, a forward proxy can enforce corporate policies or protect users from harm. By hiding the clients' IP addresses, a forward proxy can also enhance privacy and anonymity.
+
+## CONNECT Tunnel
+
+A CONNECT tunnel is a type of forward proxy that allows clients to establish a direct, secure connection to an external server. When a client sends a request to the proxy using the CONNECT method, the proxy establishes a tunnel between the client and the server, and then lets the client communicate directly with the server. The tunnel is encrypted, and it can be used for any protocol that uses TCP, such as HTTPS, SSH, or FTP.
+
+CONNECT tunnels are commonly used for bypassing firewalls or accessing restricted services. By encrypting the traffic between the client and the server, a CONNECT tunnel can evade detection or inspection by a firewall or an intrusion detection system. By using a direct connection to the server, a CONNECT tunnel can also avoid latency or interference caused by intermediate proxies or routers.
+
+Overall, Reverse Proxy, Forward Proxy, and CONNECT tunnel are powerful networking tools that can enhance performance, security, privacy, and connectivity in various scenarios.
