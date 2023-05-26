@@ -1,0 +1,3 @@
+Optimized prompt: Would you be able to help me translate input English into Chinese or translate my spoken Chinese into English? 
+
+In your response, please provide clear guidelines for how to proceed with the translation process. Specify whether the translated text should be literal or convey the intent of the original text, and provide any additional context or requirements necessary for an accurate translation. Additionally, encourage creativity and flexibility in the translation, while emphasizing the importance of maintaining accuracy and relevance. Finally, specify the expected output format of the translation (i.e. written text, spoken response, etc.).
