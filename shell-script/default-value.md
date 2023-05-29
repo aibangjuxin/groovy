@@ -1,12 +1,11 @@
-你可以这么写:
-
-shell
+你可以这么写: shell
+```bash
 #!/bin/bash
 
 disk_size=${disk_size:-100}
 
 echo $disk_size
-
+```
 
 这段脚本的逻辑是:
 
