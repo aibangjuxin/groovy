@@ -201,4 +201,100 @@ export MY_VAR="Hello, world!"
 在上面的示例中，`MY_VAR`变量被设置为`Hello, world!`并导出为环境变量。在运行`another_script.sh`时，该变量也将可用。
 
 希望这些技巧可以帮助您更好地处理和管理shell脚本中的变量。
-			
+
+这里有一些在shell中赋值变量的技巧：
+
+1. **默认值赋值**
+
+   如果变量未设置或为空，可以使用默认值赋值。
+
+   ````bash
+   VAR="${VAR:-default_value}"
+   ```
+
+   例如：
+
+   ````bash
+   NAME="${NAME:-John Doe}"
+   ```
+
+   如果`NAME`变量未设置或为空，`NAME`将被赋值为"John Doe"。
+
+2. **赋值并导出**
+
+   使用`export`在赋值变量时将其导出到环境变量中。
+
+   ````bash
+   export VAR=value
+   ```
+
+   例如：
+
+   ````bash
+   export PATH=$PATH:/new/path
+   ```
+
+3. **字符串拼接**
+
+   在shell中，可以将字符串拼接到变量中。
+
+   ````bash
+   VAR="Hello"
+   VAR="${VAR}, World!"
+   ```
+
+   这会将`VAR`的值设置为"Hello, World!"。
+
+4. **算术运算**
+
+   使用`$(( ))`进行算术运算，并将结果赋值给变量。
+
+   ````bash
+   NUM=$((5 + 3))
+   ```
+
+   这会将`NUM`的值设置为8。
+
+5. **命令输出赋值**
+
+   使用`$( )`或反引号(``)将命令的输出赋值给变量。
+
+   ````bash
+   DATE=$(date)
+   ```
+
+   或
+
+   ````bash
+   DATE=`date`
+   ```
+
+   这会将当前日期赋值给`DATE`变量。
+
+6. **读取文件内容**
+
+   使用`$( )`和`cat`命令将文件内容赋值给变量。
+
+   ````bash
+   FILE_CONTENT=$(cat file.txt)
+   ```
+
+   这会将`file.txt`文件的内容赋值给`FILE_CONTENT`变量。
+
+7. **数组赋值**
+
+   在shell中创建数组，并为其赋值。
+
+   ````bash
+   ARRAY=("value1" "value2" "value3")
+   ```
+
+   也可以分别赋值：
+
+   ````bash
+   ARRAY[0]="value1"
+   ARRAY[1]="value2"
+   ARRAY[2]="value3"
+   ```
+
+希望这些技巧对你有帮助！
