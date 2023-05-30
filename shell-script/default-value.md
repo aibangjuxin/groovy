@@ -95,5 +95,110 @@ MESSAGE="Hello world!"
 
 Hope this helps! Let me know if you have any other questions.
 
+当在shell脚本中定义变量时，有许多技巧可以使您的代码更加优雅和灵活。下面是一些常用的技巧和示例：
 
+## 给变量设置默认值
+
+您可以使用`${VARNAME:-DEFAULT}`语法为变量设置默认值。如果变量`VARNAME`未定义或为空，则使用`DEFAULT`作为默认值。例如：
+
+```bash
+#!/bin/bash
+
+MY_VAR=${1:-default_value}
+
+echo $MY_VAR
+```
+
+在运行该脚本时，如果未传递任何参数，则`MY_VAR`将被设置为`default_value`。
+
+## 使用命令输出作为变量值
+
+您可以使用反引号或 `$()` 来将命令的输出分配给变量。例如：
+
+```bash
+#!/bin/bash
+
+CURRENT_TIME=`date`
+echo "Current time: $CURRENT_TIME"
+
+UPTIME=$(uptime)
+echo "Uptime: $UPTIME"
+```
+
+## 合并变量值
+
+您可以使用`${VARNAME1}${VARNAME2}`语法将两个变量的值合并为一个。例如：
+
+```bash
+#!/bin/bash
+
+FIRST_NAME="John"
+LAST_NAME="Doe"
+
+FULL_NAME="${FIRST_NAME} ${LAST_NAME}"
+echo "Full name: $FULL_NAME"
+```
+
+## 将命令输出分配给多个变量
+
+您可以使用`read`命令将命令输出分配给多个变量。例如：
+
+```bash
+#!/bin/bash
+
+read CPU RAM <<< $(top -n1 | awk '/^%Cpu/{print $2} /^KiB Mem/{print $3}')
+echo "CPU usage: $CPU"
+echo "RAM usage: $RAM"
+```
+
+在上面的示例中，`top`命令的输出被`awk`处理后，使用`read`命令分配给`CPU`和`RAM`两个变量。
+
+## 使用数组
+
+您可以使用数组来存储多个值并在需要时访问它们。例如：
+
+```bash
+#!/bin/bash
+
+FRUITS=("apple" "banana" "orange")
+
+echo "First fruit: ${FRUITS[0]}"
+echo "All fruits: ${FRUITS[@]}"
+echo "Number of fruits: ${#FRUITS[@]}"
+```
+
+在上面的示例中，`FRUITS`数组包含三个字符串元素。`${FRUITS[0]}`用于访问第一个元素，`${FRUITS[@]}`用于访问所有元素，并且`${#FRUITS[@]}`用于获取数组元素的数量。
+
+## 使用关联数组
+
+关联数组允许您将键值对存储为元素。例如：
+
+```bash
+#!/bin/bash
+
+declare -A COLORS
+COLORS["red"]="#FF0000"
+COLORS["green"]="#00FF00"
+COLORS["blue"]="#0000FF"
+
+echo "Red color code: ${COLORS["red"]}"
+echo "All colors: ${COLORS[@]}"
+```
+
+在上面的示例中，`COLORS`是一个关联数组，其中每个键都与一个颜色代码相关联。`${COLORS["red"]}`用于访问与`red`键相关联的值，并且`${COLORS[@]}`用于访问所有键值对。
+
+## 使用环境变量
+
+您可以使用环境变量来在不同的shell脚本之间共享变量。要将变量设置为环境变量，请使用`export`命令。例如：
+
+```bash
+#!/bin/bash
+
+export MY_VAR="Hello, world!"
+./another_script.sh
+```
+
+在上面的示例中，`MY_VAR`变量被设置为`Hello, world!`并导出为环境变量。在运行`another_script.sh`时，该变量也将可用。
+
+希望这些技巧可以帮助您更好地处理和管理shell脚本中的变量。
 			
