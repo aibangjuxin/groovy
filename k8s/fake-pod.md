@@ -28,3 +28,19 @@ So in summary, faking Pods to impersonate a Deployment at scale would require a 
 
 总之,伪造Pod来人肉Deployment需要严重入侵GKE控制平面或etcd。一些小规模的人肉可以通过被盗Pod创建权限或编排系统组件发生,但完全接管不太可能在不危及基础架构的核心部分的情况下实现。限制权限,加固基础设施组件和审核更改可以帮助降低Pod被人肉的风险。
 
+It is possible for someone to run a rogue pod that pretends to be part of a Deployment/ReplicaSet in GKE, but there are some protections against this:
+
+1. By default, GKE enables PodSecurityPolicy which prevents pods from running as root, accessing the host network, etc. This makes it harder for rogue pods to do damage.
+
+2. GKE also enables RBAC (Role-Based Access Control) by default which restricts user permissions to only what they need. So a regular user would not have permission to create pods directly, only through Deployments/ReplicaSets.
+
+3. The rogue pod would not actually be part of the ReplicaSet. The ReplicaSet tracks pods through owner references and labels. A rogue pod may be able to spoof some labels, but not the owner reference. So the ReplicaSet controller would not count it toward the replica count and would eventually kill it.
+
+4. The rogue pod would not receive updates (config, secrets, etc) that are intended for pods in the Deployment. It's operating on its own.
+
+5. The rogue pod would not be accounted for in health checks, scaling, rollout status, etc of the Deployment. So its impact would be fairly limited.
+
+6. You can enable Pod Security Policy admission which prevents pods from being created directly - they must come from Deployments/ReplicaSets. This fully prevents rogue pods.
+
+So in summary, while it's possible to run a rogue pod with a spoofed name and labels, it won't actually be treated as part of the Deployment/ReplicaSet and will have limited impact. There are also security controls in GKE that can be enabled to prevent this type of spoofing entirely. Let me know if you have any other questions!
+
