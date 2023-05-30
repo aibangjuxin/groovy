@@ -436,3 +436,41 @@ echo "My name is ${name:?Variable is not set}"
 ```
 
 这些是一些常用的Shell赋值变量的技巧。还有其他更高级的技巧，根据你的需求可以进一步探索Shell编程的丰富功能。
+
+
+${!env_info[@]} 表示提取环境变量名为 env_info 的数组中的所有键(key)。
+
+举个例子:
+
+shell
+env_info=(NAME="John" AGE=30)
+echo ${!env_info[@]}
+# Prints NAME AGE
+
+
+这里我们定义了一个关联数组 env_info,包含两个键值对。
+
+${!env_info[@]} 会提取这个数组的所有键,所以打印出 NAME 和 AGE。
+
+这个语法在 Shell 脚本中很有用,可以 dynamically 获取环境变量或数组的所有键,并进行某些操作。
+
+举个更实际的例子:
+
+```shell
+env_info=(NAME="John" AGE=30 SALARY=10000)
+
+for key in ${!env_info[@]}; do
+    echo $key is ${env_info[$key]}
+done
+
+# Prints: 
+# NAME is John 
+# AGE is 30
+# SALARY is 10000
+```
+
+这里我们遍历 env_info 数组的所有键,并打印每个键和对应的值。
+
+所以 ${!env_info[@]} 给了我们一种动态获取数组键的方法,这在 Shell 脚本中是很有用的。
+
+希望这个解释能帮助你理解 ${!array[@]} 这个语法!如果有任何其他问题,随时问。
