@@ -296,5 +296,79 @@ export MY_VAR="Hello, world!"
    ARRAY[1]="value2"
    ARRAY[2]="value3"
    ```
+# Shell 赋值变量的技巧
 
-希望这些技巧对你有帮助！
+Shell 变量是在 shell 脚本编程中经常使用的元素，掌握一些变量赋值技巧可以提高编程效率。本文将介绍一些常用的 Shell 变量赋值技巧。
+
+## 默认值赋值
+
+如果变量没有被赋值，则可以使用 `${variable:-default}` 语法来为变量设置默认值。
+
+```shell
+#!/bin/bash
+echo ${VAR:-"Variable is not set."}
+```
+
+上述例子中，如果 `VAR` 变量没有被赋值，则输出 `"Variable is not set."`，否则输出 `VAR` 变量的值。
+
+## 空值赋值
+
+如果变量没有赋值，可以使用 `${variable:=default}` 语法来为变量设置空值。
+
+```shell
+#!/bin/bash
+echo ${VAR:="Variable is not set."}
+```
+
+上述例子中，如果 `VAR` 变量没有被赋值，则输出 `"Variable is not set."`，否则输出 `VAR` 变量的值。
+
+## 检测是否定义
+
+可以使用 `${variable:+value}` 语法来检测变量是否已经定义。
+
+```shell
+#!/bin/bash
+echo ${VAR:+Defined}
+```
+
+上述例子中，如果 `VAR` 变量已经定义，则输出 "Defined"。
+
+## 从字符串中截取子串
+
+使用 `${string:position:length}` 语法可以从一个字符串中截取一个子串，并将其赋值给一个变量。
+
+```shell
+#!/bin/bash
+STRING="HELLO WORLD"
+SUBSTRING=${STRING:6:5}
+echo $SUBSTRING
+```
+
+上述例子中，变量 `SUBSTRING` 的值为 `"WORLD"`。
+
+## 数组赋值
+
+Shell 可以使用数组来存储多个变量，可以使用赋值语句为数组元素赋值。
+
+```shell
+#!/bin/bash
+FRUITS=("apple" "banana" "cherry")
+echo ${FRUITS[1]}
+```
+
+在上述例子中，数组 `FRUITS` 包含三个元素，通过 `${FRUITS[1]}` 可以输出数组中的第二个元素 `"banana"`。
+
+## 多行变量赋值
+
+可以使用反斜杠 `\` 或者双引号 `"` 来进行多行变量赋值。
+
+```shell
+#!/bin/bash
+MULTILINE_VAR="This is a \
+multi-line variable."
+echo $MULTILINE_VAR
+```
+
+在上述例子中，变量 `MULTILINE_VAR` 的值为 `"This is a multi-line variable."`。
+
+以上是几种常用的 Shell 赋值变量技巧，希望对您有所帮助。
