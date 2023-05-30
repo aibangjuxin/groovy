@@ -371,4 +371,68 @@ echo $MULTILINE_VAR
 
 在上述例子中，变量 `MULTILINE_VAR` 的值为 `"This is a multi-line variable."`。
 
-以上是几种常用的 Shell 赋值变量技巧，希望对您有所帮助。
+以上是几种常用的 Shell 赋值变量技巧
+
+当在Shell脚本中赋值变量时，有许多技巧可以帮助你处理不同的情况。以下是几个常见的技巧，并使用Markdown格式输出结果：
+
+1. **默认值赋值：**
+使用`${变量名:-默认值}`语法为变量设置默认值。如果变量未定义或为空，则将其设置为默认值。
+
+示例：
+```shell
+name="John"
+echo "My name is ${name:-Unknown}"
+# 输出：My name is John
+
+unset name
+echo "My name is ${name:-Unknown}"
+# 输出：My name is Unknown
+```
+
+2. **默认值赋值（如果为空）：**
+使用`${变量名:=默认值}`语法为变量设置默认值。如果变量未定义或为空，则将其设置为默认值，并将默认值赋给该变量。
+
+示例：
+```shell
+name="John"
+echo "My name is ${name:=Unknown}"
+# 输出：My name is John
+
+unset name
+echo "My name is ${name:=Unknown}"
+echo "Now my name is $name"
+# 输出：
+# My name is Unknown
+# Now my name is Unknown
+```
+
+3. **变量存在时赋值：**
+使用`${变量名:+赋值}`语法，如果变量已定义且非空，则执行赋值操作。
+
+示例：
+```shell
+name="John"
+echo "My name is ${name:+$name Doe}"
+# 输出：My name is John Doe
+
+unset name
+echo "My name is ${name:+$name Doe}"
+# 输出：My name is
+```
+
+4. **变量不存在时赋值：**
+使用`${变量名:?错误消息}`语法，如果变量未定义或为空，则输出错误消息。
+
+示例：
+```shell
+name="John"
+echo "My name is ${name:?Variable is not set}"
+# 输出：My name is John
+
+unset name
+echo "My name is ${name:?Variable is not set}"
+# 输出：Variable is not set: name
+# 错误消息输出后，脚本会中止
+```
+
+这些是一些常用的Shell赋值变量的技巧。还有其他更高级的技巧，根据你的需求可以进一步探索Shell编程的丰富功能。
