@@ -127,3 +127,81 @@ HTTP/1.1 协议中预留给能够将连接改为管道方式的代理服务器�
 
 在 RESTful API 中,最常用的 HTTP 方法就是 GET,POST,PUT,DELETE。
 ```
+# http methods 
+
+Please note that some servers may not support all of the HTTP request methods. If you try to use a request method that is not supported, the server may return an error.
+
+
+HTTP methods are the actions that can be performed on a resource. There are 9 HTTP methods in total:
+
+- GET: Used to retrieve a resource.
+- HEAD: Similar to GET, but only returns the header of the resource.
+- POST: Used to create a new resource.
+- PUT: Used to update an existing resource.
+- DELETE: Used to delete a resource.
+- CONNECT: Used to establish a tunnel to a remote server.
+- OPTIONS: Used to get information about the communication options for a resource.
+- TRACE: Used to return the message that was sent to the server.
+- PATCH: Used to partially update a resource.
+
+The HTTP method used for a request determines what action is performed on the resource. For example, a GET request will retrieve the contents of a web page, while a POST request will create a new user account.
+
+Here are some examples of how HTTP methods are used in web applications:
+
+- When you visit a website, your browser sends a GET request to the web server. The web server then returns the HTML code for the website.
+- When you fill out a form on a website and click submit, your browser sends a POST request to the web server. The web server then stores the data from the form in a database.
+- When you delete a file from your computer, your file manager sends a DELETE request to the web server. The web server then removes the file from the server's hard drive.
+
+HTTP methods are an important part of the HTTP protocol. They allow clients and servers to communicate with each other and perform actions on resources.
+
+Nginx proxy_pass默认会重写转发请求的`User-Agent`头信息。
+
+当Nginx接收到客户端请求后,它会在转发请求给upstream服务器之前,重写请求中的`User-Agent`头信息。默认的`User-Agent`值会被重写为:
+
+User-Agent: Proxy on nginx 
+
+
+如果不希望Nginx重写`User-Agent`头信息,可以在`proxy_pass`指令中加入`proxy_set_header User-Agent $http_user_agent;来保留原始的User-Agent`:
+
+location / {
+    proxy_set_header User-Agent $http_user_agent;
+    proxy_pass http://backend; 
+}
+
+
+这样,Nginx转发给upstream的请求头中`User-Agent`的值就会和客户端原始请求中的`User-Agent`值一致。
+
+上述配置对于那些依赖客户端`User-Agent`来判断请求来源的服务很有用,比如一些移动端API等。如果不配置`proxy_set_header User-Agent $http_user_agent`,这些服务可能会误将Nginx代理的请求判断为来自桌面端浏览器。
+
+所以,总结来说,Nginx proxy_pass默认的`User-Agent`值为`Proxy on nginx`,通过`proxy_set_header User-Agent $http_user_agent;指令可以选择保留原始的User-Agent`头信息。
+## Nginx proxy_pass和http proxy Tunnel有什么区别?
+
+proxy_pass和`http proxy tunnel`的主要区别是:
+
+proxy_pass是一个反向代理,它会将请求转发给upstream服务器,并将upstream服务器的响应转发回客户端。在这个过程中,Nginx会重写请求和响应中的一些头信息,比如`Location`、`Content-Length`等。
+
+http proxy tunnel是一个正向代理,它只是简单地将请求转发给远程服务器,并将响应转发回客户端。在这个过程中,Nginx不会修改请求和响应中的任何内容。
+
+## 实例配置
+
+proxy_pass配置:
+location / {
+    proxy_pass http://backend;
+}
+
+
+http proxy tunnel配置:
+location / {
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_pass http://backend;
+} 
+
+
+## 实际场景
+
+- proxy_pass通常用于反向代理web后端服务
+- http proxy tunnel通常用于转发WebSocket或其他非HTTP协议
+
+所以,如果你配置了`proxy_pass`访问一个服务,但是实际交互使用的协议是WebSocket,这时就需要使用`http proxy tunnel`了。
