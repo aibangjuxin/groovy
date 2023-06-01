@@ -63,3 +63,66 @@ curl-X OPTIONS https://example.com/api/v1/resource
 curl -X PATCH https://example.com/api/v1/update/123 -d 'name=John'
 ```
 Note that the specific set of HTTP methods supported by a server may vary depending on the implementation, and not all methods may be supported for all resources. When working with a RESTful API or other web service, it's important to consult the API documentation or server documentation to determine which methods are supported for each resource.
+
+HTTP方法有:
+
+# GET
+用于获取资源的表示形式。请求不应该返回 resource 的副作用。
+
+# HEAD 
+类似于 GET 请求,只不过返回的响应中没有具体的内容,用于获取报头。
+
+# POST
+用于提交资源的 Side-effect 变化。POST 请求通常会导致服务器端创建或修改资源。
+
+# PUT 
+用于替换资源的所有当前表示。
+
+# DELETE 
+用于删除资源。
+
+# CONNECT
+HTTP/1.1 协议中预留给能够将连接改为管道方式的代理服务器。
+
+# OPTIONS 
+用于返回服务器针对特定资源所支持的 HTTP 方法。也可以用于测定服务器的功能集。
+
+# TRACE
+回显服务器收到的请求,主要用于测试或诊断。
+
+# PATCH
+是对 PUT 方法的补充,用来对资源进行部分修改。
+
+其他方法还有:
+
+# HEAD
+与GET方法一致,只是返回的响应中没有具体的内容,用于获取报头。
+
+# LINK
+建立和描述两个资源之间的关系。
+
+# UNLINK
+销毁两个资源之间的关系。
+
+# BASELINE-CONTROL
+用于创建,修改或删除一个基线。
+
+# CHECKOUT 
+请求服务器 Checkout 一个版本控制资源。
+
+# CHECKIN
+请求服务器 Checkin 一个版本控制资源。
+
+# UNCHECKOUT
+取消 Checkout 一个版本控制资源。 
+
+# MKACTIVITY
+创建一个新的活动流。
+
+# SEEOTHER 
+重定向到一个不同的URI以便衔接资源。
+
+# SOURCE
+用于返回文本资源的源代码。
+
+在 RESTful API 中,最常用的 HTTP 方法就是 GET,POST,PUT,DELETE。
