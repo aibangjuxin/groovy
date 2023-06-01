@@ -65,7 +65,7 @@ curl -X PATCH https://example.com/api/v1/update/123 -d 'name=John'
 Note that the specific set of HTTP methods supported by a server may vary depending on the implementation, and not all methods may be supported for all resources. When working with a RESTful API or other web service, it's important to consult the API documentation or server documentation to determine which methods are supported for each resource.
 
 HTTP方法有:
-
+```
 # GET
 用于获取资源的表示形式。请求不应该返回 resource 的副作用。
 
@@ -126,3 +126,4 @@ HTTP/1.1 协议中预留给能够将连接改为管道方式的代理服务器�
 用于返回文本资源的源代码。
 
 在 RESTful API 中,最常用的 HTTP 方法就是 GET,POST,PUT,DELETE。
+```
