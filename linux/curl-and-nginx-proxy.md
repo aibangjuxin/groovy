@@ -89,3 +89,47 @@ location / {
 这样,Nginx转发给upstream的请求头中`User-Agent`的值就会和客户端原始请求中的`User-Agent`值一致。
 上述配置对于那些依赖客户端`User-Agent`来判断请求来源的服务很有用,比如一些移动端API等。如果不配置`proxy_set_header User-Agent $http_user_agent`,这些服务可能会误将Nginx代理的请求判断为来自桌面端浏览器。
 所以,总结来说,Nginx proxy_pass默认的`User-Agent`值为`Proxy on nginx`,通过`proxy_set_header User-Agent $http_user_agent;指令可以选择保留原始的User-Agent`头信息
+
+
+使用HTTP代理隧道（HTTP proxy tunnel）来建立与目标服务器的连接 默认的--user-agent 会是什么?我如何来验证?
+使用HTTP代理隧道时，默认的`--user-agent`会使用`curl`命令的默认用户代理标头。在大多数情况下，这个默认值是`curl/<version>`，其中`<version>`是`curl`命令的版本号。
+
+要验证默认的`--user-agent`值，您可以执行以下命令：
+
+```shell
+curl -x http://fqdn --head http://example.com
+```
+
+这将发送一个`HEAD`请求到`http://example.com`，并显示响应的头部信息。在响应的头部中，您将找到`User-Agent`字段，其中包含`curl`命令的默认用户代理值。
+
+请注意，某些HTTP代理服务器可能会更改或删除`User-Agent`标头，因此在实际情况中可能会有变化。如果您需要使用特定的用户代理值，可以使用`--user-agent`选项在`curl`命令中显式设置它。例如：
+
+```shell
+curl -x http://fqdn --user-agent "My User Agent" http://example.com
+```
+
+这将发送一个带有自定义用户代理标头的请求。
+
+在Nginx的`proxy_pass`配置中，Nginx将使用其自己的用户代理标头来建立与目标服务器的连接。默认情况下，Nginx不会添加`User-Agent`标头，除非您在Nginx配置中显式指定了它。
+
+要验证Nginx `proxy_pass`请求的`User-Agent`标头，默认情况下它是空的。您可以通过在目标服务器上查看请求头部来验证。
+
+您可以使用类似以下的命令来验证：
+
+```shell
+curl -I http://fqdn
+```
+
+上述命令将发送一个`HEAD`请求到Nginx代理服务器（`fqdn`），然后显示响应的头部信息。在响应的头部中，您将找到`User-Agent`字段。如果Nginx没有显式设置`User-Agent`标头，那么它应该为空或不存在。
+
+请注意，Nginx的`proxy_pass`仅代理请求并将其转发到目标服务器，不会修改或添加额外的请求标头，除非您在Nginx配置中进行了相应的设置。因此，默认情况下，Nginx的`proxy_pass`请求不会包含`User-Agent`标头。
+
+Nginx的反向代理和使用HTTP代理隧道建立与目标服务器的连接有以下区别：
+
+1. **功能和用途不同：** Nginx的反向代理是一种服务器级别的配置，它将客户端的请求转发到后端服务器，并将响应返回给客户端，起到代理服务器的作用。它常用于负载均衡、缓存加速、SSL终止等场景。而使用HTTP代理隧道是在客户端发起的连接中，通过指定的HTTP代理服务器与目标服务器建立直接的隧道连接，绕过了中间代理服务器（如Nginx）。
+
+2. **请求转发方式不同：** 反向代理在接收到客户端请求后，根据配置将请求转发到后端服务器，并将响应返回给客户端。代理服务器（如Nginx）会在客户端和后端服务器之间起到中间层的作用。而使用HTTP代理隧道时，客户端直接与目标服务器建立连接，通过指定的HTTP代理服务器建立隧道连接，代理服务器只充当传递请求的中继。
+
+3. **网络通信方式不同：** Nginx的反向代理使用HTTP协议进行通信，客户端与Nginx之间使用HTTP协议，Nginx与后端服务器之间也使用HTTP协议。而使用HTTP代理隧道时，客户端与HTTP代理服务器之间使用HTTP协议进行通信，但代理服务器与目标服务器之间的连接可以是任何类型的通信协议（如HTTP、HTTPS、SSH等），这取决于客户端和目标服务器之间的约定。
+
+总结而言，Nginx的反向代理是一种基于服务器配置的代理方式，将请求转发到后端服务器并返回响应，适用于代理服务器位于客户端和后端服务器之间的场景。而使用HTTP代理隧道是客户端直接与目标服务器建立连接，并通过指定的HTTP代理服务器建立隧道连接，适用于客户端需要绕过中间代理服务器直接与目标服务器通信的场景
