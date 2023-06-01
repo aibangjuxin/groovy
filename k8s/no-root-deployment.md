@@ -300,3 +300,21 @@ securityContext:
 除此之外,根据你的应用需要,可能还需要设置其他选项,比如fsGroup,seLinuxOptions等,来控制文件权限、版本号等。
 总之,设置securityContext可以带来更高的安全性和容器隔离性,所以在GKE中运行非root Deployment时是非常推荐的配置。但如果应用本身设计已经考虑到安全隐患,或者出于其他原因实在不能设置,也不会建立根本阻止Deployment运行。
 所以,可以这样理解:推荐尽量设置,但不绝对必须。根据应用的具体需求和风险来斟酌设置相关的securityContext配置
+
+When running deployments as a non-root user in GKE (Google Kubernetes Engine), it is important to note the following:
+
+* **Use a service account that has the appropriate permissions.** The service account you use to run the deployment must have the appropriate permissions to access the Kubernetes API. You can create a service account with the necessary permissions using the `gcloud` command-line tool.
+* **Use a Pod Security Policy (PSP) to restrict the capabilities of the pods that are deployed.** A PSP can be used to restrict the capabilities of pods, such as the ability to mount volumes or run privileged containers. This can help to prevent unauthorized users from gaining access to your cluster.
+* **Use a role-based access control (RBAC) policy to control who can access the Kubernetes API.** An RBAC policy can be used to control who can access the Kubernetes API, and what actions they can take. This can help to prevent unauthorized users from making changes to your cluster.
+* **Monitor your cluster for suspicious activity.** It is important to monitor your cluster for suspicious activity, such as pods that are running unauthorized processes or that are consuming excessive resources. You can use the Kubernetes dashboard or a third-party monitoring tool to monitor your cluster.
+
+By following these tips, you can help to protect your GKE cluster from unauthorized users.
+
+Additionally, here are some specific things to keep in mind when running deployments as a non-root user in GKE:
+
+* **Use the `runAsUser` field in the `securityContext` object of the deployment spec to specify the user ID that the container will run as.** The value of this field must be a positive integer. If the field is omitted, the container will run as root.
+* **Use the `fsGroup` field in the `securityContext` object of the deployment spec to specify the group ID that the container will run as.** This will help to prevent containers from modifying files that they should not be able to modify.
+* **Limit the capabilities that containers have.** This will help to prevent containers from performing actions that they should not be able to perform.
+* **Do not set `privileged` to true.** This will allow containers to run with root privileges, which can be a security risk.
+
+By following these tips, you can help to improve the security of your GKE deployments.
