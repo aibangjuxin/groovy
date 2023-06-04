@@ -41,3 +41,79 @@ stateDiagram
 结束 --> [*]
 ```
 Mermaid 还支持类图、用户旅程图等等。希望这个示例能给你提供一个 Mermaid 入门的参考。更详细的语法可以参考 Mermaid 官方文档
+
+# flow Kong mtls
+simple flow
+```mermaid
+graph LR
+client-request -->kong-->upstream-->downstream
+```
+
+```mermaid
+flowchart TB
+A(client Request)-->|fqnd.domain|B(host)-->D(Kong CP Route)
+A(client Request)-->|/abc/|C(path)-->D(Kong CP Route)
+D(Kong CP Route)-->|Name cp-rout-name|E(Kong CP services)
+A(client Request)-->E(Kong CP services)--> |nginx=local ?|F( upstream upstream-fqnd.svc.cluster.local) --> G(k8s svc)-->|deployment| H(Pod Service cert detail )
+    subgraph upstreamcert
+		subgraph service-cert
+			H(Pod Service cert detail )-->J(ssl_certificate)
+			 H(Pod Service cert detail )-->W(ssl_certificate_key)
+		end
+		subgraph proxy-cert
+			 H(Pod Service cert detail )-->I(proxy_ssl_certificate)
+ 			 H(Pod Service cert detail )-->K(proxy_ssl_certificate_key)
+     		H(Pod Service cert detail )-->L(proxy_ssl_trusted_certificate)
+	    end
+		subgraph proxy-pass
+		proxy_pass--> https://nginx-fqnd
+		end
+    end
+	subgraph downstream
+	ingress-->svc-->|deployment|Pod
+	Pod-->ssl_certificate
+	Pod-->ssl_certificate_key
+	Pod-->ssl_client_certificate
+	end
+upstreamcert --> downstream
+A(client Request)-->|Through client cert nginx-fqnd |downstream
+```
+```mermaid
+flowchart TB
+style A fill:#f9f,stroke:#333,stroke-width:4px
+style downstreamnginx fill:#f9f,stroke:#333,stroke-width:4px
+
+A(client Request)-->|fqnd.domain|B(host)-->D(Kong CP Route)
+A(client Request)-->|/abc/|C(path)-->D(Kong CP Route)
+    subgraph Kong-CP
+        D(Kong CP Route)-->|Name cp-rout-name|E(Kong CP services)
+    end
+    subgraph Kong-Service
+        E(Kong CP services)--> |nginx=local ?|F(upstream-fqnd.svc.cluster.local) --> G(k8s svc)-->|deployment| H(Pod Service cert detail )
+    end
+
+    subgraph upstreamnginx
+		subgraph service-cert
+			H(Pod Service cert detail )-->J(ssl_certificate)
+			 H(Pod Service cert detail )-->W(ssl_certificate_key)
+		end
+		subgraph proxy-cert
+        		subgraph proxy-pass
+		            proxy_pass--> nextnginx
+		        end
+			H(Pod Service cert detail )-->I(proxy_ssl_certificate)
+ 			H(Pod Service cert detail )-->K(proxy_ssl_certificate_key)
+     		H(Pod Service cert detail )-->L(proxy_ssl_trusted_certificate)
+	    end
+    end
+	subgraph downstreamnginx
+	ingress-->|ssl-passthrough|svc-->|deployment|Pod
+      subgraph pod-ssl-cert
+	    Pod-->ssl_certificate
+	    Pod-->ssl_certificate_key
+	    Pod-->ssl_client_certificate
+    end
+	end
+upstreamnginx -->|nginx proxy pass| downstreamnginx
+A(client Request)-->|Through client cert nginx-fqnd |downstreamnginx
+```
