@@ -317,4 +317,83 @@ Additionally, here are some specific things to keep in mind when running deploym
 * **Limit the capabilities that containers have.** This will help to prevent containers from performing actions that they should not be able to perform.
 * **Do not set `privileged` to true.** This will allow containers to run with root privileges, which can be a security risk.
 
-By following these tips, you can help to improve the security of your GKE deployments.
+By following these tips, you can help to improve the security of your GKE deployments
+
+这里是在 GKE 上部署一个 no-root 容器的 Markdown 格式说明:
+
+# 在 GKE 上部署 no-root 容器
+
+## 创建 Kubernetes 集群
+
+使用 Google Cloud SDK 创建一个启用 Pod 安全策略的 GKE 集群:
+
+bash
+gcloud container clusters create my-cluster --pod-security-policy
+
+
+## 编写 Pod 安全策略 YAML 文件
+
+创建一个 pod-security-policy.yaml 文件:
+
+yaml
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: nonroot
+spec:
+  privileged: false 
+  runAsUser: 
+    rule: MustRunAsNonRoot
+  fsGroup:
+    rule: MustRunAs 
+    ranges:
+    - max: 65535   
+
+
+这个策略要求 Pod 必须以非 root 用户运行,禁止特权模式。
+
+## 创建 Pod 安全策略
+
+使用 kubectl 命令创建 Pod 安全策略:
+
+bash
+kubectl apply -f pod-security-policy.yaml
+
+
+## 编写 Deployment YAML 文件
+
+Deployment YAML 文件需要添加 podSecurityPolicy 指定使用 nonroot 这个 Pod 安全策略:
+
+yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      securityContext:
+        runAsNonRoot: true  
+      containers:
+      - name: my-app
+        image: http://gcr.io/my-project/my-app
+      podSecurityPolicy:
+        name: nonroot 
+          
+
+## 部署应用
+
+使用 kubectl 命令部署应用:
+
+bash
+kubectl apply -f Deployment.yaml
+
+
+至此,我们完成了在 GKE 上使用 Pod 安全策略部署一个 no-root 容器的全过程。这可以确保应用运行在一个更加安全隔离的环境中。.
