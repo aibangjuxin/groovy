@@ -3,7 +3,7 @@
 需要在Pod定义中添加`emptyDir`卷,并将该卷挂载到容器和初始化容器的相应目录。这样二者就可以共享该`emptyDir`卷中的目录和文件。
 
 例如:
-yaml
+```yaml
 apiVersion: v1 
 kind: Pod
 metadata:
@@ -25,7 +25,7 @@ spec:
   volumes:
   - name: shared-data
     emptyDir: {}
-
+```
 
 在这个例子中:
 
