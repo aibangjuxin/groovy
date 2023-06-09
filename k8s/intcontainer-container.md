@@ -155,6 +155,38 @@ volumeMounts:
 这是因为 Kubernetes 的 volume 对同一个 pod 内的所有容器都是共享的。
 
 希望上述说明能够帮助您理解这个 Kubernetes 的 volume 共享机制!
+initContainers和containers使用同一个volumeMounts,比如其名字为shared-volume
+但是挂载到不同的mountPath上
+这种情况下,containers是否可以访问initContainers挂载的这个volume?
+Yes,这种情况下主容器(containers)可以访问initContainers挂载的这个volume。
+他们两个使用的是同一个volume,只不过mountPath不同。
+这个volume会在initContainers运行结束后继续存在,然后主容器可以使用这个volume。
+一个例子:
+```yaml
+initContainers:
+  - name: init-container 
+    image: alpine:3.8
+    volumeMounts:
+      - name: shared-volume
+        mountPath: "/init/path"
+containers:
+  - name: main-container
+    image: nginx
+    volumeMounts:  
+      - name: shared-volume
+        mountPath: "/main/path"     
+volumes:
+  - name: shared-volume
+    emptyDir: {}
+```
+这里initContainers使用mountPath是"/init/path" ,而containers使用的是"/main/path"
+
+所以:
+initContainers 在/init/path 写入文件或创建目录
+运行结束后,shared-volume 仍会存在
+containers 启动后,可以通过/main/path 访问 shared-volume ,也就是initContainers写入的文件或目录
+所以总的来说,只要他们使用的是同一个volume, containers就可以访问initContainers所做的修改,即使mountPath不同
+
 //////////////////////////
 
 
