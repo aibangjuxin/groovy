@@ -113,8 +113,17 @@ spec:
        - name: appd-volume
          emptyDir: {}
 ```
+- 主要部分是:
 
-
+ - initContainers 创建 init-appd-dir 目录
+ - 主容器 container 挂载同一 volume ,就可以访问 
+ - initContainers 创建的目录
+   - 定义 emptyDir volume 用于共享
+``` 
+整个 Deployment 的作用是:
+使用 initContainers 创建一个目录
+将这个目录挂载到主容器,让主容器可以访问
+``` 
 是的,在GKE中,当容器(container)和初始化容器(initcontainer)需要共享目录或文件时,需要做特殊设置。
 
 需要在Pod定义中添加`emptyDir`卷,并将该卷挂载到容器和初始化容器的相应目录。这样二者就可以共享该`emptyDir`卷中的目录和文件。
