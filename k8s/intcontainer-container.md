@@ -1,3 +1,120 @@
+# summary
+- gke Deployment initContainers volumeMounts /opt/appdynamics-java 定义一个名字 比如 init-appd-dir
+- 这个需要在container调用，那么container调用的方式是什么？仅仅通过名字就可以调用
+  - 主容器通过 volume 的名字来挂载 initContainers 创建的目录
+     后挂载到自己container需要的目录 比如/opt/appdynamics
+
+
+为了在 Kubernetes 中使用 initContainers 和 volumeMounts，
+你需要在 Deployment YAML 文件中定义资源。这里是一个例子，
+说明了如何使用 initContainers 来创建一个名为 "init-appd-dir" 的目录，
+并在主容器中将其挂载到 "/opt/appdynamics" 目录中
+```yaml 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: your-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: your-app
+  template:
+    metadata:
+      labels:
+        app: your-app
+    spec:
+      volumes:
+        - name: appdynamics-volume
+          emptyDir: {} # 使用 emptyDir 类型的卷，它会在每个 Pod 上创建一个空目录 首先定义了一个名为 "appdynamics-volume" 的卷。这个卷使用了 emptyDir 类型，它会在每个 Pod 上创建一个空目录
+
+      initContainers:
+        - name: init-appd-dir # 定义了一个 initContainer，名为 "init-appd-dir"
+          image: your-image
+          command:
+            - sh
+            - -c
+            - mkdir -p /opt/appdynamics-java # 执行一个命令来创建 "/opt/appdynamics-java" 目录
+          volumeMounts:
+            - name: appdynamics-volume
+              mountPath: /opt/appdynamics-java # initContainer 通过 volumeMounts 将 "appdynamics-volume" 挂载到 "/opt/appdynamics-java" 目录
+
+      containers:
+        - name: your-container
+          image: your-image
+          volumeMounts:
+            - name: appdynamics-volume
+              mountPath: /opt/appdynamics # 在主容器中，将 "appdynamics-volume" 挂载到 "/opt/appdynamics" 目录
+```
+
+# Calude-instant 
+你可以这样做:
+- 为 initContainers 定义,给一个名字
+```yaml
+initContainers:
+  - name: init-appd-dir
+    image: alpine:3.8
+    command: ['mkdir', '/opt/appdynamics']
+    volumeMounts:
+      - name: appd-volume
+        mountPath: /opt
+```
+- 为主容器定义 volumeMounts, 挂载相同 volume:
+```yaml
+containers:
+  - name: app 
+    volumeMounts:
+      - name: appd-volume 
+        mountPath: /opt/appdynamics
+```
+- 定义共享 volume:
+```yaml
+volumes:
+- name: appd-volume
+  emptyDir: {}
+```
+
+主要的点是:
+initContainers 通过名字调用
+主容器通过 volume 的名字来挂载 initContainers 创建的目录
+两个容器使用相同的 volume 进行共享
+这样 initContainers 创建的目录就会在主容器的/opt/appdynamics 目录下可用。
+
+所以完整 Deployment 大致如下:
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app 
+spec:
+  replicas: 1 
+  selector:
+    matchLabels:
+      app: app
+  template:
+   metadata:
+     labels:
+       app: app
+   spec:
+     initContainers:  
+       - name: init-appd-dir 
+         image: alpine:3.8
+         command: ['mkdir', '/opt/appdynamics']
+         volumeMounts:
+           - name: appd-volume
+             mountPath: /opt    
+     containers:
+       - name: app
+         image: nginx  
+         volumeMounts:
+           - name: appd-volume
+             mountPath: /opt/appdynamics
+     volumes:
+       - name: appd-volume
+         emptyDir: {}
+```
+
+
 是的,在GKE中,当容器(container)和初始化容器(initcontainer)需要共享目录或文件时,需要做特殊设置。
 
 需要在Pod定义中添加`emptyDir`卷,并将该卷挂载到容器和初始化容器的相应目录。这样二者就可以共享该`emptyDir`卷中的目录和文件。
