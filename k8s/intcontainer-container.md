@@ -155,9 +155,11 @@ volumeMounts:
 这是因为 Kubernetes 的 volume 对同一个 pod 内的所有容器都是共享的。
 
 希望上述说明能够帮助您理解这个 Kubernetes 的 volume 共享机制!
+# q
 initContainers和containers使用同一个volumeMounts,比如其名字为shared-volume
 但是挂载到不同的mountPath上
 这种情况下,containers是否可以访问initContainers挂载的这个volume?
+# a
 Yes,这种情况下主容器(containers)可以访问initContainers挂载的这个volume。
 他们两个使用的是同一个volume,只不过mountPath不同。
 这个volume会在initContainers运行结束后继续存在,然后主容器可以使用这个volume。
