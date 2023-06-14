@@ -1,3 +1,53 @@
+```bash
+#!/bin/bash
+header=$(head -n 1 your.csv)
+content=$(tail -n +2 your.csv)
+
+table="| $header |\n"
+
+col_num=$(echo $header | tr "," "\n" | wc -l)
+align_row=""
+for i in $(seq $col_num); do
+    align_row+="| -- "
+done
+
+table="$table$align_row\n"
+#table+=$align_row "\n"
+
+while read line
+do
+    table+="| $line |\n"
+done <<< "$content"
+
+echo -e "$table"|sed 's/,/ | /g'
+```
+
+- another 
+```bash
+#!/bin/bash
+csv_file=$1
+header=$(head -n 1 $csv_file)
+content=$(tail -n +2 $csv_file)
+
+table="| $header |\n"
+
+col_num=$(echo $header | tr "," "\n" | wc -l)
+align_row=""
+for i in $(seq $col_num); do
+  align_row+="| -- "
+done
+
+table="$table$align_row\n"
+#table+=$align_row "\n"
+
+while read line; do
+  table+="| $line |\n"
+done <<<"$content"
+
+echo -e "$table" | sed 's/,/ | /g'
+# ./csv-file.sh your.csv
+``` 
+
 是的,这个也可以用shell脚本实现。主要步骤如下:
 
 1. 读取CSV文件,获取表头和内容:
