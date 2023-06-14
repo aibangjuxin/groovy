@@ -1,8 +1,7 @@
 
-- enhance 
+- enhance for chatgpt 
 ```bash
 #!/bin/bash
-
 # Read command line arguments
 csv_file=$1
 
@@ -15,6 +14,9 @@ fi
 # Read header and content
 header=$(head -n 1 "$csv_file")
 content=$(tail -n +2 "$csv_file")
+
+# Create table header
+table="| $header |\n"
 
 # Calculate the number of columns
 col_num=$(echo "$header" | tr "," "\n" | wc -l)
@@ -35,9 +37,65 @@ done <<< "$content"
 # Format table using sed
 formatted_table=$(echo -e "$table" | sed 's/,/ | /g')
 
-# Print output
 echo -e "$formatted_table"
 ```
+- enhance 
+```
+#!/bin/bash
+# Read command line arguments
+csv_file=$1
+delimiter=${2:-","} # Set the delimiter to comma if not provided
+
+# Check if the filename is valid
+if [ ! -f "$csv_file" ]; then
+  echo "Error: File '$csv_file' does not exist."
+  exit 1
+fi
+
+# Read header and content
+header=$(head -n 1 "$csv_file")
+content=$(tail -n +2 "$csv_file")
+
+# Create table header
+table="| $header |\n"
+
+# Calculate the number of columns
+col_num=$(echo "$header" | tr "$delimiter" "\n" | wc -l)
+
+# Generate alignment row
+align_row=""
+for ((i=1; i<=col_num; i++)); do
+  align_row+="| -- "
+done
+
+table="$table$align_row\n"
+
+# Process content and append to table
+while IFS= read -r line; do
+  table+="| $line |\n"
+done <<< "$content"
+
+# Format table using sed
+formatted_table=$(echo -e "$table" | sed "s/$delimiter/ | /g")
+
+echo -e "$formatted_table"
+./your_script.sh input.csv ";"
+```
+`delimiter=${2:-","}` 是一行设置变量 `delimiter` 的代码。这行代码使用了一种特殊的变量赋值形式，称为参数扩展（parameter expansion），用于设置变量的默认值。
+
+让我们分解这行代码的含义：
+
+1. `${2}` 表示脚本的第二个命令行参数。
+2. `:-` 是参数扩展的一种形式，表示如果变量没有被设置或为空，那么就使用冒号后面的值作为默认值。
+3. `","` 是默认的分隔符号，即逗号。
+
+因此，`delimiter=${2:-","}` 的含义是：
+
+- 如果脚本的第二个命令行参数存在且非空，则将其赋值给变量 `delimiter`。
+- 如果脚本的第二个命令行参数不存在或为空，则将逗号赋值给变量 `delimiter`，作为默认的分隔符号。
+
+这样，您在运行脚本时可以选择是否提供第二个命令行参数来指定自定义的分隔符号。如果没有提供第二个参数，将使用逗号作为默认分隔符号。
+
 
 
 ```bash
