@@ -68,17 +68,18 @@ table="| $header |\n"
 col_num=$(echo $header | tr "," "\n" | wc -l)
 align_row=""
 for i in $(seq $col_num); do
-    align_row+="|:--:|" 
+    align_row+="| -- " 
 done
 
-table+=$align_row "\n"  
+#table+=$align_row "\n"
+table="$table$align_row\n"
 
 while read line 
 do
     table+="| $line |\n"     
 done <<< "$content"  
 
-echo -e "$table"
+echo -e "$table"｜sed 's/,/ | /g'
 ``` 
 现在,align_row 会根据表头的列数构建正确的:--: 字符串。所以如果你的表头是:
 
