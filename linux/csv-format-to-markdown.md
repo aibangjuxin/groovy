@@ -1,3 +1,45 @@
+
+- enhance 
+```bash
+#!/bin/bash
+
+# Read command line arguments
+csv_file=$1
+
+# Check if the filename is valid
+if [ ! -f "$csv_file" ]; then
+  echo "Error: File '$csv_file' does not exist."
+  exit 1
+fi
+
+# Read header and content
+header=$(head -n 1 "$csv_file")
+content=$(tail -n +2 "$csv_file")
+
+# Calculate the number of columns
+col_num=$(echo "$header" | tr "," "\n" | wc -l)
+
+# Generate alignment row
+align_row=""
+for ((i=1; i<=col_num; i++)); do
+  align_row+="| -- "
+done
+
+table="$table$align_row\n"
+
+# Process content and append to table
+while IFS= read -r line; do
+  table+="| $line |\n"
+done <<< "$content"
+
+# Format table using sed
+formatted_table=$(echo -e "$table" | sed 's/,/ | /g')
+
+# Print output
+echo -e "$formatted_table"
+```
+
+
 ```bash
 #!/bin/bash
 header=$(head -n 1 your.csv)
