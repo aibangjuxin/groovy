@@ -2,36 +2,36 @@
 
 1. 读取CSV文件,获取表头和内容:
 
-bash
+``` bash
 header=$(head -n 1 your.csv)
 content=$(tail -n +2 your.csv)
-
+``` 
 
 2. 构建表格头:
 
-bash 
+```bash 
 table="| $header |\n"
 table+="|:--:|"*$(echo $header | tr "," "\n" | wc -l) 
 table+="\n"
-
+```
 
 3. 逐行添加内容:
 
-bash
+```bash
 while read line 
 do
     table+="| $line |\n"
 done <<< "$content"
-
+``` 
 
 4. 打印最终表格:
 
-bash 
+``` bash 
 echo "$table"
-
+``` 
 
 完整的shell脚本如下:
-bash
+```bash
 header=$(head -n 1 your.csv)
 content=$(tail -n +2 your.csv)
 
@@ -45,7 +45,7 @@ do
 done <<< "$content"
 
 echo "$table"
-
+```
 
 执行这个脚本将会输出一个Markdown表格,与Python代码实现的结果相同。
 
