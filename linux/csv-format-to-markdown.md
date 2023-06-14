@@ -147,3 +147,36 @@ align_row 的值会是:
 执行这个脚本将会输出一个Markdown表格,与Python代码实现的结果相同。
 
 这利用了shell的头尾命令和字符串操作来解析CSV并构建表格。让我知道如果你有任何其他问题!
+``` bash
+#!/bin/bash
+csv_file=$1
+
+# Read header and content
+header=$(head -n 1 "$csv_file")
+content=$(tail -n +2 "$csv_file")
+
+# Create table header
+table="| $header |\n"
+
+# Calculate the number of columns
+col_num=$(echo "$header" | tr "," "\n" | wc -l)
+
+# Generate alignment row
+align_row=""
+for ((i=1; i<=col_num; i++)); do
+  align_row+="| -- "
+done
+
+table="$table$align_row\n"
+
+# Process content and append to table
+while IFS= read -r line; do
+  table+="| $line |\n"
+done <<< "$content"
+
+# Format table using sed
+formatted_table=$(echo -e "$table" | sed 's/,/ | /g')
+
+echo -e "$formatted_table"
+``` 
+
