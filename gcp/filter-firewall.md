@@ -2,19 +2,37 @@
 firewall-filter
 ```bash
 gcloud compute firewall-rules list --format="table(
-name,
-network,
-direction,
-sourceRanges.list():label=SRC_RANGES,
-destinationRanges.list():label=DEST_RANGES,
-allowed[].map().firewall_rule().list():label=ALLOW,
-denied[].map().firewall_rule().list():label=DENY,
-sourceTags.list():label=SRC_TAGS,
-sourceServiceAccounts.list():label=SRC_SVC_ACCT,
-targetTags.list():label=TARGET_TAGS,
-targetServiceAccounts.list():label=TARGET_SVC_ACCT,
-disabled
+    name,
+    network,
+    direction,
+    sourceRanges.list():label=SRC_RANGES,
+    destinationRanges.list():label=DEST_RANGES,
+    allowed[].map().firewall_rule().list():label=ALLOW,
+    denied[].map().firewall_rule().list():label=DENY,
+    sourceTags.list():label=SRC_TAGS,
+    sourceServiceAccounts.list():label=SRC_SVC_ACCT,
+    targetTags.list():label=TARGET_TAGS,
+    targetServiceAccounts.list():label=TARGET_SVC_ACCT,
+    disabled
 )"
+```
+filter no need  head
+```
+gcloud compute firewall-rules list --filter="targetTags.list():[TARGET_TAG]" --format="value(
+  name,
+  network,
+  direction,
+  sourceRanges.list():label=SRC_RANGES,
+  destinationRanges.list():label=DEST_RANGES,
+  allowed[].map().firewall_rule().list():label=ALLOW,
+  denied[].map().firewall_rule().list():label=DENY,
+  sourceTags.list():label=SRC_TAGS,
+  sourceServiceAccounts.list():label=SRC_SVC_ACCT,
+  targetTags.list():label=TARGET_TAGS,
+  targetServiceAccounts.list():label=TARGET_SVC_ACCT,
+  disabled
+)" --project=[YOUR_PROJECT_ID]
+
 ```
 
 要单独过滤某些关键的描述，你可以使用`--filter`参数来指定过滤条件。在`gcloud compute firewall-rules list`命令中，`--filter`参数用于过滤防火墙规则的结果。
