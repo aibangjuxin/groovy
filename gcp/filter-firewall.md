@@ -34,6 +34,29 @@ gcloud compute firewall-rules list --filter="targetTags.list():[TARGET_TAG]" --f
 )" --project=[YOUR_PROJECT_ID]
 
 ```
+你可以对 `get_firewall` 函数进行优化，以在一个命令中获取并过滤所需的防火墙规则。下面是优化后的代码：
+
+```bash
+function get_firewall() {
+    gcloud compute firewall-rules list --filter="targetTags.list():gke-$environment-cluster AND NOT name:$cluster" --format="value(name, targetTags.list():label=TARGET_TAGS)"
+}
+
+get_firewall
+```
+
+请确保将 `$environment` 和 `$cluster` 替换为你的环境和集群名称。这样，`get_firewall` 函数将直接返回满足 `targetTags` 为 `gke-$environment-cluster` 并且名称不是 `$cluster` 的防火墙规则。
+
+然后，你可以使用管道操作符 `|` 将其与 `grep` 和 `awk` 命令结合使用，以进一步筛选输出。下面是优化后的代码：
+
+```bash
+get_firewall | grep -v "$cluster" | awk '{print $1, $2}'
+```
+
+这将返回满足条件的防火墙规则的名称和目标标签。
+
+请确保在执行脚本之前设置正确的环境和集群名称，并确保已经正确配置了 Google Cloud SDK 和所需的身份验证信息。
+
+
 
 要单独过滤某些关键的描述，你可以使用`--filter`参数来指定过滤条件。在`gcloud compute firewall-rules list`命令中，`--filter`参数用于过滤防火墙规则的结果。
 
