@@ -69,4 +69,93 @@ CMD [ "python", "./app.py" ]
 
 
 此镜像以john用户的权限运行python应用app.py。在构建和运行此镜像的过程中以及在最终容器内,都无法以root权限运行任何命令。这减小了安全风险,是Dockerfile的最佳实践。
+Q
+``` 
+initContainers 执行了命令
+cp -r /opt/appdynamics/. /opt/appdynamics-java
+然后挂载
+        volumeMounts:
+        - mountPath: /opt/appdynamics-java
+普通的containers通过非root用户运行，如果想要写入文件到
+/opt/appdynamics-java目录，那么关于deployment的securityContext
+有什么需要特殊设置的？
+
+``` 
+A
+``` 
+对于这样的情况,Deployment的securityContext需要进行特殊设置:
+
+1. initContainer需要以root用户运行,这样才能执行`cp`命令,copy文件。
+
+2. 普通的容器需要运行为非root用户,例如`appuser`。
+
+3. 为了解决权限问题,需要在Deployment的securityContext中设置:
+
+- initContainers使用root用户    
+- 普通容器使用非root用户    
+- 给予非root用户写访问`/opt/appdynamics-java`目录的权限
+
+具体设置如下:
+``` 
+```yaml
+securityContext:
+  initContainers:
+  - name: init-container  
+    securityContext:
+      runAsUser: 0 # root 用户
+  
+  containers: 
+  - name: app-container
+    securityContext:
+      runAsUser: 1001 # non-root 用户
+      
+volumes:
+- name: data
+  persistentVolumeClaim:
+   ...
+volumeMounts:
+- name: data
+  mountPath: "/opt/appdynamics-java"  
+  readOnly: false
+
+fsGroup: 1001
+# 允许非root组(fsGroup)对volume有写权限
+```
+
+这里:
+
+- `fsGroup: 1001` 使非root组有写权限
+- `readOnly: false` 允许写操作
+
+像这样,initContainer可以以root用户复制文件,普通容器可以作为非root用户运行,同时拥有写访问所挂载的数据卷的权限。
+
+希望以这种专家的角度解决了你的疑问。请随时提出任何其他相关的问题。
+
+```
+你说得很对,`fsGroup: 1001`是针对整个Deployment中的所有容器(包括initContainers 和app containers)。
+
+这是Kubernetes的一个设计,指定的fsGroup适用于整个Pod中的所有容器:
+
+- `fsGroup` 设置Pod或容器的文件系统组
+- Pod中的所有容器共享相同的Volume
+- 为了让所有容器都能访问Volume,它们需要有相同的fsGroup
+
+所以在这个例子中:
+
+- `initContainers` 以root用户(UID 0)运行,但属于fsGroup 1001
+- `appContainers` 作为非root用户(UID 1001)运行,也属于fsGroup 1001
+
+这使得:
+
+- `initContainers` 可以以root用户创建文件和目录
+- `appContainers` 虽然非root用户,但仍然能写访问Volume,因为也属于fsGroup 1001
+
+所有容器共享fsGroup,所以都能访问Volume。
+
+因此,`fsGroup: 1001` 是应用到Deployment中所有容器上的。
+
+它允许`initContainers` 以root权限操作,但还是可以与`appContainers`共享Storage。
+
+希望以这种专家的角度回答清楚了你的问题。如果你需要了解Kubernetes volumes和fsGroup的更多内容,也欢迎提问。
+``` 
 
