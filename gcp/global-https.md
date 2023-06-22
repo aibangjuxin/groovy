@@ -77,6 +77,25 @@ Step 22: Click Save.
 
 Step 23: Once you have configured SSL certificates for your domains, you can test your configuration by visiting each domain in a web browser.
 
+### other
+- To bind multiple domains to a forwarding rule in the Google Cloud CLI, you can use the following command:
+```bash
+gcloud compute forwarding-rules create FORWARDING_RULE_NAME \
+  --domains DOMAIN1,DOMAIN2,DOMAIN3 \
+  --target-http-proxy TARGET_HTTP_PROXY
+```
+- 
+- For example, to bind the domains www.example.com and www.example.net to a forwarding rule named my-rule, you would use the following command:-
+```
+gcloud compute forwarding-rules create my-rule \
+  --domains www.example.com,www.example.net \
+  --target-http-proxy my-http-proxy
+
+```
+- The DOMAINS flag takes a comma-separated list of domains. The TARGET_HTTP_PROXY flag specifies the target HTTP proxy that the forwarding rule should point to.
+- Once you have created the forwarding rule, you can verify that it is bound to the correct domains by running the following command:
+- `gcloud compute forwarding-rules describe FORWARDING_RULE_NAME`
+
 # summary
 Create a global HTTPS load balancer binding multiple 
 domains and using one backend as its instance group at GCP
