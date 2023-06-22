@@ -520,3 +520,36 @@ Sure, here are the steps on how to create a global HTTPS load balancer binding m
 15. Click **Save**.
 16. Your domain will now be bound to the load balancer.
 
+
+To bind multiple domains to a forwarding rule in the Google Cloud Command-Line Interface (CLI), you can use the following steps:
+
+1. Install and set up the Google Cloud SDK if you haven't already. You can find the installation instructions at: https://cloud.google.com/sdk/docs/install.
+
+2. Open a terminal or command prompt and authenticate with your Google Cloud account by running the following command:
+   ```
+   gcloud auth login
+   ```
+
+3. Set your project ID by running the following command and replacing `[PROJECT_ID]` with your actual project ID:
+   ```
+   gcloud config set project [PROJECT_ID]
+   ```
+
+4. Create a forwarding rule using the `gcloud compute forwarding-rules create` command. Replace `[FORWARDING_RULE_NAME]` with a name for your forwarding rule, `[TARGET_POOL_NAME]` with the name of your target pool, and `[REGION]` with the desired region:
+   ```
+   gcloud compute forwarding-rules create [FORWARDING_RULE_NAME] --region [REGION] --target-pool [TARGET_POOL_NAME]
+   ```
+
+5. Once the forwarding rule is created, you can bind multiple domains to it using the `gcloud compute forwarding-rules update` command. Replace `[FORWARDING_RULE_NAME]` with the name of your forwarding rule, and `[DOMAINS]` with a comma-separated list of your domains:
+   ```
+   gcloud compute forwarding-rules update [FORWARDING_RULE_NAME] --region [REGION] --add-ssl-certificates [DOMAINS]
+   ```
+
+   For example, if you have two domains, example.com and example.org, you would run the following command:
+   ```
+   gcloud compute forwarding-rules update [FORWARDING_RULE_NAME] --region [REGION] --add-ssl-certificates example.com,example.org
+   ```
+
+6. Wait for the update to propagate. It may take some time for the changes to take effect.
+
+By following these steps, you should be able to bind multiple domains to a forwarding rule in the Google Cloud CLI. Make sure to replace the placeholders with your actual values.
