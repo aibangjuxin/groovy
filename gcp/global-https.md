@@ -77,6 +77,31 @@ Step 22: Click Save.
 
 Step 23: Once you have configured SSL certificates for your domains, you can test your configuration by visiting each domain in a web browser.
 
+1. Go to the [Cloud Load Balancing](https://console.cloud.google.com/load-balancing) page in the Google Cloud Console.
+2. Click **Create load balancer**.
+3. On the **Application Load Balancer (HTTPS)** card, click **Start configuration**.
+4. For **Internet facing or internal only**, select **From Internet to my VMs**.
+5. For **Global or regional**, select **Global Application Load Balancer**.
+6. Click **Continue**.
+7. For the **load balancer name**, enter a name for your load balancer.
+8. For **Frontend configuration**, do the following:
+    * Set **Protocol** to **HTTPS**.
+    * Set **IP address** to the IP address of your load balancer.
+    * Set **Port** to **443**.
+    * Click **Certificate** and select the SSL certificate that you want to use for your load balancer.
+9. For **Backend configuration**, do the following:
+    * Click **Add backend**.
+    * Select the **Instance group** that you want to use as your backend.
+    * Click **Save**.
+10. Click **Create**.
+
+Here are some additional notes:
+
+You can bind multiple domains to your load balancer by adding Host and path rules to your load balancer's URL map.
+You can use a single backend for your load balancer, or you can use multiple backends.
+You can use a variety of SSL certificates with your load balancer, including Google-managed certificates and self-managed certificates.
+
+
 ### other
 - To bind multiple domains to a forwarding rule in the Google Cloud CLI, you can use the following command:
 ```bash
