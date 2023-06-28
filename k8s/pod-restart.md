@@ -2,7 +2,7 @@
 - 1 deployment数量是通过hpa来控制的,但是因为不能调整hpa的数值,可能会改 UUID
 - 2 只能通过kubectl scale deployment --replicas 来调整Pod的数量
 - 3 需要确定新启动的Pod能够正常工作,或者说health check 正常之后,删除掉原来的旧的Pod .可以根据创建时间来删除
-对于以上需求,有什么好的实现方式或者过滤规则,来确保最下话的不中断服务?
+对于以上需求,有什么好的实现方式或者过滤规则,来确保最小话的不中断服务?
 
 - summary
   - HPA 的最小和最大副本数量将与 Deployment 的副本数量相同，这意味着 HPA 将不再调整副本数量
