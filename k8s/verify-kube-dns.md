@@ -232,7 +232,7 @@ kubectl run -it --rm --restart=Never busybox --image=busybox:1.28 -- nslookup <s
 在此命令中，`<service-name>` 是要解析的服务的名称。如果该服务的 IP 地址成功解析，则 kube-dns 正常工作。
 
 
-kubectl exec kube-dns-7d44cdb5d5-fclcn -n kube-system -- nslookup w2-kong2-clustering.hsbc-11620118-wsitkongcp1-dev.dev.gcp.cloud.hk.hsbc
+kubectl exec kube-dns-7d44cdb5d5-fclcn -n kube-system -- nslookup cp.domain
 
 
 首先查看kube-dns Pod是否已成功启动:
