@@ -81,3 +81,36 @@ Here is a breakdown of the command:
 * --selector="creationTimestamp<2023-06-27T21:57:09Z": This is the selector that specifies the Pods to evict. The selector matches Pods that were created before the timestamp `2023-06-27T21:57:09Z`.
 
 I hope this helps! Let me know if you have any other questions.
+
+
+如果要根据GKE Pod的age来过滤并删除Pod,可以采取如下步骤:
+
+1. 使用kubectl get pods -o json | jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp}'命令获取所有Pod的name和creationTimestamp。creationTimestamp是Pod的创建时间,我们可以与当前时间比较来计算Pod的age。
+
+2. 从上一步的输出中过滤出age超过我们设置阈值的Pod。例如设定阈值为1天,过滤命令可以是:
+
+bash
+kubectl get pods -o json | 
+jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp} | 
+select(.age < "2020-01-01T00:00:00Z")'
+
+
+这会过滤出creationTimestamp早于2020-01-01的Pod。
+
+3. 获取过滤后的Pod名称列表,命令是:
+
+bash 
+kubectl get pods -o json |  
+jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp} |  
+select(.age < "2020-01-01T00:00:00Z") | .name'
+
+
+4. 使用kubectl delete pod <pod-name1> <pod-name2>...删除获取到的Pod名称列表中的Pod。
+
+所以总的来说,主要步骤是:
+
+1) 获取所有Pod的name和creationTimestamp;
+
+2) 设定age阈值,并使用jq
+
+Typing…
