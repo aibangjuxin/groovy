@@ -82,7 +82,6 @@ Here is a breakdown of the command:
 
 I hope this helps! Let me know if you have any other questions.
 
-
 如果要根据GKE Pod的age来过滤并删除Pod,可以采取如下步骤:
 
 1. 使用kubectl get pods -o json | jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp}'命令获取所有Pod的name和creationTimestamp。creationTimestamp是Pod的创建时间,我们可以与当前时间比较来计算Pod的age。
@@ -111,6 +110,12 @@ select(.age < "2020-01-01T00:00:00Z") | .name'
 
 1) 获取所有Pod的name和creationTimestamp;
 
-2) 设定age阈值,并使用jq
+2) 设定age阈值,并使用jq过滤器过滤出超过阈值的Pod;
 
-Typing…
+3) 提取过滤后的Pod的name列表; 
+
+4) 使用kubectl delete pod ...删除列表中的Pod。
+
+这个方法可以很方便的基于age过滤和删除Kubernetes中的Pod。如果您对jq过滤器不太熟悉,也可以使用其他语言如Python来实现过滤逻辑。主要思路是获取Pod的创建时间,计算其与当前时间的差值,这样就可以判断Pod的age是否超过我们的设置阈值。
+
+希望这个方法能够帮助您!如果您有任何其他问题,也请随时提出。
