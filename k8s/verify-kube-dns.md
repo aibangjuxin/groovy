@@ -242,7 +242,7 @@ kubectl get pods -n kube-system -l k8s-app=kube-dns
 
 接下来使用一个测试Pod查看域名解析是否正常:
 
-curl -kv https://w2-kong2-clustering.hsbc-11620118-wsitkongcp1-dev.dev.gcp.cloud.hk.hsbc:8005
+curl -kv https://dev
 apiVersion: v1
 kind: Pod 
 metadata:
