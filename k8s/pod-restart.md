@@ -50,4 +50,34 @@ selector:
 
 对于直接使用`kubectl scale`命令来根据时间戳驱逐指定的Pod，是没有特定的参数或选项的。`kubectl scale`命令主要用于调整部署（Deployment）或副本集（ReplicaSet）的副本数量，并不提供直接根据时间戳来驱逐Pod的功能。
 
-如果你想根据时间戳驱逐Pod，可以使用其他Kubernetes命令和工具�
+如果你想根据时间戳驱逐Pod，可以使用其他Kubernetes命令和工具结合筛选、排序和删除操作来实现目标。例如，你可以使用`kubectl get pods`命令获取Pod列表，并使用`kubectl delete pod`命令删除特定的Pod。
+
+以下是一个示例命令，用于获取具有特定标签的Pod列表，并根据时间戳选择最旧的Pod进行驱逐：
+
+```bash
+kubectl get pods -l <label-selector> --sort-by=.metadata.creationTimestamp -o jsonpath='{.items[0].metadata.name}' | xargs kubectl delete pod
+```
+
+请替换`<label-selector>`为适当的标签选择器来筛选要驱逐的Pod。该命令将获取具有指定标签的所有Pod，并按照创建时间戳进行排序。然后，它将选择最旧的Pod的名称，并使用`kubectl delete pod`命令进行驱逐。
+
+请注意，上述命令是一个示例，实际使用时需要根据你的环境和需求进行适当的修改。
+
+The command you provided is correct. It will scale the Deployment with the name `<deploy-name>` to `n` replicas, and only evict Pods that were created before the timestamp `<timestamp>`.
+
+For example, if you want to scale the Deployment `myapp` to 2 replicas, and only evict Pods that were created before the timestamp `2023-06-27T21:57:09Z`, you would use the following command:
+
+```
+kubectl scale deployment myapp --replicas=2 --selector="creationTimestamp<2023-06-27T21:57:09Z"
+```
+
+This command will evict all Pods in the Deployment that were created before the timestamp `2023-06-27T21:57:09Z`, and then scale the Deployment up to 2 replicas.
+
+Here is a breakdown of the command:
+
+* kubectl scale: This is the command used to scale a Deployment.
+* deployment: This is the type of Kubernetes resource that you want to scale.
+* myapp: This is the name of the Deployment you want to scale.
+* --replicas 2: This is the number of replicas you want to scale the Deployment to.
+* --selector="creationTimestamp<2023-06-27T21:57:09Z": This is the selector that specifies the Pods to evict. The selector matches Pods that were created before the timestamp `2023-06-27T21:57:09Z`.
+
+I hope this helps! Let me know if you have any other questions.
