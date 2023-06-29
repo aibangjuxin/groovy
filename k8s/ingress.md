@@ -33,3 +33,49 @@ pod1 & pod2 -->response
 ``` 
 
 综上,Ingress Controller通过监听Ingress资源的变化,然后动态配置负载均衡器,实现外部请求到达K8S内部服务的流量管理。Ingress和Ingress Controller之间通过K8S API进行协调。
+
+
+当在Kubernetes中使用Nginx Ingress Controller或Ingress对象时，以下是整个流程和各个组件之间的工作关系：
+
+1. 用户通过定义Ingress对象来配置路由规则、主机名和路径映射等信息。
+2. Ingress Controller是一个独立的Kubernetes控制器，负责监视和管理Ingress对象。
+3. Ingress Controller与Kubernetes API服务器保持连接，以获取Ingress对象的变化和更新。
+4. 当新的或更新的Ingress对象被创建或修改时，Ingress Controller将检测到变化并采取相应的行动。
+5. Ingress Controller会根据Ingress对象中定义的规则和配置信息生成相应的Nginx配置。
+6. Ingress Controller将更新的Nginx配置应用到运行Nginx实例的Pod中。
+7. Nginx实例作为负载均衡器和反向代理，接收来自集群外部的请求，并根据Ingress规则将请求转发给适当的后端服务。
+8. 后端服务接收到请求并进行处理，然后将响应返回给Nginx实例。
+9. Nginx实例将响应返回给请求的客户端。
+
+这是一个简单的流程，展示了Nginx Ingress Controller和Ingress之间的协作关系。下面是一个用Markdown格式表示的流程图：
+
+```
+用户定义Ingress对象 -> Ingress Controller监视和管理Ingress对象 ->
+    检测到Ingress对象变化 -> 生成Nginx配置 ->
+    应用Nginx配置到运行的Pod中 -> Nginx实例接收来自集群外部的请求 ->
+    根据Ingress规则将请求转发给后端服务 -> 后端服务处理请求并返回响应 ->
+    Nginx实例将响应返回给客户端
+```
+
+请注意，这只是一个简化的流程，实际情况可能会因配置和环境的不同而有所变化。
+
+以下是使用Mermaid格式输出的流程图，描述了Kubernetes中Nginx Ingress Controller和Ingress之间的工作流程：
+
+```mermaid
+graph LR
+  A[用户定义Ingress对象] --> B(Ingress Controller监视和管理Ingress对象)
+  B --> C{检测到Ingress对象变化}
+  C -- Yes --> D[生成Nginx配置]
+  D --> E[应用Nginx配置到运行的Pod中]
+  E --> F[Nginx实例接收来自集群外部的请求]
+  F --> G{根据Ingress规则将请求转发给后端服务}
+  G -- Yes --> H[后端服务处理请求并返回响应]
+  H --> I[Nginx实例将响应返回给客户端]
+  G -- No --> F
+  C -- No --> B
+```
+
+这个Mermaid流程图展示了用户定义Ingress对象后，Ingress Controller如何监视并管理这些对象，然后根据变化生成Nginx配置并将其应用到运行的Pod中。最终，Nginx实例将根据Ingress规则将请求转发给后端服务，并将响应返回给请求的客户端。
+
+
+
