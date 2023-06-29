@@ -213,3 +213,73 @@ There are a few good options for monitoring files in Kubernetes buckets:
 In summary, I would recommend either monitoring the CronJob logs (simplest option) or using an external monitoring tool. The custom Prometheus metric approach is also good but requires more development effort. Scripting a timestamp check is also viable but not as robust as the other options.
 
 Hope this helps! Let me know if you have any other questions.
+
+# cronjob annotation
+- 这里是一个Kubernetes CronJob 的例子,在pod template 中定义一个annotations:
+
+``` yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: example-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            example: "example annotation" 
+        spec:
+          containers:
+          - name: hello
+            image: busybox
+            args:
+            - /bin/sh
+            - -c
+            - date; echo "Hello from the Kubernetes cluster"
+          restartPolicy: OnFailure
+``` 
+
+- 在pod template 的metadata 中添加annotations 字段,然后定义你的注解键值对。在这个例子中,我们添加了一个example 注解:
+``` 
+annotations:
+  example: "example annotation"  
+``` 
+
+- 那么这个注解就会添加到CronJob 创建的所有的pod 中。你可以在pod 的metadata 中看到这个注解。
+
+- annotations 主要用于添加一些辅助的信息,不直接影响pod的行为。如果你想基于annotations 来改变deployment的行为,你应该在spec 中添加template,然后在template的pod spec 中根据annotations 做相应的修改。
+
+例如:
+
+``` yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-deployment 
+spec:
+  template:
+    metadata:
+      annotations:
+        example: "true"
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+  strategy: 
+    type: RollingUpdate  
+    rollingUpdate: 
+      maxSurge: 1      
+      maxUnavailable: 0 
+  template:
+    spec:
+      containers:      
+      - name: nginx
+        image: nginx
+        env: 
+        - name: ENABLE_WEBSERVER
+          value: $(example)  # Use annotation value
+``` 
+
+在这里,我们直接使用$(example) 引用了annotations 中的example 值,并设置到了环境变量中。所以Deployment 就会根据这个注解的存在与否来决定是否设置这个环境变量。
