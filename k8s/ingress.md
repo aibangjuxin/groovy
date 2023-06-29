@@ -62,7 +62,7 @@ pod1 & pod2 -->response
 以下是使用Mermaid格式输出的流程图，描述了Kubernetes中Nginx Ingress Controller和Ingress之间的工作流程：
 
 ```mermaid
-graph LR
+graph TD
   A[用户定义Ingress对象] --> B(Ingress Controller监视和管理Ingress对象)
   B --> C{检测到Ingress对象变化}
   C -- Yes --> D[生成Nginx配置]
