@@ -132,7 +132,59 @@ spec:
 临时禁止 HPA 调度的操作涉及的是更新 HPA 对象的配置，而不是 Deployment 对象本身。更新 HPA 对象的配置不会影响 Deployment 的 UID 或其他相关标识符。
 因此，您可以放心使用上述方法来临时禁止 HPA 的调度，而不会对 Deployment 的 UUID 产生影响。 Deployment 的 UUID 仍将保持不变，并且您可以随时将 HPA 的配置恢复为原始设置，以便再次启用 HPA 调度。
 ```
+当对 HorizontalPodAutoscaler (HPA) 进行修改时,HPA 的 UID 不会改变。
 
+HPA 的 UID 是由 Kubernetes 在创建 HPA 时生成的,用于唯一标识这个 HPA 对象。无论之后 HPA 有何修改,这个 UID 都会保持不变。
+
+例如,我们创建一个 HPA:
+
+``` bash
+kubectl autoscale deployment nginx-deployment --cpu-percent=50 --min=2 --max=10
+``` 
+
+输出:
+horizontalpodautoscaler.autoscaling/nginx-deployment scaled
+
+
+看一下这个 HPA 的详细信息:
+``` bash
+kubectl get hpa nginx-deployment -o yaml
+``` 
+
+输出中会包含这个 HPA 的 UID,例如:
+
+``` yaml
+apiVersion: autoscaling/v2beta2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-deployment
+  namespace: default
+  ...
+  uid: d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064
+``` 
+
+此时这个 HPA 的 UID 是 d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064。
+
+现在我们修改这个 HPA,将 --cpu-percent 修改为 70%:
+
+``` bash
+kubectl autoscale deployment nginx-deployment --cpu-percent=70 --min=2 --max=10
+``` 
+
+再查看 HPA 的 YAML 信息:
+``` yaml
+apiVersion: autoscaling/v2beta2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-deployment
+  namespace: default
+  ...
+  uid: d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064  # UID 保持不变
+``` 
+
+可以看到,尽管我们修改了 HPA 的配置,但 HPA 的 UID 仍然保持为 d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064。
+
+所以,总结来说:Kubernetes 生成的 HPA UID 在 HPA 的生命周期中保持不变,无论 HPA 有何修改。HPA UID 用于唯一标识一个 HPA 对象。
 
 - 如果这些 Pod 是由某个控制器(如 Deployment)创建的,控制器会感知到 Pod 的删除,并重新创建 Pod 以达到期望的 Pod 副本数。
 所以,以上命令可以很方便地获取 Kubernetes 集群中的 Pod 列表并按创建时间排序,这样我们就可以很轻松地选择删除一些创建时间较早的 Pod。但如果 Pod 是由 Deployment 等控制器创建的,删除 Pod 后,控制器会重新创建 Pod,所以这种情况下删除旧 Pod 的效果不太明显
