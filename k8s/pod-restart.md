@@ -1,5 +1,5 @@
 需求是这样的, 重启GKE里面的pod
-- 1 deployment数量是通过hpa来控制的,但是因为不能调整hpa的数值,可能会改 UUID
+- 1 deployment数量是通过hpa来控制的,但是因为不能调整hpa的数值,可能会改 UID
 - 2 只能通过kubectl scale deployment --replicas 来调整Pod的数量
 - 3 需要确定新启动的Pod能够正常工作,或者说health check 正常之后,删除掉原来的旧的Pod .可以根据创建时间来删除
 对于以上需求,有什么好的实现方式或者过滤规则,来确保最小话的不中断服务?
@@ -126,10 +126,10 @@ spec:
 请注意，这是一种临时禁止 HPA 调度的方法。如果您希望再次启用 HPA，请将 `spec.minReplicas` 和 `spec.maxReplicas` 的值恢复为适当的范围，并保存更新的 HPA 对象。
 
 
-- 上面这种临时禁止HPA的方式会改变deployment的UUID?
+- 上面这种临时禁止HPA的方式会改变deployment的UID?
 ```
-- 上述临时禁止 HPA 调度的方式不会改变 Deployment 的 UUID。Deployment 的 UUID 是在创建 Deployment 时分配的唯一标识符，它代表 Deployment 的身份和版本。
-临时禁止 HPA 调度的操作涉及的是更新 HPA 对象的配置，而不是 Deployment 对象本身。更新 HPA 对象的配置不会影响 Deployment 的 UUID 或其他相关标识符。
+- 上述临时禁止 HPA 调度的方式不会改变 Deployment 的 UID。Deployment 的 UID 是在创建 Deployment 时分配的唯一标识符，它代表 Deployment 的身份和版本。
+临时禁止 HPA 调度的操作涉及的是更新 HPA 对象的配置，而不是 Deployment 对象本身。更新 HPA 对象的配置不会影响 Deployment 的 UID 或其他相关标识符。
 因此，您可以放心使用上述方法来临时禁止 HPA 的调度，而不会对 Deployment 的 UUID 产生影响。 Deployment 的 UUID 仍将保持不变，并且您可以随时将 HPA 的配置恢复为原始设置，以便再次启用 HPA 调度。
 ```
 
