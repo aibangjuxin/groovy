@@ -15,7 +15,7 @@ K8S中使用Ingress进行流量管理的架构流程如下:
 7. 响应会依次返回给负载均衡器、入口和最终用户。
 
 流程图如下:
-mermaid 
+``` mermaid 
 graph LR
 
 ingress(Ingress资源)-->ingress-controller(Ingress Controller)
@@ -30,6 +30,6 @@ user --> 入口
 nginx --> pod1((Pod 1)) & pod2((Pod 2))
 pod1 & pod2 -->response 
 
-
+``` 
 
 综上,Ingress Controller通过监听Ingress资源的变化,然后动态配置负载均衡器,实现外部请求到达K8S内部服务的流量管理。Ingress和Ingress Controller之间通过K8S API进行协调。
