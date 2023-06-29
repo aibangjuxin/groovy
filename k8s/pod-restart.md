@@ -186,6 +186,130 @@ metadata:
 
 所以,总结来说:Kubernetes 生成的 HPA UID 在 HPA 的生命周期中保持不变,无论 HPA 有何修改。HPA UID 用于唯一标识一个 HPA 对象。
 
+## 如果直接修改 Deployment,是不会导致与其关联的 HPA 的 UID 发生变化的。
+
+- HPA 的 UID 是在创建 HPA 时确定的,用于唯一标识这个 HPA 对象。此后,无论 Deployment 还是 HPA 本身发生任何修改,这个 UID 都不会改变。
+
+例如,我们有一个 Deployment 和一个关联的 HPA:
+
+Deployment:
+``` yaml
+apiVersion: apps/v1 
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  ...
+spec:
+  replicas: 3
+``` 
+
+HPA:
+``` yaml
+apiVersion: autoscaling/v2beta2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-deployment
+  namespace: default
+  uid: d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064 
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+``` 
+
+此时,HPA 的 UID 是 d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064。
+
+现在我们直接编辑 Deployment,将 replicas 从 3 个修改为 5 个:
+
+``` yaml
+apiVersion: apps/v1  
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  ... 
+spec:
+  replicas: 5   # 修改 replicas 
+``` 
+
+然后查看 HPA 的 YAML,可以看到:
+
+``` yaml
+apiVersion: autoscaling/v2beta2 
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-deployment
+  namespace: default
+  uid: d3b4a7ac-f9d4-11e9-8eb2-42010a8a0064   # UID 未变
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 50
+``` 
+
+HPA 的 UID 仍然保持不变。
+
+所以,总结来说:直接修改 Deployment 不会引起其关联 HPA 的 UID 变化。HPA 的 UID 在创建后会保持不变,不受 Deployment 或 HPA 自身修改的影响。
+
+但如果删除并重建 Deployment,则会导致关联的 HPA 丢失,新建的 Deployment 需要 创建一个新的 HPA 对象。这种情况下,新的 HPA 的 UID 自然就会发生变化。
+
+重建 Deployment 的常见方式有:
+
+1. 删除 Deployment,然后重新创建:
+
+``` bash
+kubectl delete deployment nginx-deployment
+kubectl create deployment nginx-deployment --image=nginx
+``` 
+
+这种方式会完全删除原有的 Deployment,并创建一个新的 Deployment,关联的 HPA 对象也会丢失,需要重新创建一个新的 HPA。新 HPA 的 UID 会发生变化。
+
+2. 修改 Deployment 的 .spec.template 字段:
+
+``` yaml
+apiVersion: apps/v1  
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  ... 
+spec:
+  replicas: 5 
+  template:   # 修改模板
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.17.1   # 镜像版本变化
+``` 
+
+这种修改模板的方式也会导致 HPA 丢失,需要重新创建 HPA。新 HPA 的 UID 会变化。
+
+3. 修改 Deployment 其他与 Pod 模板无关的字段,例如:
+
+- .spec.replicas
+- .spec.strategy.type
+- .spec.progressDeadlineSeconds
+- spec.revisionHistoryLimit
+- ...
+
+这些修改不会导致 HPA 丢失,HPA 的 UID 也保持不变。
+
+所以,总结来说:
+
+- 删除或修改 Deployment 的 .spec.template 模板字段,都会导致关联的 HPA 对象丢失,需要重新创建 HPA,这时 HPA 的 UID 会发生变化。
+
+- 修改 Deployment 其他与 .spec.template 无关的字段,不会影响关联的 HPA,HPA 的 UID 保持不变。
+
+- 直接修改 Deployment 的 .spec.replicas 也不会导致 HPA UID 的变化,这是因为 HPA 的目标是维持一个期望的 Pod 副本比例,而不是绝对的副本数值。
+
+所以如果要重新创建与 Deployment 关联的 HPA,建议先删除原有的 HPA,然后再修改或重建 Deployment,最后再创建一个新的 HPA 对象。这可以避免 UID 变化导致的一些潜在问题。
+
 - 如果这些 Pod 是由某个控制器(如 Deployment)创建的,控制器会感知到 Pod 的删除,并重新创建 Pod 以达到期望的 Pod 副本数。
 所以,以上命令可以很方便地获取 Kubernetes 集群中的 Pod 列表并按创建时间排序,这样我们就可以很轻松地选择删除一些创建时间较早的 Pod。但如果 Pod 是由 Deployment 等控制器创建的,删除 Pod 后,控制器会重新创建 Pod,所以这种情况下删除旧 Pod 的效果不太明显
 
