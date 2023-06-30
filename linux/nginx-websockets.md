@@ -171,4 +171,35 @@ sequenceDiagram
     客户端->>服务器: 10. 关闭TCP连接
 ``` 
 
+```mermaid
+sequenceDiagram
+participant 浏览器 as 浏览器
+participant 服务器 as 服务器
+浏览器->>服务器: 发起HTTP Upgrade请求
+ Note right of 浏览器: 包含Upgrade:websocket头
+服务器-->>浏览器: 响应101状态码
+ Note right of 服务器: 表示换协议
+浏览器-->>服务器: 发送握手请求
+ Note right of 浏览器: 使用Sec-WebSocket-Key随机数
+服务器-->>浏览器: 响应握手
+ Note right of 服务器: 使用浏览器随机数加密的Sec-WebSocket-Accept响应头
+loops 通信循环
+   浏览器->>服务器: 发送websocket消息
+   服务器-->>浏览器:响应websocket消息
+end
+浏览器->>服务器: 关闭websocket连接
+服务器-->>浏览器: 响应关闭连接
+``` 
+
+大致来说,流程为:
+
+1. 浏览器发起HTTP升级请求,包含Upgrade: websocket头
+2. 服务器响应101状态码,表示支持协议升级 
+3. 浏览器发送Sec-WebSocket-Key随机数,进行WebSocket握手   
+4. 服务器使用加密的Sec-WebSocket-Accept响应头,完成握手
+5. 浏览器和服务器开始循环发送和接收WebSocket消息
+6. 浏览器或者服务器主动关闭连接后,另一方响应关闭连接,完成通信。
+
+以上就是详细的Websocket通信序列图示,使用Mermaid图表进行呈现
+
 
