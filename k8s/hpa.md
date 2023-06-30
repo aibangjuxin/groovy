@@ -1,6 +1,105 @@
 
 这里是一个Deployment和HPA的YAML配置示例以及markdown格式输出:
 
+scale hpa 
+```
+kubectl scale deployment name-version-master-1-1-deployment --replicas=2 -n spcoe
+
+8886666666$ kubectl get pod -n spcoe|grep  name-version-master
+name-version-master-1-1-deployment-7bcdf5f49-jqjk9           1/1     Running            0                15h
+name-version-master-1-1-deployment-7bcdf5f49-n4dlt           0/1     Running            0                11s
+
+
+
+kubectl get pods -o json -n spcoe |/home/lex/jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp}'
+
+8886666666$ kubectl scale deployment name-version-master-1-1-deployment --replicas=2 -n spcoe
+deployment.apps/name-version-master-1-1-deployment scaled
+8886666666$ kubectl get pod -n spcoe|grep  name-version-master
+name-version-master-1-1-deployment-7bcdf5f49-jqjk9           1/1     Running            0                15h
+name-version-master-1-1-deployment-7bcdf5f49-pm8vb           0/1     Running            0                4s
+8886666666$ kubectl get pods --sort-by=.metadata.creationTimestamp -l app=name-version-master-1-1 -o jsonpath='{range .items[0]}{.metadata.name}{end}' -n spcoe
+name-version-master-1-1-deployment-7 -n spcoe|grep  name-version-master
+name-version-master-1-1-deployment-7bcdf5f49-jqjk9           1/1     Running            0                15h
+name-version-master-1-1-deployment-7bcdf5f49-pm8vb           1/1     Running            0                24s
+8886666666$ kubectl get pod -n spcoe --show-labels|grep name-version-master
+name-version-master-1-1-deployment-7bcdf5f49-jqjk9           1/1     Running            0               15h     app=name-version-master-1-1,kdp=lex-init-kong,nexthop=NA,pod-template-hash=7bcdf5f49,sms=disabled,timestamp=1681359510933,type=pa
+name-version-master-1-1-deployment-7bcdf5f49-pm8vb           1/1     Running            0               53s     app=name-version-master-1-1,kdp=lex-init-kong,nexthop=NA,pod-template-hash=7bcdf5f49,sms=disabled,timestamp=1681359510933,type=pa
+
+8886666666$ kubectl get pods -l app=name-version-master-1-1 -o json -n spcoe |/home/lex/jq '.items[] | {"name": .metadata.name, "age": .metadata.creationTimestamp}'
+{
+  "name": "name-version-master-1-1-deployment-7bcdf5f49-djpb6",
+  "age": "2023-06-28T06:05:40Z"
+}
+{
+  "name": "name-version-master-1-1-deployment-7bcdf5f49-jqjk9",
+  "age": "2023-06-27T13:53:02Z"
+}
+8886666666$ kubectl get pods -l app=name-version-master-1-1 -o=jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.status.startTime}{"\n"}{end}' -n spcoe
+name-version-master-1-1-deployment-7bcdf5f49-djpb6 2023-06-28T06:05:40Z
+name-version-master-1-1-deployment-7bcdf5f49-jqjk9 2023-06-28T00:08:52Z
+
+
+
+kubectl scale --current-replicas=1 --replicas=2 deployment name-version-master-1-1-deployment -n spcoe
+
+--selector 可以加 但是是针对的 deployment
+https://www.airplane.dev/blog/kubectl-scale
+
+8886666666$ kubectl get hpa name-version-master-1-1-deployment-hpa -n spcoe -o yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  creationTimestamp: "2023-04-13T04:18:33Z"
+  name: name-version-master-1-1-deployment-hpa
+  namespace: spcoe
+  resourceVersion: "325184366"
+  uid: 3f21bc39-1f5d-4237-a48a-c5ed9e4706ac
+spec:
+  maxReplicas: 2
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 750
+        type: Utilization
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: name-version-master-1-1-deployment
+status:
+  conditions:
+  - lastTransitionTime: "2023-06-28T10:32:47Z"
+    message: recommended size matches current size
+    reason: ReadyForNewScale
+    status: "True"
+    type: AbleToScale
+  - lastTransitionTime: "2023-06-28T06:15:25Z"
+    message: the HPA was able to successfully calculate a replica count from cpu resource
+      utilization (percentage of request)
+    reason: ValidMetricFound
+    status: "True"
+    type: ScalingActive
+  - lastTransitionTime: "2023-04-13T04:18:48Z"
+    message: the desired count is within the acceptable range
+    reason: DesiredWithinRange
+    status: "False"
+    type: ScalingLimited
+  currentMetrics:
+  - resource:
+      current:
+        averageUtilization: 21
+        averageValue: 21m
+      name: cpu
+    type: Resource
+  currentReplicas: 1
+  desiredReplicas: 1
+  lastScaleTime: "2023-06-28T10:32:32Z"
+```
+
+
 ## Deployment YAML
 ```yaml
 apiVersion: apps/v1  
