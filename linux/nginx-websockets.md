@@ -2,13 +2,14 @@
 
 nginx
 # 启用 websockets 支持
+``` 
 location / {
     ...
     proxy_http_version 1.1;
     proxy_set_header Upgrade $http_upgrade; 
     proxy_set_header Connection "upgrade";
 }
-
+``` 
 # TCP 连接超时  
 proxy_read_timeout 420s;  # TCP 读取超时,默认60s  
 proxy_send_timeout 420s; # TCP 写超时,默认60s 
