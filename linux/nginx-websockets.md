@@ -14,6 +14,23 @@ location / {
 proxy_read_timeout 420s;  # TCP 读取超时,默认60s  
 proxy_send_timeout 420s; # TCP 写超时,默认60s 
 
+`proxy_read_timeout`参数用于设置Nginx与后端服务器建立连接后，读取响应数据的超时时间。如果在指定的时间内没有从后端服务器接收到完整的响应数据，Nginx将中断连接。
+
+你可以在Nginx的`location`块或`server`块中设置`proxy_read_timeout`参数，具体取决于你的配置需求。以下是示例配置中设置`proxy_read_timeout`的位置示例：
+
+```nginx
+location / {
+    proxy_pass http://backend;
+    proxy_read_timeout 420s;
+}
+```
+
+在上述示例中，`proxy_read_timeout`被设置为420秒。你可以根据需要调整这个值来满足你的应用程序的要求。确保将其放置在适当的上下文中，以便仅对特定的代理位置或服务器生效。
+
+请注意，这只是一个示例，实际的配置可能因你的Nginx版本、具体的代理设置和上下文而有所不同。在修改Nginx配置文件之前，请确保熟悉Nginx的文档和正确的配置语法。
+
+
+
 # TCP 链接复用
 ``` 
 proxy_set_header Connection "";
