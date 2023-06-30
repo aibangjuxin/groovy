@@ -543,3 +543,35 @@ mac-lex-hap-memroy-cpu-7f4f64f6d6-znjwd                        1/1     Running  
 $ kubectl get replicaSets mac-lex-hap-memroy-cpu-7f4f64f6d6 -n lex-namespace -o jsonpath='{.metadata.uid}'
 093d3479-8f24-4131-abbb-e0f6a3131b5a
 ``` 
+要触发Deployment创建新的Pod，但不重新创建ReplicaSet，您可以通过更新Deployment的标签选择器来实现。以下是在Markdown格式中组织的命令和结果示例：
+
+```markdown
+**更新Deployment的标签选择器**
+
+```bash
+kubectl patch deployment <deployment-name> -p '{"spec": {"selector": {"matchLabels": {"example-app": "v2"}}}}'
+```
+
+*结果:*
+
+```
+deployment.apps/<deployment-name> patched
+```
+```
+
+要临时禁用HPA调度，可以通过更改HPA对象的副本数量来实现。以下是在Markdown格式中组织的命令和结果示例：
+
+**更新HPA的副本数量**
+
+```bash
+kubectl scale hpa <hpa-name> --replicas=<current-replica-count>
+```
+
+*结果:*
+
+```
+horizontalpodautoscaler.autoscaling/<hpa-name> scaled
+```
+
+请记住，在执行这些操作之前，确保对其影响有所了解，并确保进行适当的验证。
+
