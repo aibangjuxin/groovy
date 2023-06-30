@@ -15,9 +15,10 @@ proxy_read_timeout 420s;  # TCP 读取超时,默认60s
 proxy_send_timeout 420s; # TCP 写超时,默认60s 
 
 # TCP 链接复用
+``` 
 proxy_set_header Connection "";
 proxy_buffering off; # 关闭代理缓存
-
+``` 
 
 建议:
 
