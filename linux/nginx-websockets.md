@@ -170,7 +170,7 @@ sequenceDiagram
     服务器-->>客户端: 9. 接收关闭帧
     客户端->>服务器: 10. 关闭TCP连接
 ``` 
-
+## new 
 ```mermaid
 sequenceDiagram
 participant 浏览器 as 浏览器
