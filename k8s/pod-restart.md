@@ -524,4 +524,21 @@ The safest and easiest option is generally a rolling replace or update. This ens
 - Config Atomic - The new config is applied fully and atomically
 
 Hope this helps! Let me know if you have any other questions.
+``` bash
+[lex-mac]$ kubectl get deployment -n lex-namespace|grep lex
+mac-lex-hap-memroy-cpu                          1/1     1            1           38d
+[lex-mac]$ kubectl rollout restart deployment/mac-lex-hap-memroy-cpu -n lex-namespace
+deployment.apps/mac-lex-hap-memroy-cpu restarted
+[lex-mac]$ kubectl get rs -n lex-namespace|grep lex
+mac-lex-hap-memroy-cpu-5bbdd6dd55                          0         0         0       12m
+mac-lex-hap-memroy-cpu-6f89c6b56c                          0         0         0       38d
+mac-lex-hap-memroy-cpu-7d4b675585                          0         0         0       27d
+mac-lex-hap-memroy-cpu-7f4f64f6d6                          1         1         1       12s
+[lex-mac]$ kubectl get pod -n lex-namespace|grep lex
+mac-lex-hap-memroy-cpu-6f89c6b56c-wqdhm                        1/1     Terminating        0                7m56s
+mac-lex-hap-memroy-cpu-7f4f64f6d6-znjwd                        1/1     Running            0                23s
 
+
+$ kubectl get replicaSets mac-lex-hap-memroy-cpu-7f4f64f6d6 -n lex-namespace -o jsonpath='{.metadata.uid}'
+093d3479-8f24-4131-abbb-e0f6a3131b5a
+``` 
