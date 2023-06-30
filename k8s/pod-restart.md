@@ -1,5 +1,5 @@
 需求是这样的, 重启GKE里面的pod
-- 1 deployment数量是通过hpa来控制的,但是因为不能调整hpa的数值,可能会改 UID
+- 1 deployment数量是通过hpa来控制的,但是因为不能调整RS的数值,可能会改 UID
 - 2 只能通过kubectl scale deployment --replicas 来调整Pod的数量
 - 3 需要确定新启动的Pod能够正常工作,或者说health check 正常之后,删除掉原来的旧的Pod .可以根据创建时间来删除
 对于以上需求,有什么好的实现方式或者过滤规则,来确保最小话的不中断服务?
@@ -12,7 +12,8 @@
     - 不做任何调整的情况下直接删除旧的Pod
     - 这时候会依赖于scale的数量进行拉去新的Pod 以满足 足量的Pod运行
   - 再次修改hpa 的 minReplicas maxReplicas为原始的值,那么scale会自动收缩,此时收缩的这些Pod能够保证是最新的Pod
-
+  - 需要注意replicaSets的值的改变，这个历史记录里面会有很多。参考文章末尾有举例。
+  - 仅仅通过kubectl scale deployment命令来调整Pod的数量不会造成replicaSets的UID的改变。
 - 
 
 要实现您描述的需求，您可以采取以下步骤：
