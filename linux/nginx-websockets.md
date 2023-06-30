@@ -173,24 +173,19 @@ sequenceDiagram
 ## new 
 ```mermaid
 sequenceDiagram
-participant 浏览器 as 浏览器
-participant 服务器 as 服务器
-浏览器->>服务器: 发起HTTP Upgrade请求
- Note right of 浏览器: 包含Upgrade:websocket头
-服务器-->>浏览器: 响应101状态码
- Note right of 服务器: 表示换协议
-浏览器-->>服务器: 发送握手请求
- Note right of 浏览器: 使用Sec-WebSocket-Key随机数
-服务器-->>浏览器: 响应握手
- Note right of 服务器: 使用浏览器随机数加密的Sec-WebSocket-Accept响应头
-loops 通信循环
-   浏览器->>服务器: 发送websocket消息
-   服务器-->>浏览器:响应websocket消息
-end
-浏览器->>服务器: 关闭websocket连接
-服务器-->>浏览器: 响应关闭连接
+  participant 浏览器
+  participant 服务器
+  浏览器->>服务器: 发起HTTP Upgrade请求
+  服务器-->>浏览器: 响应101状态码
+  浏览器-->>服务器: 发送握手请求   
+  服务器-->>浏览器: 响应握手  
+  loop 通信循环
+    浏览器->>服务器: 发送websocket消息   
+    服务器-->>浏览器:响应websocket消息      
+  end   
+  浏览器->>服务器: 关闭websocket连接
+  服务器-->>浏览器: 响应关闭连接
 ``` 
-
 大致来说,流程为:
 
 1. 浏览器发起HTTP升级请求,包含Upgrade: websocket头
