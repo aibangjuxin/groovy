@@ -155,7 +155,7 @@ WebSocket是一种基于TCP的协议，它允许客户端和服务器之间进�
 
 总的来说，WebSocket提供了一种更高效、实时和双向的通信方式，适用于需要实时数据更新或双向通信的应用程序，如实时聊天、多人协作、实时游戏等场景。它具有较低的延迟、更小的网络开销，并且更好地支持实时数据传输。
 
-```
+```mermaid
 sequenceDiagram
     participant 客户端
     participant 服务器
