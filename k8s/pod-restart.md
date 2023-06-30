@@ -545,7 +545,7 @@ $ kubectl get replicaSets mac-lex-hap-memroy-cpu-7f4f64f6d6 -n lex-namespace -o 
 ``` 
 要触发Deployment创建新的Pod，但不重新创建ReplicaSet，您可以通过更新Deployment的标签选择器来实现。以下是在Markdown格式中组织的命令和结果示例：
 
-```markdown
+
 **更新Deployment的标签选择器**
 
 ```bash
@@ -558,7 +558,21 @@ kubectl patch deployment <deployment-name> -p '{"spec": {"selector": {"matchLabe
 deployment.apps/<deployment-name> patched
 ```
 ```
+要更新Deployment的标签选择器，您可以使用以下命令：
 
+```bash
+kubectl patch deployment <deployment-name> -p '{"spec": {"selector": {"matchLabels": {"your-label-key": "your-label-value"}}}}'
+```
+
+在命令中，将`<deployment-name>`替换为您要更新的Deployment的名称，并将`your-label-key`和`your-label-value`替换为您要使用的新标签选择器的键值对。
+
+例如，如果要将标签选择器更新为`app=nginx`，可以使用以下命令：
+
+```bash
+kubectl patch deployment nginx-deployment -p '{"spec": {"selector": {"matchLabels": {"app": "nginx"}}}}'
+```
+
+这将更新名为`nginx-deployment`的Deployment的标签选择器为`app=nginx`。
 要临时禁用HPA调度，可以通过更改HPA对象的副本数量来实现。以下是在Markdown格式中组织的命令和结果示例：
 
 **更新HPA的副本数量**
