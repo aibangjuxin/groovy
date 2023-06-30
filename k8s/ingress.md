@@ -78,4 +78,34 @@ graph TD
 这个Mermaid流程图展示了用户定义Ingress对象后，Ingress Controller如何监视并管理这些对象，然后根据变化生成Nginx配置并将其应用到运行的Pod中。最终，Nginx实例将根据Ingress规则将请求转发给后端服务，并将响应返回给请求的客户端。
 
 
+Sure, here is a Markdown explanation of the working process of an Ingress controller and Ingress in Kubernetes:
 
+```markdown
+When a user sends a request to an Ingress controller, the Ingress controller will first consult the Ingress object to determine how to route the request. The Ingress object specifies a set of rules that map incoming requests to specific services. For example, the Ingress object might specify that all requests for the `www.example.com` domain should be routed to the `my-web-service` service.
+
+The Ingress controller will then use the NGINX web server to proxy the request to the appropriate service. The NGINX web server will then forward the request to the pods that are running the `my-web-service` service.
+
+The pods that are running the `my-web-service` service will then handle the request and return a response to the user. The Ingress controller will then return the response to the user.
+
+Here is a flowchart that illustrates the working process of an Ingress controller and Ingress:
+
+```
+```mermaid
+flowchart LR
+  user --> ingress-controller
+  ingress-controller --> nginx
+  nginx --> pods
+  pods --> user
+```
+
+The coordination between the Ingress controller and Ingress is achieved through the use of annotations. Annotations are metadata that can be added to Kubernetes resources. The Ingress controller will consult the annotations on the Ingress object to determine how to route requests. For example, the Ingress controller might use an annotation to specify the load balancing algorithm that should be used.
+
+Here is an example of an annotation that can be used to configure the load balancing algorithm:
+
+```
+nginx.ingress.kubernetes.io/load-balancer-algorithm: round_robin
+```
+
+This annotation tells the Ingress controller to use the round robin load balancing algorithm.
+
+I hope this explanation is helpful! Let me know if you have any other questions.
