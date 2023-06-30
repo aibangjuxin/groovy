@@ -484,3 +484,44 @@ sort_by(.timestamp) | first | .name'
 这是一个可以基于时间戳选择最旧Pod并驱逐的简单示例。如果您对jq过滤器不太熟悉,也可以使用其他语言如Python来实现该逻辑。主要思路是获取Pod列表并从中选出创建时间最早的Pod进行删除。
 
 希望这个示例能够帮助您!如果您有任何其他问题,也请随时提出。
+
+
+# roolout 
+To rollout a new deployment in Kubernetes, you have a few options:
+
+1. Replace the existing deployment:
+This will terminate all existing pods and recreate them with the new config:
+
+kubectl rollout restart deployment/<deployment-name>
+
+
+2. Rolling update:
+This will update pods one by one, ensuring availability during the rollout:
+
+kubectl rollout restart deployment/<deployment-name> --current-replicas=2 --replicas=4
+
+
+This will scale the deployment to 4 replicas, then update 2 pods at a time until all are running the new config.
+
+3. Rolling replace:
+This will replace the pods one by one, in the same way as a rolling update:
+
+kubectl replace --force -f <new-deployment.yaml>
+
+
+4. Update the deployment config:
+Edit the deployment yaml locally, then apply the new config:
+
+kubectl apply -f <new-deployment.yaml> 
+
+
+Kubernetes will compare the new config and rollout the changes.
+
+The safest and easiest option is generally a rolling replace or update. This ensures:
+
+- Availability - New pods are started before old ones are terminated
+- Rolling - The rollout happens incrementally to reduce impact
+- Config Atomic - The new config is applied fully and atomically
+
+Hope this helps! Let me know if you have any other questions.
+
