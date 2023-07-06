@@ -402,11 +402,18 @@ tcp_nodelay tcp_nopush 的设置？
 
 
 使用 ngx_stream_lua_module 可以在 Nginx 配置中支持 WebSocket，并且提供了一些有用的功能和好处，包括：
+
 动态处理请求：ngx_stream_lua_module 允许您使用 Lua 脚本来动态处理 WebSocket 请求。您可以使用 Lua 脚本编写自定义的处理逻辑，根据不同的请求参数或头信息来执行不同的操作。
+
 丰富的功能扩展：ngx_stream_lua_module 提供了一系列的功能扩展，例如日志记录、会话管理、路由和中间件等。这些功能可以帮助您更轻松地管理和扩展 WebSocket 连接。
+
 高效的性能：ngx_stream_lua_module 具有高效的性能，可以处理大量的并发连接，并且可以有效地处理请求和响应。此外，它还提供了可配置的缓冲区大小和连接数，以确保在高峰期仍能保持高性能。
+
 可扩展性和灵活性：ngx_stream_lua_module 的可扩展性和灵活性非常高，您可以根据需要编写自定义的 Lua 脚本，以实现特定的业务逻辑和功能。这使得您可以根据实际需求进行定制和扩展。
+
 关于维持所有 WebSocket 连接的集合，以下是一些推荐：
+
 使用 ngx_stream_lua_module 的功能来管理连接：ngx_stream_lua_module 提供了一些有用的功能来管理 WebSocket 连接，例如会话管理、路由和中间件等。您可以使用这些功能来维护和管理所有 WebSocket 连接的集合。
+
 使用 Lua 脚本来跟踪连接：您可以使用 Lua 脚本编写自定义的逻辑
 
