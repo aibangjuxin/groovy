@@ -240,7 +240,7 @@ RFC 6455 文档描述了 WebSocket 协议，这是一种在单个持久连接上
 
 总之，RFC 6455 文档详细描述了 WebSocket 协议，这是一种在客户端和服务器之间实现实时、低延迟通信的技术。文档包括了协议的工作原理、握手过程、数据帧格式、错误处理等方面的内容，并提供了示例来帮助理解。
 
-# enhancec
+# enhance
 ## Q
 如果nginx 启用支持WebSocket 那么关于 Nginx支持的 worker_processes和 worker_connections  还有 Nginx有三种事件模型,对于WebSocket可考虑采用那个事件模型 或者 调整buffers和连接数 有什么建议？
 这个建议的前提是我运行nginx的主机仅有单核CPU 另外内存是8G
@@ -380,6 +380,33 @@ http {
 
 tcp_nodelay tcp_nopush 的设置？
 
+## ngx_stream_lua_module
+
+如果您已经配置了Nginx以支持WebSocket，那么使用ngx_stream_lua_module模块可以带来以下好处：
+
+1. 灵活性：ngx_stream_lua_module模块允许您使用Lua脚本扩展和自定义Nginx的功能。您可以通过编写Lua脚本来处理和操作WebSocket连接，以满足特定需求。
+
+2. 高性能：Lua脚本在Nginx内部执行，因此具有较高的性能。它允许您通过在请求级别处理WebSocket连接来提高性能，并减轻上游服务器的负载。
+
+3. 功能丰富：ngx_stream_lua_module提供了许多有用的函数和指令，可用于管理和操作WebSocket连接。您可以使用这些功能来处理连接的生命周期、发送和接收消息、执行认证和授权等操作。
+
+如果您想要维护所有WebSocket连接的集合，以下是一些建议：
+
+1. 使用Lua全局变量：您可以在Lua脚本中使用Lua全局变量来存储WebSocket连接的集合。每当有新的WebSocket连接建立或关闭时，您可以更新这个集合。
+
+2. 使用Lua表（table）：Lua表是一种数据结构，可用于组织和存储WebSocket连接的集合。您可以使用Lua表的键值对来表示每个连接，并在需要时添加、删除或查询连接。
+
+3. 使用共享内存：如果您的Nginx配置使用了共享内存模块（例如ngx.shared.DICT），您可以使用它来存储和共享WebSocket连接的集合。这样可以在多个Nginx worker进程之间共享连接信息。
+
+这些是维护WebSocket连接集合的一些常见做法。具体选择取决于您的应用需求和Nginx配置。
 
 
+使用 ngx_stream_lua_module 可以在 Nginx 配置中支持 WebSocket，并且提供了一些有用的功能和好处，包括：
+动态处理请求：ngx_stream_lua_module 允许您使用 Lua 脚本来动态处理 WebSocket 请求。您可以使用 Lua 脚本编写自定义的处理逻辑，根据不同的请求参数或头信息来执行不同的操作。
+丰富的功能扩展：ngx_stream_lua_module 提供了一系列的功能扩展，例如日志记录、会话管理、路由和中间件等。这些功能可以帮助您更轻松地管理和扩展 WebSocket 连接。
+高效的性能：ngx_stream_lua_module 具有高效的性能，可以处理大量的并发连接，并且可以有效地处理请求和响应。此外，它还提供了可配置的缓冲区大小和连接数，以确保在高峰期仍能保持高性能。
+可扩展性和灵活性：ngx_stream_lua_module 的可扩展性和灵活性非常高，您可以根据需要编写自定义的 Lua 脚本，以实现特定的业务逻辑和功能。这使得您可以根据实际需求进行定制和扩展。
+关于维持所有 WebSocket 连接的集合，以下是一些推荐：
+使用 ngx_stream_lua_module 的功能来管理连接：ngx_stream_lua_module 提供了一些有用的功能来管理 WebSocket 连接，例如会话管理、路由和中间件等。您可以使用这些功能来维护和管理所有 WebSocket 连接的集合。
+使用 Lua 脚本来跟踪连接：您可以使用 Lua 脚本编写自定义的逻辑
 
