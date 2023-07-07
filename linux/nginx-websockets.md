@@ -417,3 +417,17 @@ tcp_nodelay tcp_nopush 的设置？
 
 使用 Lua 脚本来跟踪连接：您可以使用 Lua 脚本编写自定义的逻辑
 
+
+
+# curl wss
+要使用cURL模拟WebSocket Secure (WSS) 连接，您可以使用`--include`选项添加WebSocket协议头，并通过`--no-buffer`选项禁用缓冲。
+
+以下是一个示例命令：
+
+```shell
+curl --include --no-buffer --header "Connection: Upgrade" --header "Upgrade: websocket" --header "Sec-WebSocket-Version: 13" --header "Sec-WebSocket-Key: <your-key>" "wss://your-wss-url"
+```
+
+请确保将`<your-key>`替换为实际的WebSocket密钥，将`wss://your-wss-url`替换为您要连接的WebSocket服务器的URL。
+
+这将使用cURL建立与WSS服务器的连接，并将服务器的响应输出到控制台。请注意，这只是一个简单的示例命令，您可能需要根据实际情况进行适当的调整和配置。
