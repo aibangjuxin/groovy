@@ -142,7 +142,7 @@ WebSocket是一种基于TCP的协议，它允许客户端和服务器之间进�
 以下是WebSocket协议的一些关键特点和解释：
 
 1. 握手过程：WebSocket在初始连接时进行握手过程，使用HTTP协议进行握手请求和响应。客户端通过发送特定的HTTP请求头（包含Upgrade和Connection字段）来表明希望升级到WebSocket协议。服务器在接收到握手请求后，返回带有特定响应头（包含Upgrade和Connection字段）的HTTP响应，表示协议已成功升级。完成握手后，连接升级为WebSocket连接。
-
+- detail it
 ```
 是的，在WebSocket的初始连接握手过程中，确实会有协议从HTTP升级到WebSocket协议。在建立WebSocket连接时，需要进行跨域资源共享（CORS）的处理。
 
@@ -152,7 +152,7 @@ WebSocket协议不受同源策略的限制，但在实际应用中，仍然需�
 
 1. 在WebSocket服务器端设置允许连接的域名列表。例如，如果您使用Node.js的`ws`库，可以在创建WebSocket服务器时设置`verifyClient`回调函数，用于检查请求的来源是否在允许的域名列表中。
 
-   `````javascript
+   ```javascript
    const WebSocket = require('ws');
 
    const server = new WebSocket.Server({
