@@ -417,6 +417,17 @@ tcp_nodelay tcp_nopush 的设置？
 
 使用 Lua 脚本来跟踪连接：您可以使用 Lua 脚本编写自定义的逻辑
 
+# cross 
+location /websocket-endpoint {
+    proxy_pass http://backend-server;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+    proxy_set_header Origin $http_origin;
+    add_header 'Access-Control-Allow-Origin' "$http_origin" always;
+    add_header 'Access-Control-Allow-Credentials' 'true' always;
+}
 
 
 # curl wss
