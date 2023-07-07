@@ -143,6 +143,36 @@ WebSocket是一种基于TCP的协议，它允许客户端和服务器之间进�
 
 1. 握手过程：WebSocket在初始连接时进行握手过程，使用HTTP协议进行握手请求和响应。客户端通过发送特定的HTTP请求头（包含Upgrade和Connection字段）来表明希望升级到WebSocket协议。服务器在接收到握手请求后，返回带有特定响应头（包含Upgrade和Connection字段）的HTTP响应，表示协议已成功升级。完成握手后，连接升级为WebSocket连接。
 
+```
+是的，在WebSocket的初始连接握手过程中，确实会有协议从HTTP升级到WebSocket协议。在建立WebSocket连接时，需要进行跨域资源共享（CORS）的处理。
+
+WebSocket协议不受同源策略的限制，但在实际应用中，仍然需要考虑跨域问题。在WebSocket握手过程中，虽然发送的是HTTP请求，但请求头中的`Upgrade`和`Connection`字段表示希望建立一个WebSocket连接。服务器在处理这些请求时，应该检查请求中的`Origin`字段，以确定请求来自于允许的域名列表。如果请求的来源在允许的列表中，服务器会返回带有相关响应头的HTTP响应，完成握手。否则，服务器应该拒绝这个请求。
+
+在实际开发中，可以使用以下几种方法解决跨域问题：
+
+1. 在WebSocket服务器端设置允许连接的域名列表。例如，如果您使用Node.js的`ws`库，可以在创建WebSocket服务器时设置`verifyClient`回调函数，用于检查请求的来源是否在允许的域名列表中。
+
+   `````javascript
+   const WebSocket = require('ws');
+
+   const server = new WebSocket.Server({
+     port: 8080,
+     verifyClient: (info) => {
+       const allowedOrigins = ['http://example1.com', 'http://example2.com'];
+       return allowedOrigins.includes(info.origin);
+     },
+   });
+   ```
+
+2. 如果您使用WebSocket代理服务器（例如Nginx），可以在代理服务器配置中设置允许的来源域名。
+
+3. 如果您对跨域限制没有特殊要求，可以在服务器端设置允许所有来源的连接。但请注意，这样做可能导致安全风险。
+
+总之，虽然WebSocket本身不受同源策略限制，但在实际应用中仍然需要考虑跨域问题。通过在服务器端设置允许的来源域名列表，可以有效解决这个问题。
+
+``` 
+
+
 2. 持久连接：WebSocket连接是持久的，不同于传统的HTTP连接，在连接建立后，双方可以随时发送数据，而无需每次都进行握手和连接关闭操作。
 
 3. 二进制和文本数据传输：WebSocket可以传输二进制数据和文本数据。客户端和服务器可以使用WebSocket API发送和接收数据帧，这些帧可以包含任意类型的数据。
