@@ -124,3 +124,84 @@ sourcetype="kube:container:proxy"
 - 组合索引、命名空间、源类型和字符串模式进行过滤
 - 可以统计错误或关键字出现频次
 - 充分利用Splunk的搜索语言分析日志
+
+## 这里是一些更高级的Splunk日志过滤用法示例:
+
+1. 使用正则表达式进行更复杂的匹配
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" | regex _raw="[Ee]rror: (.*)"
+
+
+上例将匹配包含"Error:"或"error:"的日志,并提取出错误信息。
+
+2. 组合多个搜索条件
+
+  
+index="abc-lex-env*" namespace="namespace-dev" (sourcetype="kube:container:proxy" OR sourcetype="other") | regex _raw="\[error\].*\[clustering\]"
+
+
+上例将在指定的index和namespace下,搜索两个sourcetype,并检查是否同时包含"[error]"和"[clustering]"。
+
+3. 使用NOT操作符排除某些结果
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" NOT (_raw="\[info\]") | regex _raw="\[error\]"
+
+
+上例将首先排除包含"[info]"的日志,然后再匹配"[error]"。
+
+4. 使用字段提取功能
+
+index="abc-lex-env*" | rex field=_raw "^(?<timestamp>\d{4}-\d{2}-\d{2}) (?<log_level>\w+) (?<message>.*)" | search log_level="error"
+
+
+上例使用rex命令提取日志的时间戳、日志级别和消息字段,然后根据日志级别"error"进行搜索。
+
+5. 使用统计函数聚合
+
+index="abc-lex-env*" sourcetype="kube:container:proxy" | stats count by host
+ 
+
+上例可以统计每个主机上的日志数量
+
+好的,这里再提供一些更高级的Splunk日志过滤和分析的用法:
+
+6. 将搜索结果输出到CSV文件
+
+index="abc-lex-env*" sourcetype="kube:container:proxy" | eval hostname=host | fields hostname,source,message 
+| outputlookup append=t /tmp/logs.csv
+
+
+上例将指定的字段输出到 /tmp/logs.csv 文件中。
+
+7. 创建数据模型进行联表分析 
+
+可以使用`datamodels`命令创建数据模型,将不同的数据源进行联表分析。
+
+8. 创建仪表板进行数据可视化
+
+可以使用`dashboard`命令创建仪表板,将搜索结果进行可视化展示,如折线图、柱状图等。
+
+9. 计划报告和警报
+
+可以使用`alert`命令根据搜索条件设置报警规则,并使用`report`命令定期生成报告。
+
+10. 统计不同时间段的结果
+
+index=web | timechart span=1h count by status_code
+
+
+上例可以统计每小时不同状态码的数量变化。
+
+11. 使用子搜索优化复杂搜索
+
+可以使用`tstats`等命令进行子搜索,提高搜索性能。
+
+12. 使用滚动时间窗口分析最近时间段的数据。
+
+index=web | timewrap earliest=-15m | stats count by status_code
+
+
+上例统计最近15分钟内的数据。
+
+请让我知道如果还需要补充解释哪些方面的高级用法!
+
