@@ -75,3 +75,52 @@
 - 从现有搜索和报表转换是最快捷的方式
 - 也可以利用向导和命令从头创建图表
 - 结合使用各种方式来生成丰富的图表内容
+
+
+好的,根据你提供的示例,可以总结出以下在Splunk中过滤k8s日志的技巧:
+
+# Splunk过滤k8s日志技巧
+
+## 根据命名空间过滤
+
+- 过滤指定命名空间namespace的日志
+
+index="abc-lex-env*" namespace="namespace"
+
+## 根据sourcetype过滤
+
+- 过滤kube:container:proxy类型的日志
+
+sourcetype="kube:container:proxy" 
+
+## 根据字符串正则过滤
+
+- 过滤包含[error]的日志 
+
+| regex _raw="\[error\]"
+
+- 过滤包含[crit]的日志
+
+| regex _raw="\[crit\]"
+
+## 组合过滤
+
+- 过滤namespace-dev的proxy日志,且包含[error]和[clustering]
+
+index="abc_lex_env*" namespace="namespace-dev"  
+sourcetype="kube:container:proxy"
+| regex _raw="\[error\]" 
+| regex _raw="\[clustering\]"
+
+
+## 统计关键字出现次数
+
+- 统计communicate()出现次数
+
+| regex _raw="communicate()" | stats count by _raw
+
+## 总结
+
+- 组合索引、命名空间、源类型和字符串模式进行过滤
+- 可以统计错误或关键字出现频次
+- 充分利用Splunk的搜索语言分析日志
