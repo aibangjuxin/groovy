@@ -254,6 +254,34 @@ index=web | timewrap earliest=-15m | stats count by status_code
 请根据您的需求调整这些示例。如果需要更多高级功能，请参考[Splunk官方文档](https://docs.splunk.com/Documentation/Splunk/latest/SearchReference/Whatsinthismanual)。
 
 
+Sure, here are some more examples of Splunk search queries that you can use to find errors in your logs:
 
+* **To find all errors in the `kube:container:proxy` sourcetype:**
+
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" telemetry | regex _raw="\[error\]"
+
+
+* **To find all errors that occurred in the last hour:**
+
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" telemetry | regex _raw="\[error\]" | timespan 1h
+
+
+* **To find all errors that occurred on a specific host:**
+
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" telemetry | regex _raw="\[error\]" | host "my-host"
+
+
+* **To find all errors that are associated with a specific user:**
+
+
+index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" telemetry | regex _raw="\[error\]" | user "my-user"
+
+
+You can also use the `| stats` command to generate statistics about the errors that you find. For example, you could use the `| stats count by error_code` command to generate a count of the number of errors for each error code.
+
+I hope this helps! Let me know if you have any other questions.
 
 
