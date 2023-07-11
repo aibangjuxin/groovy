@@ -205,3 +205,55 @@ index=web | timewrap earliest=-15m | stats count by status_code
 
 请让我知道如果还需要补充解释哪些方面的高级用法!
 
+### gtp 4
+以下是一些更高级的Splunk过滤规则示例：
+
+1. 匹配包含"[error]"的日志，并统计每个小时的错误数量：
+
+   `````
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy"
+   | regex _raw="\[error\]"
+   | timechart span=1h count
+   ```
+
+2. 匹配同时包含"[error]"和"[clustering]"的日志，按照日志源进行分组：
+
+   ````
+   index="abc_lex_env*" namespace="namespace-dev" sourcetype="kube:container:proxy"
+   | regex _raw="\[error\].*\[clustering\]"
+   | stats count by source
+   ````
+
+3. 匹配包含"[crit]"的日志，并显示最近10条记录：
+
+   ````
+   index="abc-lex-env*" namespace="namespace"
+   | regex _raw="\[crit\]"
+   | head 10
+   ````
+
+4. 使用`eval`函数对日志进行自定义分类：
+
+   ````
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy"
+   | regex _raw="\[error\]|\[crit\]"
+   | eval log_level=if(match(_raw, "\[error\]"), "Error", "Critical")
+   | stats count by log_level
+   ````
+
+5. 匹配包含"[warn]"的日志，并提取额外的字段：
+
+   ````
+   index="abc-lex-env*" namespace="namespace"
+   | regex _raw="\[warn\]"
+   | rex field=_raw "user=(?<user>\w+)"
+   | rex field=_raw "action=(?<action>\w+)"
+   | table _time, user, action
+   ````
+
+请根据您的需求调整这些示例。如果需要更多高级功能，请参考[Splunk官方文档](https://docs.splunk.com/Documentation/Splunk/latest/SearchReference/Whatsinthismanual)。
+
+
+
+
+
