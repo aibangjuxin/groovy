@@ -14,6 +14,7 @@ namespaceB == proxy namespace
 namespaceA ==> namespace B
 # Detail networkpolicy
 GKE network policy 我配置允许一个namespaceA egress 到另一个namespacesB 的load balance 3128端口
+要求namespaceA 内的源Pod必须有destinationKey: destinationValue 这个标签,它才能连接我的namespaceB 的kind: Service
 我的默认规则已经是禁止了所有的Ingress和Egress
 ## The service
 Squid Service
@@ -56,8 +57,9 @@ NamespaceB Ingress Network Policy
 
 它允许来自 CIDR 为 192.168.192.0/22 的 IP 地址块的流量访问端口 3128 和 443（TCP 协议）。
 
-该策略只适用于具有标签 "type: squid-coreproxy" 的 Pod。这个规则确保了只有满足条件的流量可以进入 namespaceB。
+该策略只适用于具有标签 "destinationKey: destinationValue" 的 Pod。这个规则确保了只有满足条件的流量可以进入 namespaceB。
 
+在我这个场景中主要是满足许Node之间的IP跳转访问 3128
 
 ```yaml
   kubectl apply -f - <<EOF
@@ -70,7 +72,7 @@ spec:
   ingress:
   - from:
     - ipBlock:
-        cidr: 192.168.192.0/22 # 假设NamespaceB内pod的网段 或者 应该指定ingress.from为namespaceA,这里还有个意思就是允许Node之间的IP跳转访问 3128
+        cidr: 192.168.192.0/22 # node ip range 允许Node之间的IP跳转访问 3128
     ports:
     - port: 3128
       protocol: TCP
@@ -78,7 +80,7 @@ spec:
       protocol: TCP
   podSelector:
     matchLabels:
-      type: squid-coreproxy
+      destinationKey: destinationValue
   policyTypes:
   - Ingress
 EOF
@@ -104,19 +106,19 @@ metadata:
 spec:
   egress:
   - to:
-    - namespaceSelector:
+    - namespaceSelector: # 这个字段用于选择特定的命名空间作为目标
         matchLabels:
-          type: namespaceB 
+          type: namespaceB # 这个字段用于指定一个标签选择器，选择具有特定标签的命名空间。在这种情况下，选择具有标签 "type: namespaceB" 的命名空间作为目标。
       podSelector:
-        matchLabels:
-          destinationKey: destinationValue
+        matchLabels: # 这个字段用于指定一个标签选择器，选择具有特定标签的 Pod。在这种情况下，选择具有标签 "destinationKey: destinationValue" 的 Pod 作为目标。
+          destinationKey: destinationValue # 访问namespaceB中标签为"destinationKey: destinationValue"的服务的3128端口
     ports:
       - port: 3128
-  podSelector:
-    matchLabels:
-      destinationKey: destinationValue
+  podSelector: # 这个字段用于选择应用该策略的源 Pod 
+    matchLabels: # 这个字段用于指定一个标签选择器，选择具有特定标签的 Pod。在这种情况下，选择具有标签 "destinationKey: destinationValue" 的 Pod
+      destinationKey: destinationValue # namespaceA中pod 具有 destinationKey: destinationValue 标签的 Pod 
   policyTypes:
-    - Egress
+    - Egress # 这个字段表示这是一个出口策略，即控制 Pod 发送流量的规则
 
 
 上述 NetworkPolicy 中，namespaceSelector 和 podSelector 字段用于选择目标 Pod。
@@ -129,7 +131,7 @@ spec:
 ### summary 
 
 1. 您在namespaceB中创建了一个Squid代理的Service,类型是Internal Load Balancer,端口是3128。
-2. 在namespaceB中创建了一个NetworkPolicy,允许来自192.168.192.0/22段的流量访问Squid服务的3128和443端口。这里是允许外部访问Squid服务。
+2. 在namespaceB中创建了一个NetworkPolicy,允许来自192.168.192.0/22段的流量访问Squid服务的3128和443端口。这里是允许外部/我这里立即为内部Node跳转 访问Squid服务。
 3. 在namespaceA中创建了一个NetworkPolicy,允许namespaceA中pod访问namespaceB中标签为"destinationKey: destinationValue"的服务的3128端口。这里是允许namespaceA访问namespaceB中的Squid服务。
 总体来说,namespaceA可以通过3128端口访问namespaceB中的Squid服务,其他的访问默认都是被禁止的
 
@@ -139,3 +141,54 @@ spec:
 3. 从一个 Namespace 访问另一个 Namespace 时,需要在目标 Namespace 配置 ingress 规则,在源 Namespace 配置 egress 规则。
 
 
+
+根据您的要求，您希望在 namespaceA 中配置一个出口规则，允许通过 `namespaceSelector` 指定到 `namespaceB`。下面是一个符合您要求的 namespaceA 的出口规则的示例：
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-namespaceB
+  namespace: namespaceA
+spec:
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: namespaceB
+    ports:
+    - port: 3128
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      destinationKey: destinationValue
+  policyTypes:
+  - Egress
+```
+
+解释如下：
+
+- `metadata`：指定网络策略的名称为 "allow-egress-namespaceB"，所属命名空间为 `namespaceA`。
+
+- `spec`：定义了网络策略的规范和规则。
+
+  - `egress`：定义了出口规则。
+
+    - `to`：指定出口流量的目标规则。
+
+      - `namespaceSelector`：通过标签选择器来选择目标命名空间。
+
+        - `matchLabels`：选择具有标签 "name: namespaceB" 的命名空间作为目标。
+
+    - `ports`：定义允许的目标端口。
+
+      - `port`：指定目标端口号为 3128。
+      - `protocol`：指定协议为 TCP。
+
+  - `podSelector`：通过标签选择器来选择应用该策略的源 Pod。
+
+    - `matchLabels`：选择具有标签 "destinationKey: destinationValue" 的 Pod。
+
+  - `policyTypes`：指定策略类型为 Egress，即出口规则。
+
+这个规则将允许在 namespaceA 中具有标签 "destinationKey: destinationValue" 的源 Pod 连接到具有标签 "name: namespaceB" 的目标命名空间中的端口 3128。 
