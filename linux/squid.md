@@ -144,3 +144,52 @@ chown proxy:proxy /var/run/squid.pid
   
 
 关于配置文件中的pid_filename和编译系统默认的pid_filename指定的文件路径不一致是否会影响容器内的Squid启动，答案是肯定的。如果配置文件中的pid_filename指定的路径与实际创建的pid文件路径不一致，Squid服务无法找到pid文件，从而导致启动失败。因此，建议在配置文件中和启动脚本中使用相同的pid文件路径。
+
+
+Prompt:  使用Ubuntu 20.0.4 构建安装Docker squid 现在存在的问题
+登陆 Docker  手动启动`/usr/sbin/squid -f /etc/squid/squid.conf` 可以成功启动 Squid 服务，
+
+但在Dockerfile 写启动脚本 无法自动启动squid 
+错误提示
+Docker里面squid -k check squid.conf 报错 failed to open /var/run/squid.pid no such file or directory 
+而且这个版本默认不支持制定-p 参数
+手动启动成功的时候会自动创建/var/run/squid.pid文件
+分析可能的原因和解决办法？
+
+如果配置文件中的pid_filename 和编译系统默认的pid_filename 指定的文件路径不一致 是否会影响容器内的squid 启动
+
+Response: 错误提示中指出了缺少/var/run/squid.pid文件导致启动失败。这很可能是由于Docker容器内对/var/run目录的访问权限不足所致。
+
+解决这个问题的方法是在Dockerfile中添加一个命令来创建所需的目录和文件，并设置正确的权限。具体操作如下：
+
+1. 在Dockerfile中添加以下命令来创建所需的目录和文件：
+
+```Dockerfile
+RUN mkdir -p /var/run/squid \
+    && touch /var/run/squid.pid \
+    && chown -R squid:squid /var/run/squid \
+    && chmod 755 /var/run/squid
+```
+
+上述命令会创建/var/run/squid目录，并在其中创建一个空的/var/run/squid.pid文件，并将文件所有权设置为squid用户。
+
+2. 确保Dockerfile中有安装squid的步骤。例如，添加以下命令：
+
+```Dockerfile
+RUN apt-get update \
+    && apt-get install -y squid
+```
+
+3. 在Dockerfile中添加一个CMD或ENTRYPOINT命令来启动squid服务。例如：
+
+```Dockerfile
+CMD ["/usr/sbin/squid", "-N", "-f", "/etc/squid/squid.conf"]
+```
+
+在这个示例中，我们使用了`-N`参数来使squid以前台模式运行。
+
+4. 构建并运行容器，检查squid是否能够自动启动。
+
+如果配置文件中的pid_filename和编译系统默认的pid_filename指定的文件路径不一致，也会影响容器内的squid启动。在这种情况下，您需要确保squid配置文件中的pid_filename设置与Docker容器内路径一致，并且Dockerfile中的相关配置正确。
+
+请注意，如果您是以非特权用户运行Docker容器，可能需要相应调整权限设置的步骤。
