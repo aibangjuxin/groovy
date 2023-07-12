@@ -193,3 +193,88 @@ CMD ["/usr/sbin/squid", "-N", "-f", "/etc/squid/squid.conf"]
 如果配置文件中的pid_filename和编译系统默认的pid_filename指定的文件路径不一致，也会影响容器内的squid启动。在这种情况下，您需要确保squid配置文件中的pid_filename设置与Docker容器内路径一致，并且Dockerfile中的相关配置正确。
 
 请注意，如果您是以非特权用户运行Docker容器，可能需要相应调整权限设置的步骤。
+
+
+Docker file 
+```bash 
+COPY ["sources.list", "/etc/apt/"]
+RUN --mount=type=secret,id=auth,target=/etc/apt/auth.conf apt update && apt-get install squid -y
+COPY squid.conf /etc/squid/squid.conf
+#RUN mkdir -p /var/run/squid \
+#&& touch /var/run/squid.pid \
+#&& chown -R proxy:proxy /var/run/squid \
+#&& chmod 755 /var/run/squid
+
+EXPOSE 3128
+COPY wrapper.sh /opt/wrapper.sh
+RUN chmod +x /opt/wrapper.sh
+CMD ["/bin/bash", "-c", "/opt/wrapper.sh"]
+
+
+
+cat wrapper.sh
+mkdir -p /var/log/squid
+chmod -R 755 /var/log/squid
+chown -R proxy:proxy /var/log/squid
+
+mkdir -p /var/spool/squid
+chmod -R 755 /var/spool/squid
+chown -R proxy:proxy /var/spool/squid
+
+#touch /var/run/squid.pid
+#chmod -R 755 /var/run/squid.pid
+#chown -R proxy:proxy /var/run/squid.pid
+
+/usr/sbin/squid -f /etc/squid/squid.conf
+tail -f /dev/null
+详细解释CMD ["/bin/bash", "-c", "/opt/wrapper.sh"]
+CMD ["/bin/bash", "-c", "/opt/wrapper.sh"] 是一个 Dockerfile 中的命令，用于指定容器的默认启动命令。
+
+这个命令由三个参数组成：
+
+/bin/bash：表示要执行的命令是 /bin/bash，也就是 Bash 终端。这将在容器启动时打开一个交互式终端会话，允许用户与容器进行交互。
+-c：是 Bash 终端的一个选项，用于指定要执行的命令。这个选项后面跟着要执行的命令。
+/opt/wrapper.sh：是要执行的命令文件路径。这个文件是一个包装器脚本，可能包含一些容器启动时的配置或初始化脚本。
+综合起来，这个命令的作用是在容器启动时执行 /bin/bash 终端，并在终端中执行 /opt/wrapper.sh 脚本。这个命令可以用于在容器启动时执行一些额外的配置或初始化操作，例如设置环境变量、加载配置文件等。
+
+需要注意的是，这个命令是在容器启动时执行的默认命令。如果需要指定其他命令或启动参数，可以在运行 Docker 容器时使用 docker run 命令，通过 --rm、--name、-it 等参数来指定容器的行为和属性。
+
+我的Dockers使用CMD ["/bin/bash", "-c", "/opt/wrapper.sh"]可以执行成功。但是使用CMD /opt/wrapper.sh没有执行成功，可能的原因是什么？
+
+原因可能有以下几点:
+
+1. CMD后面跟的是命令的参数格式,使用CMD /opt/wrapper.sh是不正确的格式。
+
+CMD后面应该是JSON数组格式,即使用双引号括起来,所以正确格式是:
+
+CMD ["/opt/wrapper.sh"]
+
+
+2. 使用/bin/bash -c 是为了执行一个包含多条命令的shell脚本。
+
+而直接使用CMD ["/opt/wrapper.sh"] 只能执行一个命令,不能执行复杂的shell脚本。
+
+3. 在Dockerfile中,推荐的做法是使用ENTRYPOINT来指定固定的容器启动命令,然后使用CMD来指定该入口点的默认参数。
+
+例如:
+
+ENTRYPOINT ["/bin/bash", "-c"]
+CMD ["/opt/wrapper.sh"] 
+
+
+这种方式ENTRYPOINT和CMD配合使用,可以 making docker run上添加任意命令行参数。
+
+4. 需要确认/opt/wrapper.sh脚本是否有执行权限,在Dockerfile中可以添加:
+
+RUN chmod +x /opt/wrapper.sh
+
+
+来给脚本添加执行权限。
+
+所以在这个情况下,使用 CMD ["/bin/bash","-c","/opt/wrapper.sh"] 是正确的格式和用法,直接使用CMD /opt/wrapper.sh 格式错误且可能存在权限问题。
+
+
+``` 
+
+
+
