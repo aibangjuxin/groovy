@@ -192,3 +192,218 @@ spec:
   - `policyTypes`：指定策略类型为 Egress，即出口规则。
 
 这个规则将允许在 namespaceA 中具有标签 "destinationKey: destinationValue" 的源 Pod 连接到具有标签 "name: namespaceB" 的目标命名空间中的端口 3128。 
+
+
+
+
+``` yaml 
+apiVersion: networking.k8s.io/v1   #指定NetworkPolicy的API版本
+
+kind: NetworkPolicy  # 指定类型是NetworkPolicy
+
+metadata:   
+
+  name: allow-rt-egress-proxy-microsoft    #定义网络策略的名字
+
+  namespace: namespaceA   # 定义网络策略所在的namespace
+
+spec:   
+
+  egress:   # 定义此网络策略只应用于出口流量
+
+  - to:    
+
+    - namespaceSelector:  # 目标namespace,使用namespaceSelector和matchLabels指定
+
+        matchLabels:   
+
+          type: namespaceB     
+
+    podSelector: # 目标pod,使用podSelector和matchLabels指定
+
+        matchLabels:  
+
+          destinationKey: destinationValue 
+
+    ports:  # 允许的端口 
+
+      - port: 3128   
+
+  podSelector:  # 使用podSelector确定网络策略所应用的源pod     
+
+    matchLabels:  
+
+      destinationKey: destinationValue  
+
+  policyTypes:   #指定此网络策略只涉及到出口流量  
+
+    - Egress
+``` 
+
+
+帮我详细解释下面这个 network policy 逐行解释并加# 解释在行后面
+
+  
+``` yaml 
+apiVersion: networking.k8s.io/v1 
+
+kind: NetworkPolicy
+
+metadata:
+
+  name: allow-rt-egress-proxy-microsoft
+
+  namespace: namespaceA
+
+spec:
+
+  egress:
+
+  - to:
+
+    - namespaceSelector:
+
+        matchLabels:
+
+          type: namespaceB 
+
+      podSelector:
+
+        matchLabels:
+
+          destinationKey: destinationValue 
+
+    ports:
+
+      - port: 3128
+
+  podSelector:
+
+    matchLabels:
+
+      destinationKey: destinationValue 
+
+  policyTypes:
+
+    - Egress
+``` 
+
+GKE network policy 我配置允许一个namespaceA egress 到另一个namespacesB 的load balance 3128端口
+
+要求namespaceA 内的源Pod必须有destinationKey: destinationValue 这个标签,它才能连接我的namespaceB 的kind: Service
+
+  
+
+下面是我的namespaceB中的load-balancer.
+```yaml
+kubectl apply -f - <<EOF
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  annotations:
+
+    cloud.google.com/load-balancer-type: "Internal"
+
+  labels:
+
+    type: squid-services
+
+    destinationKey: destinationValue
+
+  name: proxy_name-service
+
+  namespace: namespaceB
+
+spec:
+
+  ports:
+
+    - port: 3128
+
+      protocol: TCP
+
+      targetPort: 3128
+
+  selector:
+
+    app: proxy_name
+
+  type: LoadBalancer
+
+EOF
+```
+请根据上面的规则,帮我推里出来一个
+
+namespaceA 的egress规则它要namespaceSelector: 
+指定到namespaceB
+
+
+
+``` yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-egress-to-namespaceB
+  namespace: namespaceA
+spec:
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          type: namespaceB
+    ports:
+    - port: 3128
+      protocol: TCP
+  podSelector:
+    matchLabels:
+      destinationKey: destinationValue
+  policyTypes:
+  - Egress
+``` 
+以 Markdown 格式输出上面的 NetworkPolicy 如下:
+
+```markdown
+# NamespaceA Egress 规则   
+
+允许 NamespaceA 中带有 `destinationKey: destinationValue` 标签的 Pod 通过 3128 端口访问 NamespaceB 中的服务。
+
+```yaml
+apiVersion: networking.k8s.io/v1  
+kind: NetworkPolicy  
+metadata:  
+  name: allow-egress-to-namespaceB  
+  namespace: namespaceA  
+spec:  
+  egress:  
+  - to:  
+    - namespaceSelector: 
+        matchLabels:    
+          type: namespaceB  
+    ports:  
+    - port: 3128  
+      protocol: TCP  
+  podSelector:  
+    matchLabels:  
+      destinationKey: destinationValue  
+  policyTypes:  
+  - Egress
+```
+
+## 策略解释
+
+- `apiVersion` 和 `kind` 定义这是一个 NetworkPolicy  
+- `metadata` 中定义该策略的名字为 `allow-egress-to-namespaceB`,`namespace` 为 `namespaceA` 
+- `spec` 中定义这是一个 `egress` 策略
+- `to` 部分使用 `namespaceSelector` 选择目标 `namespaceB` 
+- `ports` 部分打开 `3128` 端口(squid 服务的端口)
+- `podSelector` 部分选择 source pod,要求它有 `destinationKey: destinationValue` 标签  
+- `policyTypes` 确认这是一个 `egress` 策略
+
+``` 
+
+所以,这个 NetworkPolicy 允许 namespaceA 中带有 destinationKey: destinationValue 标签的 pod 通过 3128 端口访问 namespaceB 中的服务。
+```
