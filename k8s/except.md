@@ -221,3 +221,46 @@ EOF
 echo "$network_policy"
 
 ``` 
+关于上面所有的ports except这种写法并不支持，所以都是错误的
+
+好的,在 Kubernetes 中可以通过 NetworkPolicy 的 egress 规则来限制流出流量的端口范围:
+
+1. 在 NetworkPolicy 的 spec 中定义egress规则
+
+2. 在 egress 规则中使用 ports 字段定义允许的端口范围
+
+例如,限制流量只能出口到 30000-32767 端口范围:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: egress-policy
+spec:
+  podSelector: 
+    matchLabels:
+      app: webapp
+  policyTypes:
+  - Egress
+  egress:
+  - ports:
+    - port: 30000
+      endPort: 32767
+```
+
+上面使用 port 和 endPort 定义了一个端口范围 30000-32767。
+
+此外,可以列出每个单独的端口:
+
+```yaml
+  ports:
+  - port: 30000
+  - port: 30301
+  - port: 30302
+```
+
+或者合并使用端口范围和单独端口的方式。
+
+这就实现了使用 NetworkPolicy 的 egress 规则限制流量的出口端口范围的功能。
+
+另外,不能出口的端口可以通过设置一个空的 egress 规则 {} 来拒绝。
