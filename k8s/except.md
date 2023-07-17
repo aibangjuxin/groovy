@@ -1,3 +1,36 @@
+在 Kubernetes 网络策略中，`[]` 和 `{}` 之间的区别在于它们允许的流量类型。`[]` 允许所有流量，而 `{}` 仅允许指定的流量。
+
+例如，以下网络策略允许来自任何来源的任何流量：
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all
+spec:
+  ingress:
+  - {}
+```
+我们基本都是用上面这个
+
+以下网络策略仅允许来自 pod 标签 `app: web` 的 pod 的流量：
+
+```
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-web
+spec:
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: web
+```
+
+您可以使用网络策略来控制 pod 之间、pod 和服务之间以及 pod 和外部系统之间的流量。
+
+
 要生成一个适用于动态IP地址的except部分的模板，您可以使用以下格式：
 
 ```
