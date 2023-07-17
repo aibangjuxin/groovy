@@ -102,7 +102,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: your-service
+      type: squid-service
   ingress:
   - from:
     - namespaceSelector:
@@ -116,7 +116,7 @@ spec:
 
 在上面的示例中，你需要替换以下内容：
 - `namespaceB`：你的服务所在的命名空间。
-- `your-service`：你的服务的标签。
+- `squid-service`：你的服务的标签。
 - `namespaceA`：允许访问你的服务的命名空间。
 - `destinationKey: destinationValue`：允许访问你的服务的 Pod 必须具有的标签。
 
@@ -168,7 +168,7 @@ spec:
   - from:
     - podSelector:
         matchLabels:
-          namespace: a
+          name: namespaceA
           destinationKey: destinationValue
   egress:
   - to:
