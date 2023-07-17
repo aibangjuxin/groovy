@@ -145,7 +145,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: your-service
+      type: squid-service
   ingress:
   - from:
     - namespaceSelector:
