@@ -165,6 +165,9 @@ spec:
 ## bard
 你好。要实现你所描述的网络策略，你可以创建一个NetworkPolicy，该策略将默认情况下拒绝所有流量，然后添加一条规则，允许来自具有destinationKey: destinationValue标签的namespace A的Pod的流量。以下是NetworkPolicy的示例yaml：
 
+如果要按照上面的标准走的话 可以更加详细的限制egress to 参考
+
+bard 的 配置 ☕️ 下面仅仅是参考 
 ```
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
