@@ -363,3 +363,42 @@ I hope this helps! Let me know if you have any other questions.
 
 希望这对您有所帮助！
 
+
+# sage
+
+Sure, here are the detailed steps for creating an Alert, Report, and Dashboard in Splunk based on search log results:
+
+## Creating an Alert
+
+1. Perform a search using the search bar in the Splunk interface.
+2. Refine your search to return the results that you want to create an alert for.
+3. Click on "Save As" in the search bar and select "Alert" from the dropdown menu.
+4. Enter a name for the alert and select the destination app where you want to save it.
+5. Configure the alert settings, such as the trigger condition, alert type, and notification options.
+6. Save the alert.
+
+## Creating a Report
+
+1. Perform a search using the search bar in the Splunk interface.
+2. Refine your search to return the results that you want to include in the report.
+3. Click on "Save As" in the search bar and select "Report" from the dropdown menu.
+4. Enter a name for the report and select the destination app where you want to save it.
+5. Configure the report settings, such as the time range, visualization type, and field formatting.
+6. Save the report.
+
+## Creating a Dashboard
+
+1. Perform a search using the search bar in the Splunk interface.
+2. Refine your search to return the results that you want to include in the dashboard.
+3. Click on "Save As" in the search bar and select "Dashboard Panel" from the dropdown menu.
+4. Enter a name for the panel and select the destination app where you want to save it.
+5. Configure the panel settings, such as the visualization type, time range, and search query.
+6. Save the panel.
+7. Repeat steps 3-6 to create additional panels for the dashboard.
+8. Click on "Create Dashboard" in the top right corner of the interface.
+9. Enter a name for the dashboard and select the destination app where you want to save it.
+10. Add the panels that you created in steps 3-6 to the dashboard.
+11. Configure the dashboard settings, such as the layout and time range.
+12. Save the dashboard.
+
+I hope this helps you create Alerts, Reports, and Dashboards in Splunk based on search log results! Let me know if you have any further questions.
