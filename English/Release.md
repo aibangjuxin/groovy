@@ -1,3 +1,4 @@
 - update DP 
-We want to do a Splunk index aligned
- for Shared DP. So we need to arrange the next upgrade from your side. Also if possible, you can arrange a colleague from SRE side to operate this upgrade.
+``` 
+We would like to perform a Splunk Index Alignment on the shared DP. Therefore, need you are required to schedule an upgrade. If possible, this operation can be performed by an SRE colleague.
+``` 
