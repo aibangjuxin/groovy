@@ -1,3 +1,93 @@
+# p
+以下是更高级的Splunk日志过滤规则：
+
+1. 使用正则表达式匹配多个关键字：
+
+   ```
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" | regex _raw="(\[error\]|\[warning\]|\[crit\])"
+   ```
+
+   此过滤规则将匹配包含"[error]"、"[warning]"或"[crit]"的日志。
+
+2. 使用时间范围过滤日志：
+
+   ```
+   index="abc_lex_env*" namespace="namespace-dev" sourcetype="kube:container:proxy" broken "[error]" "[clustering]" | where _time >= relative_time(now(), "-1d@d") AND _time < relative_time(now(), "@d") | table _time, _raw
+   ```
+
+   此过滤规则将匹配包含"[error]"和"[clustering]"的日志，并且只显示最近一天的日志。
+
+3. 使用字段过滤日志：
+
+   ```
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" | search status="404" | table _time, _raw
+   ```
+
+   此过滤规则将匹配状态码为"404"的日志，并且只显示时间和原始日志。
+
+请注意，这只是一些高级过滤规则的示例。更多的过滤规则和选项可以在Splunk官方文档中找到[1]。
+
+## 操作结果：
+
+1. 使用正则表达式匹配多个关键字：
+
+   ```
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" | regex _raw="(\[error\]|\[warning\]|\[crit\])"
+   ```
+
+2. 使用时间范围过滤日志：
+
+   ```
+   index="abc_lex_env*" namespace="namespace-dev" sourcetype="kube:container:proxy" broken "[error]" "[clustering]" | where _time >= relative_time(now(), "-1d@d") AND _time < relative_time(now(), "@d") | table _time, _raw
+   ```
+
+3. 使用字段过滤日志：
+
+   ```
+   index="abc-lex-env*" namespace="namespace" sourcetype="kube:container:proxy" | search status="404" | table _time, _raw
+   ```
+
+请注意，上述过滤规则仅供参考，实际操作结果可能会有所不同。
+
+[1] [Splunk搜索语言 - Splunk Documentation](https://docs.splunk.com/Documentation/Splunk/latest/SearchReference/SearchTimeModifiers)
+
+Sources
+[1] Splunk | 将数据转化为行动| SIEM、全面的日志管理和分析平台 https://www.splunk.com/zh_cn
+[2] Automation Suite - 设置Splunk https://docs.uipath.com/automation-suite/lang-zh_CN/v2022.4/docs/setting-up-splunk
+[3] 使用Splunk Connect 在Anthos 上收集日志| 云架构中心 - Google Cloud https://cloud.google.com/architecture/logging-anthos-with-splunk-connect?hl=zh-cn
+[4] 简志_高分内容_个人页 - 阿里云开发者社区 https://developer.aliyun.com/profile/6stee4gmrmgas/highScore_1
+[5] 元乙_个人页 - 阿里云开发者社区 https://developer.aliyun.com/profile/yntwiwlnyhffo
+[6] elk日志报警- OSCHINA - 中文开源技术交流社区 https://www.oschina.net/informat/elk%E6%97%A5%E5%BF%97%E6%8A%A5%E8%AD%A6
+
+By Perplexity at https://www.perplexity.ai/?s=m&uuid=f290ac0c-9e3b-4d58-800a-cfadf2eb29e2
+
+
+要将Splunk与Kubernetes集成以收集日志，您可以按照以下步骤进行操作：
+
+1. 配置Splunk Enterprise版的HTTP Event Collector（HEC）[1]。确保您已经部署并配置了Splunk Enterprise版。
+
+2. 在Kubernetes集群中部署Splunk Connect for Kubernetes[1]。您可以使用kubectl命令在Anthos上运行的Kubernetes应用中部署Splunk Connect for Kubernetes。
+
+3. 部署一个示例应用[1]。您可以使用kubectl命令在Anthos上运行的Kubernetes应用中部署一个示例应用，以验证日志收集是否正常工作。
+
+请注意，这些步骤假定您已经熟悉Kubernetes，并且满足一些技术要求，例如您是Anthos客户或参与Anthos免费试用计划，并且您当前在组织中运行本地Splunk Enterprise版（7.0或更高版本）[1]。
+
+此外，还可以参考Splunk的Kubernetes监控解决方案，该解决方案可以帮助您将Kubernetes数据与基础设施数据、应用程序数据和日志整合在一起[5]。
+
+请注意，以上步骤是基于Google Cloud的Anthos环境的集成示例。如果您在其他环境中使用Kubernetes，可能需要根据您的环境和需求进行适当的调整。
+
+Sources
+[1] 使用Splunk Connect 在Anthos 上收集日志| 云架构中心 - Google Cloud https://cloud.google.com/architecture/logging-anthos-with-splunk-connect?hl=zh-cn
+[2] Kubernetes开发运维-七、收集和查询日志 - OomSpot https://www.oomspot.com/post/ifayunweiqishoujihechaxunrizhi
+[3] 第13 章与Splunk 集成Red Hat Advanced Cluster Security for Kubernetes 4.0 https://access.redhat.com/documentation/zh-cn/red_hat_advanced_cluster_security_for_kubernetes/4.0/html/integrating/integrate-with-splunk
+[4] 第13 章与Splunk 集成Red Hat Advanced Cluster Security for Kubernetes 3.73 https://access.redhat.com/documentation/zh-cn/red_hat_advanced_cluster_security_for_kubernetes/3.73/html/integrating/integrate-with-splunk
+[5] Kubernetes 监控解决方案 - Splunk https://www.splunk.com/zh_cn/solutions/kubernetes-monitoring.html
+[6] kubernetes日志采集方案_k8s集群收集日志方案 - CSDN博客 https://blog.csdn.net/linuxerlin/article/details/93749330
+
+By Perplexity at https://www.perplexity.ai/?s=m&uuid=f290ac0c-9e3b-4d58-800a-cfadf2eb29e2
+
+
+
 ## 在Splunk中根据搜索日志结果创建Alert、Report和Dashboard
 
 ### 创建Alert
