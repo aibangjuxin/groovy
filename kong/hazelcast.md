@@ -45,3 +45,38 @@ Hazelcast可以与Kong的rate limiting插件结合使用,提供分布式限流�
 通过这种方式,限流计数器和规则维护在Hazelcast集群中,Kong Plugins从Hazelcast获取限流规则。即使Kong节点扩容也可以确保限流计数准确。
 
 相比本地计数,使用Hazelcast实现分布式限流可以实现集群间限流规则一致性,且在Kong扩容时也可以平滑过渡,非常适合大流量场景下的限流需求。
+
+
+对于 Hazelcast 的凭证信息存储,开源解决方案可以考虑以下方案:
+
+1. Hashicorp Vault
+
+- Vault可以用于存储敏感信息如密码、证书等
+- Hazelcast可以通过Vault的API读取secret
+- 需要部署和配置Vault服务
+- 优点是安全,灵活
+
+2. Kubernetes Secret
+
+- Kubernetes内置了Secret对象用于存储密文信息
+- 可以把Hazelcast凭证存入Secret对象
+- 应用通过Volume挂载Secret
+- 简单方便,但不是为密文设计,安全性稍差
+
+3. 环境变量
+
+- 通过环境变量传入Hazelcast凭证
+- 实现简单,但安全性差
+- 生产环境需要谨慎使用
+
+4. 配置文件
+
+- 将凭证直接配置在Hazelcast的XML或YAML文件
+- 部署时需要保护好配置文件
+- 生产环境风险较大
+
+综上,对于生产环境,Hashicorp Vault是较好的解决方案。它专门用于存储敏感信息,安全性高,也能方便地与Hazelcast集成。
+
+Kubernetes Secret也可以考虑,操作简单,但需要注意Secret的安全风险。
+
+环境变量和明文配置则只适合开发测试环境。
