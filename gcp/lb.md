@@ -251,3 +251,28 @@ GCP create load balance (TCP/SSL) 这种创建模式下 TCP LB和TCP proxy �
 在这些规则中，您可以使用Cloud Armor的高级功能，如自定义规则和正则表达式，以更为精细地限制白名单IP地址。例如，您可以使用正则表达式来匹配特定的IP地址模式，或者使用自定义规则来执行更复杂的检测和限制操作。
 
 总之，在使用负载均衡器和Cloud Armor进行DDoS防护时，您可以根据实际需要选择最适合您需求的模式，并结合Cloud Armor的高级功能进行更为精细的配置和限制。
+
+
+以下是一些关于如何在 GCP 中使用 Cloud Armor 来防止 DDoS 攻击的建议：
+
+使用 TCP Proxy 负载均衡器将流量路由到您的应用程序。
+创建一个 Cloud Armor 安全策略，并将其应用于您的负载均衡器。
+在安全策略中启用 DDoS 保护。
+在安全策略中添加您希望白名单的 IP 地址。
+监控您的负载均衡器并监控 DDoS 攻击。
+以下是一些更具体的建议：
+
+使用 Cloud Armor 的标准网络 DDoS 保护来防止 L3/L4 攻击。
+使用 Cloud Armor 的自动适应性保护来防止 L7 攻击。
+使用 Cloud Armor 的 Web 应用防火墙 (WAF) 规则来阻止恶意流量。
+使用 Cloud Armor 的速率限制功能来限制来自特定 IP 地址或来源的流量。
+使用 Cloud Armor 的负载均衡功能来将流量分散到多个后端服务器。
+使用 Cloud Logging 和 Cloud Monitoring 来监控您的负载均衡器和 DDoS 攻击。
+通过遵循这些建议，您可以帮助保护您的应用程序免受 DDoS 攻击。
+
+以下是一些额外的提示：
+
+使用 Cloud Armor 的多项目支持来为多个项目创建一个安全策略。
+使用 Cloud Armor 的 API 来自动化您的安全策略配置。
+使用 Cloud Armor 的预定义安全策略来快速启动和运行。
+使用 Cloud Armor 的支持来获得帮助。
