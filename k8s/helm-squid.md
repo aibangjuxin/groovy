@@ -555,3 +555,55 @@ spec:
 
 以上就是一个基本的 Helm chart，用于在 Kubernetes 集群中部署 Squid。请注意，这只是一个起点，你可能需要根据你的具体需求进行更多的定制和调整。更多关于 Helm chart 和 Kubernetes 资源的详细信息，你可以参考 [Helm 文档 ↗](https://helm.sh/docs/) 和 [Kubernetes 文档 ↗](https://kubernetes.io/docs/home/)。
 
+
+如果要使用类似的目录结构来安装一个Squid的Kubernetes资源,需要准备以下文件:
+
+## charts/squid
+
+### Chart.yaml
+
+定义chart的元信息,如名称、版本等
+
+### values.yaml
+
+定义chart的默认配置值,如Squid的镜像、资源限制等
+
+### templates/
+
+##### deployment.yaml
+
+Squid的Deployment定义
+
+##### service.yaml 
+
+Squid的Service定义
+
+##### hpa.yaml
+
+Squid的HPA(Horizontal Pod Autoscaler)定义
+
+##### configmap.yaml
+
+Squid的配置ConfigMap定义
+
+### README.md
+
+chart的使用文档
+
+## releases/my-squid
+
+### release.yaml
+
+helm install生成的release配置
+
+主要准备以下文件:
+
+- Chart.yaml 定义chart信息 
+- values.yaml 定义默认配置
+- templates/ 目录下准备 Deployment、Service、HPA、ConfigMap等kubernetes资源配置模板
+- README.md 提供chart使用说明文档
+
+然后可以通过`helm install`来安装这个chart,并在releases目录下生成release记录。
+
+通过定义合理的目录结构、模板和默认值,可以通过helm打包管理k8s应用的安装部署。
+
