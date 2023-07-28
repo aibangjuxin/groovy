@@ -1,4 +1,4 @@
-好的,使用Helm安装squid proxy到Kubernetes集群的namespace里,可以按以下步骤操作:
+使用Helm安装squid proxy到Kubernetes集群的namespace里,可以按以下步骤操作:
 
 1. 准备squid的docker image,比如:squid:latest
 
