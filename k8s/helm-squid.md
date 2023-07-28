@@ -1,3 +1,28 @@
+在GCP中,可以通过以下方法查看一个Role被赋予了哪些Service Account:
+
+1. 在GCP控制台,转到IAM页面,选择“Roles”。
+
+2. 点击要查看的Role名称。
+
+3. 在Members选项卡下可以看到已被赋予该Role的成员列表。其中Service Account相关的成员以“serviceAccount”开头。
+
+4. 也可以通过gcloud命令行查看:
+
+gcloud iam roles describe [ROLE_NAME] --project [PROJECT_ID] --format="value(includedPermissions)"
+
+
+该命令会列出拥有该Role的所有成员,包括Service Account。
+
+5. 如果要反向查看一个Service Account拥有哪些Role,可以:
+
+gcloud iam service-accounts get-iam-policy [SA_NAME]@[PROJECT_ID].http://iam.gserviceaccount.com
+
+
+这个命令会列出Service Account被赋予的所有Role。
+
+通过上述方法,就可以查看一个Role对应哪些Service Account,或一个Service Account拥有哪些Role的权限。这可以帮助我们审计和管理权限分配。
+
+
 使用Helm安装squid proxy到Kubernetes集群的namespace里,可以按以下步骤操作:
 
 1. 准备squid的docker image,比如:squid:latest
