@@ -1,16 +1,7 @@
 #!/bin/bash
-#cd /Users/lex/Downloads/git/groovy
-#riqi=$(date)
-#echo "$riqi"
-#git add .
-#git commit -m "This is for my iPhone git push or pull at $riqi"
-#git push
-#adbc
-#!/bin/bash
 
 # Define the directory
 dir=$(pwd)
-#dir="/Users/lex/Downloads/git/groovy"
 
 # Check if the directory exists
 if [ -d "$dir" ]; then
@@ -34,8 +25,14 @@ if [ -n "$(git status --porcelain)" ]; then
     exit 1
   fi
 
+  # Get the latest changed filename
+  filename=$(git diff --name-only HEAD | tail -n 1)
+
+  # Define a commit message 
+  commit_message="This is for my iPhone git push or pull at $riqi. Last changed file: $filename"
+
   # Commit the changes
-  git commit -m "This is for my iPhone git push or pull at $riqi"
+  git commit -m "$commit_message"
   if [ $? -eq 0 ]; then
     echo "Changes committed successfully."
   else
