@@ -69,7 +69,7 @@ flowchart TB
 ```mermaid
 graph TD
     subgraph CP
-        CP(Kong Control Plane)
+        Kong-Control-Plane
     end
     subgraph Workspace
         W(Workspace)
