@@ -32,12 +32,14 @@ Workspace与CP之间的关系是这样的：每个Workspace是一个隔离的配
 
 3. **关系**：CP是管理和控制Workspace的入口。您可以在CP中创建、编辑和删除Workspace，还可以在CP中选择要操作的特定Workspace，然后在该Workspace中配置Kong的各种对象。CP允许您在不同的Workspace之间切换，以便有效地管理和维护各个环境的配置。
 
-综上所述，Workspace是一种机制，允许您在同一个Kong实例上管理多个隔离的环境，而CP是您与这些Workspace交互的接口。通过Workspace，您可以在不同的环境中配置Kong，同时保持这些配置的隔离性，从而提高了部署和管理的灵活性和可维护性。
+综上所述，Workspace是一种机制，允许您在同一个Kong实例上管理多个隔离的环境，而CP是您与这些Workspace交互的接口。通过Workspace，您可以在不同的环境中配置Kong，同时保持这些配置的隔离性，从而提高了部署和管理的灵活性和
+非常抱歉，我理解您的意思了。以下是经过修正的Mermaid格式的Markdown流程图，更清楚地展示了CP、DP和Workspace之间的关系：
+
 ```mermaid
 flowchart TB
     subgraph Kong
-        CP[Control Plane (CP)]
-        DP[Data Plane (DP)]
+        CP[Control Plane - CP]
+        DP[Data Plane - DP]
     end
 
     subgraph Workspace
@@ -52,10 +54,10 @@ flowchart TB
         Workspace3 --> |Contains| Configurations3
     end
 
-    subgraph Data Flow
-        DP --> |Processes| Network Traffic
-    end
+    DP -->|Processes| Network_Traffic
 ```
+
+复制上述Markdown代码并在支持Mermaid图的环境中查看，您将会看到一个图表，清楚地显示了Control Plane（CP）与Data Plane（DP）之间的关系，以及它们与Workspace和数据流之间的交互。
 
 关于WebSocket支持，Kong高级版本中确实支持WebSocket的API。您可以通过Kong的插件来启用WebSocket支持，例如"websocket-termination"插件。这使得Kong能够处理WebSocket连接，以及在WebSocket连接上执行插件功能，如认证、鉴权、限流等。
 
