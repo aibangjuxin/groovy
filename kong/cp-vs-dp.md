@@ -24,6 +24,17 @@ Workspace与CP之间的关系是这样的：每个Workspace是一个隔离的配
 
 通过Workspaces，您可以在同一个Kong实例上管理多个环境的配置，而不会相互干扰。这有助于简化多环境部署和管理，同时提高了配置的可维护性和灵活性。
 
+当涉及Kong的CP（Control Plane，控制平面）和Workspace之间的关系时，可以将其理解为以下几个关键点：
+
+1. **Control Plane（控制平面）**：CP是Kong的管理和配置部分，负责处理API、插件、路由、服务等的配置和管理。它提供了API和界面，供管理员和开发人员使用，以便创建、修改和删除Kong的各种配置元素。CP与实际处理网络流量的Data Plane（数据平面）是分离的。
+
+2. **Workspace（工作空间）**：Workspace是Kong中的一个重要概念，它允许您在同一个Kong实例内部创建多个独立的配置环境。每个Workspace都可以拥有自己的API、插件、路由等配置，这些配置是相互隔离的，不会相互干扰。这意味着您可以在同一个Kong实例上管理多个环境，如开发、测试和生产，而不会发生冲突。
+
+3. **关系**：CP是管理和控制Workspace的入口。您可以在CP中创建、编辑和删除Workspace，还可以在CP中选择要操作的特定Workspace，然后在该Workspace中配置Kong的各种对象。CP允许您在不同的Workspace之间切换，以便有效地管理和维护各个环境的配置。
+
+综上所述，Workspace是一种机制，允许您在同一个Kong实例上管理多个隔离的环境，而CP是您与这些Workspace交互的接口。通过Workspace，您可以在不同的环境中配置Kong，同时保持这些配置的隔离性，从而提高了部署和管理的灵活性和可维护性。
+
+
 
 关于WebSocket支持，Kong高级版本中确实支持WebSocket的API。您可以通过Kong的插件来启用WebSocket支持，例如"websocket-termination"插件。这使得Kong能够处理WebSocket连接，以及在WebSocket连接上执行插件功能，如认证、鉴权、限流等。
 
