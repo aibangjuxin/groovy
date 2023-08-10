@@ -139,7 +139,7 @@ spec:
 
 
 
-
+``` 
 
 
 # other reference
@@ -560,3 +560,4 @@ spec:
 
 所以,这个 NetworkPolicy 允许 namespaceA 中带有 destinationKey: destinationValue 标签的 pod 通过 3128 端口访问 namespaceB 中的服务。
 ```
+``` 
