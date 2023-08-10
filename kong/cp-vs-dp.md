@@ -62,3 +62,28 @@ flowchart TB
 关于WebSocket支持，Kong高级版本中确实支持WebSocket的API。您可以通过Kong的插件来启用WebSocket支持，例如"websocket-termination"插件。这使得Kong能够处理WebSocket连接，以及在WebSocket连接上执行插件功能，如认证、鉴权、限流等。
 
 总之，CP和DP在Kong中扮演着不同的角色，CP负责配置和管理，DP负责实际的API流量处理，它们通过WSS协议进行通信以保持同步。高级版本的Kong支持WebSocket的API，并且您可以通过插件来启用和配置WebSocket支持功能。
+
+
+这里是使用mermaid绘制Kong的CP和Workspace之间关系的markdown代码:
+
+```mermaid
+graph TD
+    subgraph CP
+        CP(Kong Control Plane)
+    end
+    subgraph Workspace
+        W(Workspace)
+    end
+    CP-->W
+    CP-. K8S CRDs .->W
+    W-. Events .->CP
+    W-. Metrics .->CP
+```
+
+这个mermaid图展示了:
+
+- Kong的CP和Workspace之间的关系
+- CP通过K8S CRDs来配置Workspace
+- Workspace通过Events和Metrics来与CP进行交互
+
+CP作为控制平面,负责配置和管理Workspace。Workspace作为数据平面,执行真正的服务流量处理。两者通过CRDs, Events和Metrics相互协作。
