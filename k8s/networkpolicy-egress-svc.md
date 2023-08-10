@@ -16,7 +16,7 @@ namespaceA ==> namespace B
 GKE network policy 我配置允许一个namespaceA egress 到另一个namespacesB 的load balance 3128端口
 要求namespaceA 内的源Pod必须有destinationKey: destinationValue 这个标签,它才能连接我的namespaceB 的kind: Service
 我的默认规则已经是禁止了所有的Ingress和Egress
-## The service
+## 1 The service
 Squid Service
 这个部分定义了一个名为 "proxy_name-service" 的 Service，在 namespaceB 中。
 
@@ -24,7 +24,7 @@ Squid Service
 
 这个规则用于在 namespaceB 中创建一个可从其他命名空间访问的 Squid 代理服务。
 
-1 The service
+The service
 ```yaml
 echo "kubectl apply squid service"
 kubectl apply -f - <<EOF
@@ -85,9 +85,6 @@ spec:
   - Ingress
 EOF
 ```
-
-设置。
-
 
 ## 3 namespaceA egress 
 namespaceA Egress Network Policy
