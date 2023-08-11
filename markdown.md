@@ -74,7 +74,7 @@ graph TD
 
 ```mermaid
 graph TD
-  subgraph Control-Plane (CP)
+  subgraph Control-Plane
     A[Workspace: Dev] -->|Config| B[APIs, Routes, Plugins]
     A[Workspace: Dev] -->|Config| C[Consumers, Credentials]
     D[Workspace: Test] -->|Config| B[APIs, Routes, Plugins]
@@ -83,7 +83,7 @@ graph TD
     E[Workspace: Prod] -->|Config| C[Consumers, Credentials]
   end
 
-  subgraph Data-Plane (Runtime)
+  subgraph Data-Plane
     B -->|Sync Config| Runtime
     C -->|Sync Config| Runtime
   end
