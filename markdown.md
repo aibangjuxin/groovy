@@ -70,6 +70,29 @@ graph TD
 希望这个示例和解释对您有帮助！如果您需要更多关于Mermaid的指导或其他信息，请随时提问。
 
 
+当然可以！以下是关于Kong的CP和Workspace之间关系的Mermaid示意图：
+
+```mermaid
+graph TD
+  subgraph Control Plane (CP)
+    A[Workspace: Dev] -->|Config| B[APIs, Routes, Plugins]
+    A[Workspace: Dev] -->|Config| C[Consumers, Credentials]
+    D[Workspace: Test] -->|Config| B[APIs, Routes, Plugins]
+    D[Workspace: Test] -->|Config| C[Consumers, Credentials]
+    E[Workspace: Prod] -->|Config| B[APIs, Routes, Plugins]
+    E[Workspace: Prod] -->|Config| C[Consumers, Credentials]
+  end
+
+  subgraph Data Plane (Runtime)
+    B -->|Sync Config| Runtime
+    C -->|Sync Config| Runtime
+  end
+```
+
+在上述Mermaid示意图中，Control Plane（CP）中有三个工作区（Dev、Test、Prod），每个工作区包含不同的配置（如APIs、Routes、Plugins、Consumers等）。CP负责管理不同工作区的配置状态，并通过同步配置到Data Plane（Runtime）来实现配置的生效。
+
+希望这个Mermaid示意图能够更清楚地展示CP和Workspace之间的关系。如果您有任何进一步的问题，请随时提问。
+
 如果 Markdown 表格中有多行共用一个单元格区域,可以使用 :-- 表示这几行属于同一个单元格。
 
 例如:
