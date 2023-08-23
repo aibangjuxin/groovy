@@ -13,24 +13,27 @@ namespaceB == proxy namespace
 
 为了表示你的GKE网络策略，允许Namespace A的Egress流量连接到Namespace B的LoadBalancer Service的3128端口，并要求Namespace A内的源Pod必须具有"destinationKey: destinationValue"标签，以下是对应的Mermaid图表：
 
+
 ```mermaid
+
 graph TD
 
 subgraph Namespace A
-  A[应用程序 Pods A] -- 出站规则 --> B[Egress 网络策略 A]
-  B -->|目标标签：destinationKey: destinationValue| C[Service B (3128端口)]
+  A[应用程序 Pods A] -->|Egress到Namespace B:3128| B[LoadBalancer Service B 3128端口]
 end
 
 subgraph Namespace B
-  C[Service B (3128端口)]
+  B[LoadBalancer Service B 3128端口] -- 入站规则 --> C[应用程序 Pods B]
 end
 
 subgraph Default Rules
   D[禁止所有流入流出]
 end
 
-D -- 允许 --> B
-```
+A -->|destinationKey: destinationValue| B
+D --> A
+
+``` 
 
 在这个Mermaid图表中，Namespace A的Egress流量被允许，但只有具有"destinationKey: destinationValue"标签的Pod才能连接到Namespace B的Service B的3128端口。默认规则禁止所有其他Ingress和Egress流量。
 
