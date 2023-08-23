@@ -21,9 +21,9 @@ DOMAIN-SUFFIX,poe.com
 DOMAIN-SUFFIX,quoracdn.net
 DOMAIN-SUFFIX,quora.com
 DOMAIN-KEYWORD,openai
-DOMAIN,cdn.usefathom.com
-DOMAIN-SUFFIX,anthropic.com
-DOMAIN-SUFFIX,claude.ai
+#DOMAIN,cdn.usefathom.com
+#DOMAIN-SUFFIX,anthropic.com
+#DOMAIN-SUFFIX,claude.ai
 # perplexity.ai
 DOMAIN-SUFFIX,perplexity.ai
 
