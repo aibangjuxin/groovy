@@ -51,5 +51,109 @@ graph TD
     D -->|否| B
     D -->|是| E[流程结束]
 ```
+# nginx stream 
+nginx stream模块主要用于层四转发,可以实现以下功能:
+
+1. TCP和UDP代理:实现对TCP和UDP流量的中转,将客户端请求转发给后端服务。
+
+1. 负载均衡:支持多种负载均衡算法如轮询、最小连接数等,实现后端服务的负载均衡。
+
+1. SSL termination:可以终止客户端SSL会话,对后端非SSL连接进行SSL转发。
+
+1. 灾备切换:实现主备切换,配置后备服务器组作为主服务器组的备份。
+
+1. 限流限速:支持限制每客户端连接数及请求速率,防止水平攻击。
+
+1. IP伪装:通过修改客户端IP实现IP伪装,隐藏真实客户端IP。
+
+1. 连接池:通过连接池提高资源利用率,实现长连接会话持久化。
+
+1. 监控统计:提供配置和统计模块,实时获取负载、连接数、慢请求等运行数据。
+
+1. 动态配置:支持动态配置文件以实现热部署,无需重启即可加载配置变更。
+
+1. ACL控制:通过ACL访问控制列表实现基于IP或其他条件的访问限制。
+
+1. SSL加密:支持对后端连接或整体Web服务启用SSL/TLS加密传输。
+
+1. 服务发现:支持第三方服务发现接口自动更新后端服务信息。
+
+以上都是nginx stream模块常见的一些应用场景。它主要用于TCP协议的中继代理功能。
+
+nginx stream中的一些主要概念和信息如下:
+
+1. upstream: 表示一组后端服务器集群,可以设置多个upstream。
+
+1. server:后端服务器,可以被多个upstream引用。格式:server ip:port。
+
+1. proxy: 用于转发请求到对应的upstream。主要有三种代理模式:proxy_protocol、tcp、udp。
+
+1. proxy_protocol:tcp级别上的协议,用于传输客户端真实IP地址。
+
+1. balancer: 负载均衡算法,nginx stream支持round_robin、least_conn、ip_hash等算法。
+
+1. max_conns: 每个server连接数限制。
+
+1. fail_timeout:服务器失效时间。
+
+1. proxy_timeout:proxy与后端server连接超时时间。
+
+1. keepalive:长连接配置,默认为关。
+
+1. proxy_pass: 指定转发到哪个upstream,例如proxy_pass upstream_name;
+
+1. listen: 指定监听端口,支持tcp、udp、unix域套接字。
+
+1. so_keepalive: socket级别keepalive配置。
+
+1. proxy_responses:后端server返回的响应数限制。
+
+1. ssl:可以对stream连接启用SSL支持。
+
+1. geo/map:根据客户端IP做服务区分和负载均衡。
+
+1. limit_conn/limit_rate:限速限流配置。
+
+1. log_format:访问日志格式自定义。
+
+以上都是nginx stream主要涉及的一些基本概念和对应的主要配置项。
+
+## mermaid
+```mermaid
+graph TD
+subgraph Client
+  A[发起HTTP请求] -->|包括请求头| B{DNS解析}
+  B -->|返回目标IP地址| C[建立TCP连接]
+  C -->|建立连接成功| D[发送HTTP请求]
+end
+
+subgraph Server
+  D -->|接收HTTP请求| E[处理请求]
+  E -->|生成HTTP响应| F[发送HTTP响应]
+end
+
+subgraph Client
+  F -->|接收HTTP响应| G[解析响应]
+  G -->|获取数据| H[渲染页面]
+end
+```
+客户端发起HTTP请求，包括请求头。
+客户端进行DNS解析，获取目标服务器的IP地址。
+客户端建立TCP连接，与服务器建立连接成功。
+客户端发送HTTP请求到服务器。
+服务器接收HTTP请求，开始处理请求。
+服务器生成HTTP响应。
+服务器发送HTTP响应到客户端。
+客户端接收HTTP响应，并解析响应数据。
+客户端获取数据并渲染页面
 
 
+```mermaid
+ sequenceDiagram
+Client->>DNS: Resolve domain name
+DNS-->>Client: Return IP address
+Client->>Server: Send HTTP request
+Server->>Client: Return HTTP response
+Client->>Server: Send HTTP request
+Server->>Client: Return HTTP response
+```

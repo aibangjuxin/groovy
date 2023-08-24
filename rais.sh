@@ -6,7 +6,7 @@
 git add .
 
 # Commit the changes with a commit message
-git commit -m "Your commit message here"
+git commit -m "Your commit message here this"
 
 # Push the changes to the remote repository
 git push
