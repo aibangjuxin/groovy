@@ -6,6 +6,12 @@
 
 当然可以！Mermaid是一种用于绘制流程图、时序图、甘特图等的Markdown扩展。下面是一个详细的Mermaid语法示例，以及关于subgraph的用法和注意事项。
 
+
+https://mermaid.live/
+https://support.typora.io/Draw-Diagrams-With-Markdown/
+https://fontawesome.com/v4/icons/
+
+
 ### Mermaid语法示例：
 
 #### 流程图示例：

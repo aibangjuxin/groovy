@@ -1,5 +1,21 @@
 
 network-policy
+
+
+```mermaid
+graph TD;
+  A[主题] --> B[子主题1];
+  A --> C[子主题2];
+  B --> D[子主题1.1];
+  B --> E[子主题1.2];
+  C --> F[子主题2.1];
+  C --> G[子主题2.2];
+```
+
+
+
+
+
 ```mermaid
 graph LR
 subgraph Namespace A
@@ -131,3 +147,28 @@ graph LR
   Selectors --> Labelselect
 
 ```
+# other 
+```
+mindmap
+  root((network Policy))
+    Policy Type
+      ingress
+      ::icon(fa fa-book)
+      egress
+      ::icon(fa fa-thumbs-o-up) 
+    Action
+      Deny
+      Allow
+    Labels
+      namespace </br> Select
+      Pod Select
+    Traffic
+      From
+        source
+        destination
+      to
+        source
+        destination
+```
+
+
