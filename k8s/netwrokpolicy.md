@@ -148,7 +148,7 @@ graph LR
 
 ```
 # other 
-```
+```mermaid
 mindmap
   root((network Policy))
     Policy Type
