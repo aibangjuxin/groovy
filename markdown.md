@@ -14,6 +14,15 @@ https://fontawesome.com/v4/icons/
 
 ### Mermaid语法示例：
 
+```mermaid
+graph TD
+  A[开始] --> B[第一步]
+  B --> C[第二步]
+  C --> D[结束]
+  
+```
+
+
 #### 流程图示例：
 
 ```mermaid
