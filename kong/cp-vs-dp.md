@@ -87,3 +87,24 @@ graph TD
 - Workspace通过Events和Metrics来与CP进行交互
 
 CP作为控制平面,负责配置和管理Workspace。Workspace作为数据平面,执行真正的服务流量处理。两者通过CRDs, Events和Metrics相互协作。
+
+Kong CP（Kong Control Plane）的工作区（Workspace）主要用于多租户环境和版本控制。在Kong CP中，不同的工作区是相互隔离的，这意味着不同工作区内的配置是分离的，包括API定义。因此，你可以在不同的工作区中部署完全相同的API，而它们之间不会互相干扰。
+
+这种隔离性使得在多个环境中或为不同的客户提供服务时能够更轻松地管理和控制API配置的版本和访问权限。但请注意，Kong CP中的工作区管理需要额外的配置和权限控制，以确保不同工作区之间的隔离性。
+
+以下是一个简单的Mermaid流程图，说明了Kong CP工作区的隔离性：
+
+```mermaid
+graph TD
+    subgraph Workspace A
+    API1 --> Service1
+    end
+    subgraph Workspace B
+    API1 --> Service1
+    end
+    subgraph Kong CP
+    Service1
+    end
+```
+
+上面的图示示例了两个工作区A和B，它们都使用相同的API1，但它们是相互隔离的，与Kong CP中的Service1关联。这意味着你可以在不同的工作区中定义和配置API，而它们不会相互冲突。
