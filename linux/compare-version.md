@@ -337,3 +337,45 @@ Let me explain how the script works:
 5. We loop through each Deployment and extract the major and minor versions from the Deployment name using `awk` and `sed`. We then check if the Deployment matches the retain policy using `grep`. If it does not match, we delete the Deployment using `kubectl delete deployment`.
 
 Note that this script assumes that the Deployment names have the format `abc-def-hij-abc-gg-Jo-51-2-20`, with the major and minor versions separated by hyphens. If your Deployment names have a different format, you may need to modify the script accordingly.
+
+以下是根据您提供的要求编写的 Bash 脚本来清理 Kubernetes Deployment：
+
+```bash
+#!/bin/bash
+
+# Get all Deployment names
+deployments=$(kubectl get deployments --all-namespaces -o jsonpath='{.items[*].metadata.name}')
+
+# Extract the major version numbers from the Deployment names
+major_versions=$(echo "$deployments" | awk -F'[-]' '{print $(NF-2)}' | sort -u)
+
+# Determine the number of major versions
+num_major_versions=$(echo "$major_versions" | wc -l)
+
+# Determine the retain policy based on the number of major versions
+if [ $num_major_versions -eq 1 ]; then
+  # Single major version, retain the last two minor versions
+  retain_policy="last 2 minor versions"
+elif [ $num_major_versions -gt 1 ]; then
+  # Multiple major versions, retain the last two major versions
+  retain_policy="last 2 major versions"
+fi
+
+# Delete all Deployments that do not match the retain policy
+for deployment in $deployments; do
+  # Extract the major and minor versions from the Deployment name
+  major=$(echo "$deployment" | awk -F'[-]' '{print $(NF-2)}')
+  minor=$(echo "$deployment" | awk -F'[-]' '{print $(NF-1)}')
+
+  # Check if the Deployment matches the retain policy
+  if ! echo "$retain_policy" | grep -q "$major-$minor"; then
+    # Delete the Deployment
+    kubectl delete deployment "$deployment"
+  fi
+done
+```
+
+请确保已正确设置 Kubernetes 环境，并具有足够的权限来执行 `kubectl` 命令和删除部署。这个脚本会获取所有 Deployment 的名称，并根据您的要求确定保留策略。然后，它会删除不符合保留策略的 Deployment。
+
+请注意，这个脚本假设 Deployment 名称的格式是 `abc-def-hij-abc-gg-Jo-<major>-<minor>-<patch>`，其中 `<major>` 是主版本号，`<minor>` 是次版本号，`<patch>` 是修订版本号。如果您的实际 Deployment 名称格式不同，请适当修改脚本中的正则表达式来提取主版本号和次版本号。
+
