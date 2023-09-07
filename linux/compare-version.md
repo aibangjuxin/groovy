@@ -389,3 +389,44 @@ done
 
 请注意，这个脚本假设 Deployment 名称的格式是 `abc-def-hij-abc-gg-Jo-<major>-<minor>-<patch>`，其中 `<major>` 是主版本号，`<minor>` 是次版本号，`<patch>` 是修订版本号。如果您的实际 Deployment 名称格式不同，请适当修改脚本中的正则表达式来提取主版本号和次版本号。
 
+```bash 
+#!/bin/bash
+
+# 获取 deployment 列表
+deployments=$(kubectl get deployments --sort=metadata.name | awk '{print $1}')
+
+# 获取所有 deployment 的主版本号
+majors=$(echo $deployments | awk '{split($0, a, "-"); print a[2]}' | sort -u)
+
+# 判断主版本数量
+num_majors=$(echo $majors | wc -l)
+
+# 遍历 deployment 列表
+for deployment in $deployments; do
+  # 获取 deployment 的主版本号
+  major=$(echo $deployment | cut -d'-' -f2)
+
+  # 判断是否需要保留
+  if [ $num_majors -eq 1 ]; then
+    # 单主版本
+    if [ $major -gt $(echo $majors | head -2 | tail -1) ]; then
+      # 保留
+      echo "保留 deployment: $deployment"
+    else
+      # 删除
+      echo "删除 deployment: $deployment"
+      kubectl delete deployment $deployment
+    fi
+  else
+    # 多主版本
+    if [ $major -ge $(echo $majors | head -2 | tail -1) ]; then
+      # 保留
+      echo "保留 deployment: $deployment"
+    else
+      # 删除
+      echo "删除 deployment: $deployment"
+      kubectl delete deployment $deployment
+    fi
+  fi
+done
+```
