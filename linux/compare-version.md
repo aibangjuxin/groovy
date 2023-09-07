@@ -292,3 +292,48 @@ done
 单版保留前两个次版本
 多版保留最大两个主版本
 删除不符合条件的Deployment
+
+Sure! Here's an example shell script that implements the logic you described:
+```bash
+#!/bin/bash
+
+# Get all Deployment names
+deployments=$(kubectl get deployments --all-namespaces -o jsonpath='{.items[*].metadata.name}')
+
+# Extract the major version numbers from the Deployment names
+major_versions=$(echo "$deployments" | awk '{print $NF}' | sort -u)
+
+# Determine the number of major versions
+num_major_versions=$(echo "$major_versions" | wc -l)
+
+# Determine the retain policy based on the number of major versions
+if [ $num_major_versions -eq 1 ]; then
+  # Single major version, retain the last two minor versions
+  retain_policy="last 2 minor versions"
+elif [ $num_major_versions -gt 1 ]; then
+  # Multiple major versions, retain the last two major versions
+  retain_policy="last 2 major versions"
+fi
+
+# Delete all Deployments that do not match the retain policy
+for deployment in $deployments; do
+  # Extract the major and minor versions from the Deployment name
+  major=$(echo "$deployment" | awk '{print $NF}' | sed 's/-.*//')
+  minor=$(echo "$deployment" | awk '{print $NF}' | sed 's/.*-//')
+
+  # Check if the Deployment matches the retain policy
+  if ! echo "$retain_policy" | grep -q "$major-$minor"; then
+    # Delete the Deployment
+    kubectl delete deployment "$deployment"
+  fi
+done
+```
+Let me explain how the script works:
+
+1. First, we use `kubectl get deployments --all-namespaces` to get a list of all Deployments in all namespaces. We then use `jsonpath` to extract just the names of the Deployments.
+2. Next, we use `awk` to extract the major version numbers from the Deployment names. We use `$NF` to get the last field of each line, which contains the major version number. We then use `sort -u` to remove duplicates and sort the list.
+3. We determine the number of major versions using `wc -l`.
+4. Based on the number of major versions, we determine the retain policy. If there is only one major version, we retain the last two minor versions. If there are multiple major versions, we retain the last two major versions.
+5. We loop through each Deployment and extract the major and minor versions from the Deployment name using `awk` and `sed`. We then check if the Deployment matches the retain policy using `grep`. If it does not match, we delete the Deployment using `kubectl delete deployment`.
+
+Note that this script assumes that the Deployment names have the format `abc-def-hij-abc-gg-Jo-51-2-20`, with the major and minor versions separated by hyphens. If your Deployment names have a different format, you may need to modify the script accordingly.
