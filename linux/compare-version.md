@@ -375,6 +375,16 @@ for deployment in $deployments; do
 done
 ```
 
+这段代码是用来检查 Deployment 是否符合保留策略，并根据结果来决定是否删除 Deployment。
+
+让我们逐行解释这段代码的含义：
+
+1. `if ! echo "$retain_policy" | grep -q "$major-$minor"; then`: 这是一个 if 语句，用于检查 Deployment 是否符合保留策略。`$retain_policy` 是保留策略，`$major-$minor` 是当前 Deployment 的主要版本号和次要版本号的组合。`echo "$retain_policy" | grep -q "$major-$minor"` 的作用是在 `$retain_policy` 中搜索 `$major-$minor`，如果找到匹配项，则返回成功（0），否则返回失败（非0）。`!` 是逻辑非运算符，表示取反。因此，`! echo "$retain_policy" | grep -q "$major-$minor"` 的含义是如果 `$retain_policy` 中没有找到 `$major-$minor`，即 Deployment 不符合保留策略，那么执行下面的代码块。
+
+2. `kubectl delete deployment "$deployment"`: 这行代码使用 `kubectl delete` 命令删除不符合保留策略的 Deployment。`"$deployment"` 是当前迭代的 Deployment 名称，通过将其作为参数传递给 `kubectl delete deployment` 命令，可以删除该 Deployment。
+
+因此，如果 Deployment 的主要版本号和次要版本号与保留策略不匹配，那么该 Deployment 将被删除。
+
 请确保已正确设置 Kubernetes 环境，并具有足够的权限来执行 `kubectl` 命令和删除部署。这个脚本会获取所有 Deployment 的名称，并根据您的要求确定保留策略。然后，它会删除不符合保留策略的 Deployment。
 
 请注意，这个脚本假设 Deployment 名称的格式是 `abc-def-hij-abc-gg-Jo-<major>-<minor>-<patch>`，其中 `<major>` 是主版本号，`<minor>` 是次版本号，`<patch>` 是修订版本号。如果您的实际 Deployment 名称格式不同，请适当修改脚本中的正则表达式来提取主版本号和次版本号。
