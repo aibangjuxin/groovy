@@ -3,6 +3,62 @@
 - 这个需要在container调用，那么container调用的方式是什么？仅仅通过名字就可以调用
   - 主容器通过 volume 的名字来挂载 initContainers 创建的目录
      后挂载到自己container需要的目录 比如/opt/appdynamics
+- pod-vs-container
+`kubectl attach` 命令用于将终端连接到正在运行的 Kubernetes Pod 中的容器，以便你可以与容器内部的进程进行交互。以下是该命令的详细解释和使用示例：
+
+**语法**：
+```markdown
+kubectl attach <pod-name> -c <container-name>
+```
+
+- `<pod-name>`: 要连接到的 Pod 的名称。
+- `-c <container-name>`: 可选参数，如果 Pod 中包含多个容器，可以使用此参数指定要连接的容器名称。如果 Pod 中只有一个容器，通常可以省略。
+
+**示例**：
+
+1. **连接到正在运行的 Pod**：
+   
+    ```markdown
+    kubectl attach my-pod
+    ```
+
+    这将连接到名为 `my-pod` 的 Pod 中的默认容器（如果只有一个容器）。
+
+2. **连接到指定容器**：
+
+    如果 Pod 包含多个容器，你可以使用 `-c` 参数来指定要连接的容器名称。
+
+    ```markdown
+    kubectl attach my-pod -c my-container
+    ```
+
+    这将连接到名为 `my-pod` 的 Pod 中的 `my-container` 容器。
+
+3. **交互式进程**：
+
+    一旦连接到容器，你可以像在本地终端中一样与容器内的进程进行交互。你可以运行命令、查看日志等。
+
+4. **退出连接**：
+
+    若要退出连接并将控制权还给 Kubernetes，你可以使用快捷键 `Ctrl+C`。
+
+5. **重新连接**：
+
+    如果你意外断开连接，可以使用相同的 `kubectl attach` 命令重新连接到容器。
+
+请注意，`kubectl attach` 主要用于调试和排查问题，它会将你的终端连接到容器内部，所以要谨慎使用，特别是在生产环境中。此外，如果容器内没有交互式 shell（例如，没有 `/bin/bash`），则可能无法进行有效的交互。
+
+要查看 Pod 的名称以及其使用的容器名称，你可以使用 `kubectl get pods` 命令结合 `-o custom-columns` 参数。以下是如何执行这个操作的示例：
+
+```markdown
+kubectl get pods -o custom-columns=POD:.metadata.name,CONTAINER:.spec.containers[*].name
+```
+
+这个命令使用 `-o custom-columns` 参数来指定你要显示的列，并为每个列分配一个标签（例如，`POD` 和 `CONTAINER`）。在这个示例中，我们获取了 Pod 的名称和其使用的容器名称。
+
+请注意，`POD` 列显示了 Pod 的名称，`CONTAINER` 列显示了 Pod 中所有容器的名称，如果 Pod 包含多个容器，它们将以逗号分隔显示。
+
+这个命令将输出一个表格，其中包含每个 Pod 的名称和其使用的容器名称。这可以帮助你快速了解每个 Pod 中运行的容器。
 
 
 为了在 Kubernetes 中使用 initContainers 和 volumeMounts，
