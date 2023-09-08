@@ -95,6 +95,33 @@ abc-def-123-abc-gg-Jo-52-1-21
 3. `versions+=("$version")`: 这一行将提取到的版本号存储在名为 `versions` 的数组中。`+=` 意味着将新的版本号追加到数组的末尾。
 
 所以，循环将遍历 `deployment_names` 数组中的每个元素，提取版本号，并将这些版本号存储在 `versions` 数组中。最终，`versions` 数组将包含所有提取到的版本号。
+
+
+这段代码是一个 Bash 脚本片段，用于根据一些逻辑筛选要保留的 `Deployment`。我将逐行解释它：
+
+1. `for name in "${deployment_names[@]}"; do`: 这是一个 for 循环，用于迭代名为 `deployment_names` 的数组中的每个元素，并将每个元素赋值给变量 `name`。`"${deployment_names[@]}"` 表示展开数组，以便循环可以访问数组中的每个元素。
+
+2. `version=$(echo "$name" | awk -F'-' '{print $7}')`: 这一行从变量 `name` 中提取版本号，并将其存储在变量 `version` 中。解释如下：
+   - `echo "$name"`: 这将输出当前循环中的 `name` 变量的值。
+   - `|`: 这是管道符号，它将前一个命令的输出传递给下一个命令。
+   - `awk -F'-' '{print $7}'`: 这使用了 `awk` 命令来处理输入的字符串，其中 `-F'-'` 指定了字段分隔符为连字符 `-`。然后，`'{print $7}'` 用于打印第7个字段，即版本号。这假设字符串中使用连字符分隔符，并且版本号位于第7个字段。
+
+3. `major=$(echo "$version" | cut -d'-' -f1)`: 这一行从版本号中提取主要版本号（Major Version），并将其存储在变量 `major` 中。解释如下：
+   - `echo "$version"`: 这将输出当前循环中的 `version` 变量的值。
+   - `|`: 管道符号，将前一个命令的输出传递给下一个命令。
+   - `cut -d'-' -f1`: 这使用了 `cut` 命令来处理输入的字符串，其中 `-d'-'` 指定了字段分隔符为连字符 `-`，而 `-f1` 表示提取第一个字段，即主要版本号。
+
+4. `minor=$(echo "$version" | cut -d'-' -f2)`: 类似于前一行，这一行从版本号中提取次要版本号（Minor Version），并将其存储在变量 `minor` 中。
+
+5. `if [ "$major" -eq "$max_major" ]; then`: 这是一个条件语句，用于检查提取的主要版本号是否等于 `$max_major`。如果相等，则执行下面的操作。
+
+6. `keep_deployments+=("$name")`: 如果主要版本号等于 `$max_major`，则将当前的 `name` 添加到名为 `keep_deployments` 的数组中，表示要保留这个 `Deployment`。
+
+7. `elif [ "${#keep_deployments[@]}" -lt 2 ]; then`: 这是一个条件语句的另一个分支，用于检查 `keep_deployments` 数组中的元素数量是否小于 2。如果满足条件，则执行下面的操作。
+
+8. `keep_deployments+=("$name")`: 如果条件满足，将当前的 `name` 添加到 `keep_deployments` 数组中，表示要保留这个 `Deployment`。
+
+整个循环将根据主要版本号和数组长度来筛选要保留的 `Deployment`。具体规则是：在最大的主要版本号下保留 2 个小版本，而其他主要版本号下也保留 2 个小版本。
 ``` 
 
 - 假设你已经有了版本号数组 versions
