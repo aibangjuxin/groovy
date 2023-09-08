@@ -82,7 +82,7 @@ done
 要保留的 Deployment 列表：
 abc-def-123-abc-gg-Jo-51-2-20
 abc-def-123-abc-gg-Jo-52-1-21
-
+``` 
 这段代码是一个 Bash 脚本片段，用于迭代一个名为 `deployment_names` 的数组，并从每个元素中提取一个版本号，然后将这些版本号存储在名为 `versions` 的数组中。让我详细解释一下：
 
 1. `for name in "${deployment_names[@]}"; do`: 这是一个 for 循环，用于迭代名为 `deployment_names` 的数组中的每个元素，并将每个元素赋值给变量 `name`。
@@ -95,14 +95,15 @@ abc-def-123-abc-gg-Jo-52-1-21
 3. `versions+=("$version")`: 这一行将提取到的版本号存储在名为 `versions` 的数组中。`+=` 意味着将新的版本号追加到数组的末尾。
 
 所以，循环将遍历 `deployment_names` 数组中的每个元素，提取版本号，并将这些版本号存储在 `versions` 数组中。最终，`versions` 数组将包含所有提取到的版本号。
+``` 
 
-
-# 假设你已经有了版本号数组 versions
-# 遍历数组并打印每个版本号
+- 假设你已经有了版本号数组 versions
+- 遍历数组并打印每个版本号
+```bash
 for version in "${versions[@]}"; do
   echo "Version: $version"
 done
-
+``` 
 
 
 
