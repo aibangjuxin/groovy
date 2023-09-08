@@ -1,3 +1,199 @@
+- sort 
+``` bash
+#!/bin/bash
+
+# 存储 Deployment 名称的数组
+declare -a deployment_names=(
+  "abc-def-123-abc-gg-Jo-52-1-21"
+  "abc-def-123-abc-gg-Jo-49-1-21"
+  "abc-def-123-abc-gg-Jo-52-1-22"
+  "abc-def-123-abc-gg-Jo-52-1-23"
+  "abc-def-123-abc-gg-Jo-51-2-20"
+  "abc-def-123-abc-gg-Jo-51-2-19"
+  "abc-def-123-abc-gg-Jo-51-1-20"
+)
+
+# 存储版本号的数组
+declare -a versions=()
+
+# 解析版本号并存储
+for name in "${deployment_names[@]}"; do
+  version=$(echo "$name" | awk -F'-' '{print $7}')
+  versions+=("$version")
+done
+
+# 对版本排序去重
+versions=($(echo "${versions[@]}"|tr ' ' '\n'|sort -u|tr '\n' ' '))
+
+# 遍历数组并打印每个版本号
+echo "Print all of Version"
+for version in "${versions[@]}";
+    do echo "Version: $version"
+done
+
+# 找到最大的 Major 版本
+max_major=0
+
+for version in "${versions[@]}"; do
+  major=$(echo "$version" | cut -d'-' -f1)
+  if [ "$major" -gt "$max_major" ]; then
+    max_major="$major"
+  fi
+done
+echo "Print The max_major Version"
+echo $max_major
+
+# attempt find 前两个最大值
+sorted_versions=($(printf "%s\n" "${versions[@]}" | sort -rV))
+
+# 选择前两个最大值
+majormax1="${sorted_versions[0]}"
+majormax2="${sorted_versions[1]}"
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+echo "majormax1 and majormax2"
+echo $majormax1
+echo $majormax2
+
+# 存储要保留的 Deployment 名称
+declare -a keep_deployments=()
+
+# need delete Deployment
+declare -a del_deployments=()
+
+# 根据逻辑筛选要保留的 Deployment
+for name in "${deployment_names[@]}"; do
+  version=$(echo "$name" | awk -F'-' '{print $7}')
+  major=$(echo "$version" | cut -d'-' -f1)
+  minor=$(echo "$version" | cut -d'-' -f2)
+  # 查提取的主要版本号是否等于$max_major
+  if [ "$major" -eq "$max_major" ] || [ "$major" -eq "$majormax2" ]; then
+    # 在最大的 Major 版本下保留 2 个小版本,我分析应该是等于最大的都保留了
+    # 如果主要版本号等于 `$max_major`，则将当前的 `name` 添加到名为 `keep_deployments` 的数组中，表示要保留这个 `Deployment`
+    keep_deployments+=("$name")
+    # 一个条件语句的另一个分支，用于检查 `keep_deployments` 数组中的元素数量是否小于 2。如果满足条件，则执行下面的操作
+    # 这个其实不是我想要的，我其实关注的版本的大小，而不是数量的问题
+    #elif [ "${#keep_deployments[@]}" -lt 2 ]; then
+    # 保留其他 Major 版本下的 2 个小版本
+    #keep_deployments+=("$name")
+    else
+      del_deployments+=("$name")
+  fi
+done
+
+
+
+# 输出保留的 Deployment 列表："
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"need keep",s}'
+for deployment in "${keep_deployments[@]}"; do
+  echo "$deployment"
+done
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"need delete",s}'
+# output need delete deployment
+for deployment in "${del_deployments[@]}"; do
+  echo "$deployment"
+done
+
+
+
+
+abc-def-123-abc-gg-jo-2-0-0-deployment
+abc-def-123-abc-gg-jo-3-0-0-deployment
+abc-def-123-abc-gg-jo-5-0-1-deployment
+abc-def-123-abc-gg-jo-5-0-2-deployment
+abc-def-123-abc-gg-jo-5-0-3-deployment
+
+
+#!/bin/bash
+# Get all Deployment names
+
+#deployments=$(kubectl get deployments -n spcoe -o jsonpath='{range .items[*]}{.metadata.name} {"\n"}{end}' | grep abc-def-123-abc-gg-jo)
+deployments=$(cat /home/lex/deploy.txt)
+
+# Extract the major version numbers from the Deployment names
+major_versions=$(echo "$deployments" | awk -F'[-]' '{print $7}' | sort -u)
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+echo major_versions
+echo $major_versions
+# 排序数组
+sorted_versions=($(printf "%s\n" "${major_versions[@]}" | sort -rV))
+# 选择前两个最大值
+majormax1="${sorted_versions[0]}"
+majormax2="${sorted_versions[1]}"
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+echo "majormax1 and majormax2"
+echo $majormax1
+echo $majormax2
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+# Determine the number of major versions
+num_major_versions=$(echo "$major_versions" | wc -l)
+echo num_major_versions
+echo $num_major_versions
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+# Determine the retain policy based on the number of major versions
+if [ $num_major_versions -eq 1 ]; then
+  # Single major version, retain the last two minor versions
+  retain_policy="keep 2 minor versions"
+  keep_policy=("$majormax1")
+elif [ $num_major_versions -gt 1 ]; then
+  # Multiple major versions, retain the last two major versions
+  retain_policy=" keep 2 major versions"
+  keep_policy=("$majormax1" "$majormax2")
+  # My example should Retain major_versions 3 and 5 how to define retain_policy
+fi
+
+echo "Retain policy"
+echo $retain_policy
+
+echo "keep_policy"
+echo "${keep_policy[0]}" # 5
+echo "${keep_policy[1]}" # 3
+
+awk 'BEGIN{while (a++<50) s=s "-"; print s,"split",s}'
+# Delete all Deployments that do not match the retain policy
+for deployment in $deployments; do
+  major=$(echo "$deployment" | awk -F'[-]' '{print $7}')
+  minor=$(echo "$deployment" | awk -F'[-]' '{print $8}')
+  path=$(echo "$deployment" | awk -F'[-]' '{print $9}')
+  if [ $major == ${keep_policy[0]} ] || [ $major == ${keep_policy[1]} ]; then
+    echo -e "$major == "${keep_policy[0]}" OR $major == "${keep_policy[1]}"\n"
+    echo "need keep $deployment"
+  else
+    echo -e "need delete this one\n"
+    echo -e "need delete $deployment\n"
+  fi
+done
+
+: <<'END'
+
+
+echo "---------------------------"
+# Delete all Deployments that do not match the retain policy
+for deployment in $deployments; do
+  # Extract the major and minor versions from the Deployment name
+  major=$(echo "$deployment" | awk -F'[-]' '{print $7}')
+  minor=$(echo "$deployment" | awk -F'[-]' '{print $8}')
+  path=$(echo "$deployment" | awk -F'[-]' '{print $9}')
+  echo $major
+  echo $minor
+  echo $path
+  # Check if the Deployment matches the retain policy
+  if ! echo "{$keep_policy[0]}" | grep -q "$major"; then
+    echo "loop "${keep_policy[0]}""
+    # Delete the Deployment
+    # kubectl delete deployment "$deployment"
+    echo "$deployment"
+  fi
+done
+
+END
+``` 
+
+
 想要保留最大的 Major 版本下的 2 个小版本，
 如果只有一个大版本，则保留该大版本下的 2 个小版本，
 然后删除其他的 Deployment。
