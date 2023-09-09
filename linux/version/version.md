@@ -20,6 +20,43 @@
 
 8. `if [ -z "${max_versions[$major_version]}" ]; then`：这是一个条件语句，检查关联数组`max_versions`中是否已经有该主版本号的最大版本。`-z`用于检查变量是否为空。
 
+这段代码的目的是维护一个关联数组 `max_versions`，以确保每个主版本号对应的最大版本号被正确地记录下来。下面是代码的更详细解释：
+
+8.1. `if [ -z "${max_versions[$major_version]}" ]; then`：这个条件语句首先检查是否已经存在一个最大版本号（以主版本号 `$major_version` 作为索引）。这里使用了 `-z` 条件，它检查一个字符串是否为空。如果 `${max_versions[$major_version]}` 为空，表示还没有记录这个主版本号的最大版本。
+
+8.2. `max_versions[$major_version]=$version_str`：如果条件满足，也就是没有记录这个主版本号的最大版本，那么当前版本号 `$version_str` 就会被设置为该主版本号的最大版本。这一步将初始化该主版本号的最大版本。
+
+8.3. `else`：如果条件不满足，说明已经有了记录这个主版本号的最大版本。
+
+8.4. `if [[ "$version_str" > "${max_versions[$major_version]}" ]]; then`：在这里，脚本会比较当前版本号 `$version_str` 与已记录的最大版本 `${max_versions[$major_version]}`。这个比较是使用双方括号 `[[ ... ]]` 来完成的，它允许进行字符串比较。
+
+8.5. `max_versions[$major_version]=$version_str`：如果当前版本号 `$version_str` 比已记录的最大版本 `${max_versions[$major_version]}` 大，则更新最大版本为当前版本号。这确保了在遍历关键字列表时，只有最大版本会被记录下来。
+
+总结：这段代码负责维护一个记录每个主版本号最大版本的关联数组。它首先检查是否已经有了最大版本，如果没有，就将当前版本作为最大版本记录下来。如果已经有了最大版本，它会比较当前版本与已有的最大版本，将较大的版本作为最大版本。这样，最终你将得到每个主版本号对应的最大版本。
+
+- eg
+当你需要使用关联数组中的值时，可以使用`${array[key]}`的语法。这里有一个简单的例子，假设我们有一个关联数组 `fruit_prices`，它存储了不同水果的价格：
+
+```bash
+#!/bin/bash
+
+# 创建关联数组
+declare -A fruit_prices
+fruit_prices["apple"]=0.99
+fruit_prices["banana"]=0.25
+fruit_prices["cherry"]=1.50
+
+# 检索水果的价格
+selected_fruit="banana"
+price="${fruit_prices[$selected_fruit]}"
+
+# 打印结果
+echo "价格 for $selected_fruit 是 $price"
+```
+
+在这个例子中，`${fruit_prices[$selected_fruit]}` 表示从关联数组 `fruit_prices` 中检索出与 `$selected_fruit`（这里是 "banana"）关联的价格。最后，脚本会打印出所选水果的价格。
+
+
 9. `max_versions[$major_version]=$version_str`：如果该主版本号在关联数组中不存在（即为空），则将当前版本字符串`version_str`存储在`max_versions`中，以表示当前版本是该主版本号的最大版本。
 
 10. `else`：如果关联数组中已经有该主版本号的最大版本，则执行下面的操作。
