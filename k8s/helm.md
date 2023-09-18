@@ -562,3 +562,33 @@ spec:
 以上是一些常用的 Helm 模板语法，还有其他更高级的用法，例如模板继承和模板函数等。你可以参考官方文档来了解更多信息
 
 https://www.it399.com/code/markdown2html
+
+Helm is a package manager for Kubernetes that allows you to define, install, and upgrade even the most complex Kubernetes applications. Helm uses templates to generate Kubernetes YAML manifests with configurable values.
+
+Here's a brief overview of Helm templates:
+
+1. **Chart Structure**: Helm packages are called "charts." A chart is a collection of files and templates that define a Kubernetes application. The structure typically includes a `charts/` directory for dependencies, a `templates/` directory for template files, and a `values.yaml` file to define default configuration values.
+
+2. **Template Language**: Helm uses the Go template language for its templates. This language allows you to embed dynamic values and logic into your Kubernetes manifests. You can use conditional statements, loops, and variables to customize the generated YAML.
+
+3. **Values**: The `values.yaml` file mentioned earlier contains default configuration values for your chart. These values can be overridden when you install or upgrade the chart, allowing you to customize the behavior of your application.
+
+4. **Template Functions**: Helm provides a set of built-in template functions that you can use in your templates. These functions can manipulate strings, perform arithmetic operations, and more.
+
+5. **Release Names**: When you install a Helm chart, it creates a "release" in your Kubernetes cluster. The release name is used to distinguish different instances of the same chart. You can specify a release name when installing a chart.
+
+6. **Generating Manifests**: To generate Kubernetes manifests from a Helm chart, you use the `helm template` command. This command processes the templates and values, producing the final YAML manifests that can be applied to your cluster.
+
+Here's an example of using `helm template` to render the templates in a Helm chart and install it:
+
+```bash
+helm template my-release ./my-chart -f my-values.yaml | kubectl apply -f -
+```
+
+In this command:
+- `my-release` is the name of the release.
+- `./my-chart` is the path to the Helm chart.
+- `-f my-values.yaml` specifies a custom values file to override default configuration.
+- `kubectl apply -f -` applies the generated manifests to your Kubernetes cluster.
+
+Helm templates are a powerful way to manage and deploy Kubernetes applications with configuration flexibility. You can customize your Kubernetes resources easily while maintaining a structured chart.
