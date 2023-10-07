@@ -1,8 +1,186 @@
+- [reference](#reference)
+  - [detail process](#detail-process)
+    - [need todo Testing](#need-todo-testing)
+  - [explain chatgpt](#explain-chatgpt)
+    - [1. 创建后端服务](#1-创建后端服务)
+    - [2. 添加后端实例](#2-添加后端实例)
+    - [3. 更新后端服务的安全策略](#3-更新后端服务的安全策略)
+    - [4. 创建URL映射](#4-创建url映射)
+    - [5. 创建目标HTTPS代理](#5-创建目标https代理)
+    - [6. 创建转发规则](#6-创建转发规则)
+  - [Claude2](#claude2)
+  - [Google Bard](#google-bard)
+- [need prepare](#need-prepare)
+  - [Detail introduction](#detail-introduction)
 # reference
 https://cloud.google.com/armor/docs/security-policy-overview
 The following diagram illustrates the location of global external Application Load Balancers, classic Application Load Balancers, the Google network, and Google data centers.
 https://cloud.google.com/static/armor/images/ip-bl-wl-1.svg
 The following diagram illustrates the location of global external Application Load Balancers, classic Application Load Balancers, the Google network, and Google data centers.
+
+## detail process 
+- [x] gcloud compute backend-services create lex-test-mycomponent-https-cloud-armor --global --protocol HTTPS --port-name=mycomponentport --health-checks dev-testenv-mycomponent-be-4bd7-tcp-healthcheck --load-balancing-scheme EXTERNAL --timeout=30s --connection-draining-timeout 60s --project aibang-myid-dufu-dev-
+- [x] gcloud compute backend-services add-backend lex-test-mycomponent-https-cloud-armor --global --instance-group dev-testenv-mycomponentlextest-mig-30jo --instance-group-zone=asia-east2-a
+- [x] gcloud compute backend-services update lex-test-mycomponent-https-cloud-armor --security-policy aibang-myid-dufu-dev-httpsmycomponent-armor-policy --global
+- [x] gcloud compute url-maps create dev-testenv-lextest-mycomponent-https --default-service=lex-test-mycomponent-https-cloud-armor --project aibang-myid-dufu-dev
+- [x] gcloud compute target-https-proxies create dev-testenv-mycomponent-lextest-https-proxy --ssl-certificates=dev-testenv-glb-fuww-cert-20230323 --global --url-map=dev-testenv-lextest-mycomponent-https --global-url-map --project aibang-myid-dufu-dev
+- [x] gcloud compute forwarding-rules create mycomponentlextest --ports=443   --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=EXTERNAL --global
+
+### need todo Testing 
+gcloud compute forwarding-rules create mycomponentlextest --ports=443   --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=INTERNAL --global
+
+要将转发规则限制为仅供您内部的 share VPC 网络访问，您可以使用 --network 参数指定您的 share VPC 网络。以下是一个示例：
+
+gcloud compute forwarding-rules create mycomponentlextest --ports=443   --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=INTERNAL --network=my-share-vpc-network --global
+
+如果仅仅凭命令的指定的EXTERNAL或者INTERNAL, 那么看起来我最终forwarding-rules的地址是?  能否成功也是一个问题?这样其实更有利于去理解public IP Addresses
+
+使用了 load-balancing-scheme 设置为 INTERNAL 的转发规则，因此您的 share VPC 网络将获得一个内部 IP 地址
+
+
+创建的 backend-service 和 target-https-proxy 都是设置为 EXTERNAL 的，因此可以通过互联网访问。如果您将 load-balancing-scheme 设置为 INTERNAL，则转发规则将仅在内部 VPC 网络中可用
+
+gcloud compute forwarding-rules create mycomponentlextest --ports=443  --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=INTERNAL --global
+
+## explain chatgpt
+
+这些命令是使用Google Cloud Platform (GCP)的gcloud命令行工具进行的操作，用于配置和管理负载均衡和HTTPS终端的相关服务。以下是对每个命令的详细解释：
+
+### 1. 创建后端服务
+```bash
+gcloud compute backend-services create lex-test-mycomponent-https-cloud-armor --global --protocol HTTPS --port-name=mycomponentport --health-checks dev-testenv-mycomponent-be-4bd7-tcp-healthcheck --load-balancing-scheme EXTERNAL --timeout=30s --connection-draining-timeout 60s --project aibang-myid-dufu-dev-
+```
+
+- `gcloud compute backend-services create`: 这个命令用于创建一个后端服务。
+- `lex-test-mycomponent-https-cloud-armor`: 这是服务的名称。
+- `--global`: 指定这个服务是全局服务，可以跨多个区域使用。
+- `--protocol HTTPS`: 指定使用HTTPS协议。
+- `--port-name=mycomponentport`: 指定端口的名称为"mycomponentport"。
+- `--health-checks dev-testenv-mycomponent-be-4bd7-tcp-healthcheck`: 指定健康检查的名称，用于确定后端实例的健康状态。
+- `--load-balancing-scheme EXTERNAL`: 指定负载均衡方案为EXTERNAL，即通过公网访问。
+- `--timeout=30s`: 指定连接的超时时间为30秒。
+- `--connection-draining-timeout 60s`: 指定连接排空的超时时间为60秒。
+- `--project aibang-myid-dufu-dev-`: 指定项目名称。
+
+### 2. 添加后端实例
+```bash
+gcloud compute backend-services add-backend lex-test-mycomponent-https-cloud-armor --global --instance-group dev-testenv-mycomponentlextest-mig-30jo --instance-group-zone=asia-east2-a
+```
+
+- `gcloud compute backend-services add-backend`: 这个命令用于将后端实例添加到后端服务。
+- `lex-test-mycomponent-https-cloud-armor`: 后端服务的名称。
+- `--global`: 指定后端服务是全局服务。
+- `--instance-group dev-testenv-mycomponentlextest-mig-30jo`: 指定要添加的后端实例组。
+- `--instance-group-zone=asia-east2-a`: 指定后端实例组所在的区域。
+
+### 3. 更新后端服务的安全策略
+```bash
+gcloud compute backend-services update lex-test-mycomponent-https-cloud-armor --security-policy aibang-myid-dufu-dev-httpsmycomponent-armor-policy --global
+```
+
+- `gcloud compute backend-services update`: 这个命令用于更新后端服务的配置。
+- `lex-test-mycomponent-https-cloud-armor`: 后端服务的名称。
+- `--security-policy aibang-myid-dufu-dev-httpsmycomponent-armor-policy`: 指定安全策略的名称，用于控制访问后端服务的安全规则。
+- `--global`: 指定后端服务是全局服务。
+
+### 4. 创建URL映射
+```bash
+gcloud compute url-maps create dev-testenv-lextest-mycomponent-https --default-service=lex-test-mycomponent-https-cloud-armor --project aibang-myid-dufu-dev
+```
+
+- `gcloud compute url-maps create`: 这个命令用于创建一个URL映射。
+- `dev-testenv-lextest-mycomponent-https`: 指定URL映射的名称。
+- `--default-service=lex-test-mycomponent-https-cloud-armor`: 指定默认的服务，即请求将被路由到的后端服务。
+- `--project aibang-myid-dufu-dev`: 指定项目名称。
+
+### 5. 创建目标HTTPS代理
+```bash
+gcloud compute target-https-proxies create dev-testenv-mycomponent-lextest-https-proxy --ssl-certificates=dev-testenv-glb-fuww-cert-20230323 --global --url-map=dev-testenv-lextest-mycomponent-https --global-url-map --project aibang-myid-dufu-dev
+```
+
+- `gcloud compute target-https-proxies create`: 这个命令用于创建目标HTTPS代理。
+- `dev-testenv-mycomponent-lextest-https-proxy`: 指定代理的名称。
+- `--ssl-certificates=dev-testenv-glb-fuww-cert-20230323`: 指定SSL证书的名称，用于加密HTTPS流量。
+- `--global`: 指定代理是全局的，可以在全球范围内使用。
+- `--url-map=dev-testenv-lextest-mycomponent-https`: 指定URL映射，用于路由请求。
+- `--global-url-map`: 指定URL映射是全局的。
+- `--project aibang-myid-dufu-dev`: 指定项目名称。
+
+### 6. 创建转发规则
+```bash
+gcloud compute forwarding-rules create mycomponentlextest --ports=443 --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=EXTERNAL --global
+```
+
+- `gcloud compute forwarding-rules create`: 这个命令用于创建转发规则。
+- `mycomponentlextest`: 指定规则的名称。
+- `--ports=443`: 指定端口号为443，用于接收HTTPS流量。
+- `--target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy`: 指定目标HTTPS代理，将流量路由到后端服务。
+- `--load-balancing-scheme=EXTERNAL`: 指定负载均衡方案为EXTERNAL，即通过公网访问。
+- `--global`: 指定规则是全局的。
+
+这些命令一起配置了一个负载均衡的HTTPS终端，用于处理HTTPS请求并将其路由到后端服务。这个配置允许全球范围内的访问，并提供了安全策略的控制。
+
+
+## Claude2
+好的,我来详细解释一下这6条gcloud命令:
+
+1. 创建一个名为lex-test-mycomponent-https-cloud-armor的全局HTTPS协议的后端服务,指定健康检查和负载均衡方式。
+
+2. 将后端服务lex-test-mycomponent-https-cloud-armor加入一个名为dev-testenv-mycomponentlextest-mig-30jo的托管实例组作为后端主机池,指定其在asia-east2-a区。
+
+3. 更新后端服务lex-test-mycomponent-https-cloud-armor,为其添加安全策略dev-testenv-httpsmycomponent-armor-policy。
+
+4. 创建一个名为dev-testenv-lextest-mycomponent-https的URL映射,默认指向前面创建的后端服务。
+
+5. 创建一个名为dev-testenv-mycomponent-lextest-https-proxy的全局目标HTTPS代理,绑定证书、URL映射。
+
+6. 创建一个名为mycomponentlextest的全局转发规则,端口为443,目标为之前创建的代理,加载均衡方式为外部方式。
+
+这样通过后端服务、URL映射、目标代理和转发规则构建起了一个负载均衡功能,提供了全局的HTTPS访问。请确定我的解释是否准确。如有需要补充的部分请告知。
+
+
+## Google Bard
+以下是您提供的6条命令的详细解释：
+
+
+gcloud compute backend-services create lex-test-mycomponent-https-cloud-armor --global --protocol HTTPS --port-name=mycomponentport --health-checks dev-testenv-mycomponent-be-4bd7-tcp-healthcheck --load-balancing-scheme EXTERNAL --timeout=30s --connection-draining-timeout 60s --project aibang-myid-dufu-dev-
+
+
+这条命令用于创建一个名为 `lex-test-mycomponent-https-cloud-armor` 的后端服务。该服务使用 HTTPS 协议，端口名为 `mycomponentport`，健康检查为 `dev-testenv-mycomponent-be-4bd7-tcp-healthcheck`，负载均衡方案为 EXTERNAL，超时时间为 30 秒，连接耗尽超时时间为 60 秒。
+
+
+gcloud compute backend-services add-backend lex-test-mycomponent-https-cloud-armor --global --instance-group dev-testenv-mycomponentlextest-mig-30jo --instance-group-zone=asia-east2-a
+
+
+这条命令用于将名为 `dev-testenv-mycomponentlextest-mig-30jo` 的实例组添加到 `lex-test-mycomponent-https-cloud-armor` 后端服务中。该实例组位于 `asia-east2-a` 区域。
+
+
+gcloud compute backend-services update lex-test-mycomponent-https-cloud-armor --security-policy aibang-myid-dufu-dev-httpsmycomponent-armor-policy --global
+
+
+这条命令用于将 `aibang-myid-dufu-dev-httpsmycomponent-armor-policy` 安全策略应用到 `lex-test-mycomponent-https-cloud-armor` 后端服务中。
+
+
+gcloud compute url-maps create dev-testenv-lextest-mycomponent-https --default-service=lex-test-mycomponent-https-cloud-armor --project aibang-myid-dufu-dev
+
+
+这条命令用于创建一个名为 `dev-testenv-lextest-mycomponent-https` 的 URL 映射。该 URL 映射的默认服务为 `lex-test-mycomponent-https-cloud-armor` 后端服务。
+
+
+gcloud compute target-https-proxies create dev-testenv-mycomponent-lextest-https-proxy --ssl-certificates=dev-testenv-glb-fuww-cert-20230323 --global --url-map=dev-testenv-lextest-mycomponent-https --global-url-map --project aibang-myid-dufu-dev
+
+
+这条命令用于创建一个名为 `dev-testenv-mycomponent-lextest-https-proxy` 的目标 HTTPS 代理。该代理使用 `dev-testenv-glb-fuww-cert-20230323` SSL 证书，并将用户流量转发到 `dev-testenv-lextest-mycomponent-https` URL 映射中指定的默认服务。
+
+
+gcloud compute forwarding-rules create mycomponentlextest --ports=443  --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=EXTERNAL --global
+
+
+这条命令用于创建一个名为 `mycomponentlextest` 的转发规则。该规则将端口 443 上的流量转发到 `dev-testenv-mycomponent-lextest-https-proxy` 目标 HTTPS 代理中。负载均衡方案为 EXTERNAL，意味着该规则将流量负载均衡到实例组中。
+
+总而言之，这6条命令用于创建一个完整的负载均衡器，用于将用户流量转发到后端服务 `lex-test-mycomponent-https-cloud-armor` 中。该服务使用 HTTPS 协议，并受 `aibang-myid-dufu-dev-httpsmycomponent-armor-policy` 安全策略的保护。
+
+
 
 
 # need prepare 
