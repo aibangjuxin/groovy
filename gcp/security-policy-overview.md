@@ -49,6 +49,15 @@ gcloud compute forwarding-rules create mycomponentlextest --ports=443  --target-
 ### 1. 创建后端服务
 ```bash
 gcloud compute backend-services create lex-test-mycomponent-https-cloud-armor --global --protocol HTTPS --port-name=mycomponentport --health-checks dev-testenv-mycomponent-be-4bd7-tcp-healthcheck --load-balancing-scheme EXTERNAL --timeout=30s --connection-draining-timeout 60s --project aibang-myid-dufu-dev-
+
+gcloud compute backend-services create ""$backend-services-Name"" \
+    --load-balancing-scheme=internal \
+    --protocol=tcp \
+    --region=$region \
+    --health-checks=""$healthname"" \
+    --global-health-checks \
+    --project=$project \
+    --network=$network
 ```
 
 - `gcloud compute backend-services create`: 这个命令用于创建一个后端服务。
@@ -61,10 +70,17 @@ gcloud compute backend-services create lex-test-mycomponent-https-cloud-armor --
 - `--timeout=30s`: 指定连接的超时时间为30秒。
 - `--connection-draining-timeout 60s`: 指定连接排空的超时时间为60秒。
 - `--project aibang-myid-dufu-dev-`: 指定项目名称。
+- `--network 注意这里可能需要指定网络，否则应该是有一个默认的网络配置,但是应该会有global和internal的区别的时候是否需要选择这个network?
+    eg: network=projects/$project/global/networks/aibang-beta-cidmz
 
 ### 2. 添加后端实例
 ```bash
 gcloud compute backend-services add-backend lex-test-mycomponent-https-cloud-armor --global --instance-group dev-testenv-mycomponentlextest-mig-30jo --instance-group-zone=asia-east2-a
+
+gcloud compute backend-services add-backend ""$backend-services-Name"" \
+    --instance-group-region=$region \
+    --instance-group=""$groupName"" \
+    --project=$project
 ```
 
 - `gcloud compute backend-services add-backend`: 这个命令用于将后端实例添加到后端服务。
@@ -109,15 +125,25 @@ gcloud compute target-https-proxies create dev-testenv-mycomponent-lextest-https
 ### 6. 创建转发规则
 ```bash
 gcloud compute forwarding-rules create mycomponentlextest --ports=443 --target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy --load-balancing-scheme=EXTERNAL --global
+
+gcloud compute forwarding-rules create $frName  --project $project \
+    --region=$region \
+    --load-balancing-scheme=internal \
+    --subnet=$subnetwork \
+    --ip-protocol=TCP \
+    --ports=$ilbPort \
+    --backend-service=$backend-services-Name \
+    --backend-service-region=$region \
+    --service-label=$seviceLabel
 ```
 
 - `gcloud compute forwarding-rules create`: 这个命令用于创建转发规则。
 - `mycomponentlextest`: 指定规则的名称。
 - `--ports=443`: 指定端口号为443，用于接收HTTPS流量。
 - `--target-https-proxy=dev-testenv-mycomponent-lextest-https-proxy`: 指定目标HTTPS代理，将流量路由到后端服务。
-- `--load-balancing-scheme=EXTERNAL`: 指定负载均衡方案为EXTERNAL，即通过公网访问。
+- `--load-balancing-scheme=EXTERNAL`: 指定负载均衡方案为EXTERNAL，即通过公网访问。是否可以internal ==> Direct to my Shared vpc network ?
 - `--global`: 指定规则是全局的。
-
+- `subnet` 这里有这个参数其实是可以供选择的？那么我是否可以将创建的规则直接应用到我的shared VPC network ？
 这些命令一起配置了一个负载均衡的HTTPS终端，用于处理HTTPS请求并将其路由到后端服务。这个配置允许全球范围内的访问，并提供了安全策略的控制。
 
 
