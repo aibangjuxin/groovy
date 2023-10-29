@@ -1,4 +1,23 @@
 #!/bin/bash
+os_type=""
+
+# 尝试获取操作系统类型
+os_name=$(uname -s)
+
+case $os_name in
+  Linux)
+    os_type="Linux"
+    ;;
+  Darwin)
+    os_type="macOS"
+    ;;
+  *)
+    # 其他未知系统类型默认为iPhone
+    os_type="iPhone"
+esac
+
+# 输出操作系统类型
+echo "OS Type: $os_type"
 
 # Define the directory
 dir=$(pwd)
@@ -28,8 +47,8 @@ if [ -n "$(git status --porcelain)" ]; then
   # Get the latest changed filename
   filename=$(git diff --name-only HEAD | tail -n 1)
 
-  # Define a commit message 
-  commit_message="This is for my iPhone git push or pull at $riqi. Last changed file: $filename"
+  # Define a commit message
+  commit_message="This is for my ${os_type} git push or pull at $riqi. Last changed file: $filename"
 
   # Commit the changes
   git commit -m "$commit_message"
