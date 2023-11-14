@@ -114,3 +114,108 @@ spec:
 - 启动探针 (`startupProbe`): 用于检测容器是否已经启动完成，通过HTTP GET请求检查健康检查页面`.well_health`，初始延迟10秒，每5秒检查一次。
 - 健康检查页面路径为 `/.well_health`，端口为 `8443`。
 
+选择是使用HTTP探针还是TCP探针通常取决于你的应用程序的性质和需求。下面是一些建议：
+
+1. **HTTP探针：**
+   - **优势：** 更高级别的健康检查，允许你检查应用程序的具体HTTP端点，验证应用程序是否能够正确响应HTTP请求。
+   - **适用场景：** 适用于Web应用程序、API服务等能够响应HTTP请求的场景。
+   - **注意事项：** 请确保你的应用程序提供了健康检查的HTTP端点，而且该端点设计良好，能够反映应用程序的实际健康状态。
+
+2. **TCP探针：**
+   - **优势：** 更通用，适用于任何TCP连接。不需要应用程序提供特定的健康检查端点。
+   - **适用场景：** 适用于无法使用HTTP进行健康检查的场景，例如数据库连接或其他基于TCP的服务。
+   - **注意事项：** TCP探针通常只检查TCP连接是否建立，而不了解应用程序的具体健康状态。
+
+3. **综合使用：**
+   - **优势：** 在某些情况下，可以同时使用HTTP和TCP探针，以获得更全面的健康检查。
+   - **适用场景：** 对于复杂的应用程序，可能需要同时检查TCP连接和特定HTTP端点，以确保全面的健康状态。
+   - **注意事项：** 确保不要过度使用探针，以避免对应用程序性能造成负担。
+
+综合考虑应用程序的性质、架构和运行环境，选择最适合你需求的探针类型。
+
+# squid
+```yaml
+containers:
+- name: squid-proxy-container
+  image: your-squid-image:tag
+  ports:
+  - containerPort: 3128
+  livenessProbe:
+    tcpSocket:
+      port: 3128
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 3
+  readinessProbe:
+    tcpSocket:
+      port: 3128
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 3
+  startupProbe:
+    tcpSocket:
+      port: 3128
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    failureThreshold: 30
+``` 
+这配置是一个 Kubernetes Deployment 的容器部分，其中包含了存活探针（livenessProbe）、就绪探针（readinessProbe）和启动探针（startupProbe）的设置，主要针对名为 `squid-proxy-container` 的容器。
+
+1. **基本容器配置：**
+   - `name: squid-proxy-container`: 定义容器的名称。
+   - `image: your-squid-image:tag`: 指定容器所使用的镜像，其中 `your-squid-image:tag` 应该被替换为实际的Squid代理镜像及其标签。
+   - `ports`: 配置容器的端口映射。
+     - `containerPort: 3128`: 定义容器监听的端口号，这里是Squid代理的默认端口。
+
+2. **存活探针 (`livenessProbe`):**
+   - 通过TCP套接字检测容器是否存活。
+   - `port: 3128`: 指定TCP连接的目标端口。
+   - `initialDelaySeconds: 10`: 容器启动后等待10秒开始第一次检测。
+   - `periodSeconds: 5`: 每5秒执行一次存活探针。
+   - `failureThreshold: 3`: 如果在连续3次检测中都失败，则认为容器不再存活。
+
+3. **就绪探针 (`readinessProbe`):**
+   - 通过TCP套接字检测容器是否准备好接受流量。
+   - `port: 3128`: 指定TCP连接的目标端口。
+   - `initialDelaySeconds: 10`: 容器启动后等待10秒开始第一次检测。
+   - `periodSeconds: 5`: 每5秒执行一次就绪探针。
+   - `failureThreshold: 3`: 如果在连续3次检测中都失败，则认为容器不准备好接受流量。
+
+4. **启动探针 (`startupProbe`):**
+   - 通过TCP套接字检测容器是否已经启动完成。
+   - `port: 3128`: 指定TCP连接的目标端口。
+   - `initialDelaySeconds: 10`: 容器启动后等待10秒开始第一次检测。
+   - `periodSeconds: 5`: 每5秒执行一次启动探针。
+   - `failureThreshold: 30`: 如果在连续30次检测中都失败，则认为容器启动失败。
+
+这些探针用于确保Squid代理容器在运行、准备好接受流量以及成功启动后能够正常工作。适当调整这些参数以满足你的具体需求和应用场景。
+
+确保你的Squid代理Pod在kube-dns启动之后再启动，可以通过以下几种方式来解决依赖启动顺序的问题：
+
+1. **使用启动延迟：**
+   - 在Squid代理容器的`startupProbe`或`livenessProbe`中增加一定的初始延迟（`initialDelaySeconds`），以确保kube-dns有足够的时间启动。例如，将`initialDelaySeconds`设置为较大的值，比如60秒，以便确保kube-dns有充分时间启动。
+
+2. **使用依赖关系控制器：**
+   - 如果你使用的是Kubernetes 1.9或更高版本，可以使用Init Containers 或 `initContainers` 字段，以确保 kube-dns 在Squid代理容器之前启动。Init Containers 是在主容器启动之前运行的短暂容器，可以用于执行一些初始化任务，例如等待依赖服务启动。
+   
+3. **使用等待机制：**
+   - 在你的启动脚本中，添加等待kube-dns服务启动的机制。这可以通过在脚本中使用`nc`（netcat）或`curl`等工具，定期检查kube-dns服务是否可用，直到它准备好为止。
+
+下面是一个简单的示例，演示了如何在启动脚本中使用等待机制：
+
+```bash
+#!/bin/sh
+
+# Wait for kube-dns to be ready on port 53
+echo "Waiting for kube-dns to be ready..."
+while ! nc -z kube-dns-service 53; do
+  sleep 5
+done
+
+# Continue with Squid proxy startup
+exec squid
+```
+
+请根据你的具体环境和需求选择适合的方法。使用上述方法之一，可以确保在Squid代理启动时kube-dns已经准备就绪。
+
+
