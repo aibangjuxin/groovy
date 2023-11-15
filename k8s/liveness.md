@@ -239,6 +239,7 @@ Kubernetes中的Pod在kube-dns没有启动的情况下，仍然可以启动，�
 但请注意，这种解析方式可能会有限制，不同于kube-dns提供的完整的DNS解析服务。特别是，对于服务发现和跨命名空间的解析，kube-dns等DNS解析服务更为强大和灵活。
 
 总的来说，Pod在kube-dns未启动的情况下，仍然能够获取到一定程度的主机名解析，但功能可能受到限制，特别是在涉及到Kubernetes服务发现和跨命名空间的情况下。
+## squid likeness tcp 
 
 在Kubernetes（K8S）中，可以使用存活（liveness）、就绪（readiness）和启动（startup）探针来检查Squid服务的启动状态。以下是一个示例配置，使用TCP探针检查3128端口的状态：
 
