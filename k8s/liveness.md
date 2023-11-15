@@ -240,4 +240,58 @@ Kubernetes中的Pod在kube-dns没有启动的情况下，仍然可以启动，�
 
 总的来说，Pod在kube-dns未启动的情况下，仍然能够获取到一定程度的主机名解析，但功能可能受到限制，特别是在涉及到Kubernetes服务发现和跨命名空间的情况下。
 
+在Kubernetes（K8S）中，可以使用存活（liveness）、就绪（readiness）和启动（startup）探针来检查Squid服务的启动状态。以下是一个示例配置，使用TCP探针检查3128端口的状态：
 
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: squid
+  labels:
+    app: squid
+spec:
+  containers:
+  - name: squid
+    image: your-squid-image
+    ports:
+    - containerPort: 3128
+    livenessProbe:
+      tcpSocket:
+        port: 3128
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    readinessProbe:
+      tcpSocket:
+        port: 3128
+      initialDelaySeconds: 15
+      periodSeconds: 20
+    startupProbe:
+      tcpSocket:
+        port: 3128
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      failureThreshold: 5
+```
+
+在这个示例中，`livenessProbe`和`readinessProbe`使用TCP探针检查3128端口的状态。存活探针在容器启动后的15秒开始工作，每20秒检查一次。就绪探针的配置与存活探针相同。启动探针在容器启动后的5秒开始工作，每10秒检查一次，允许失败5次。如果启动探针失败，Kubelet将杀死容器，而容器依其重启策略进行重启[1][4]。
+
+请根据实际服务和环境调整探针的配置，例如探测频率、失败阈值等。
+
+Sources
+[1] 配置存活、就绪和启动探针 - Kubernetes https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[2] Configure Liveness, Readiness and Startup Probes - Kubernetes https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[3] 连接到外部HTTPS 代理 - Istio https://istio.io/v1.1/zh/docs/examples/advanced-gateways/http-proxy/
+[4] k8s怎么配置Pod的liveness和readiness与startup探针- 技术颜良 - 博客园 https://www.cnblogs.com/cheyunhua/p/15378350.html
+[5] Liveness, Readiness, and Startup Probes | Kube by Example https://kubebyexample.com/learning-paths/application-development-kubernetes/lesson-4-customize-deployments-application-2
+[6] Kubernetes-存活探针(liveness probe)（十六） - Andya_net - 博客园 https://www.cnblogs.com/Andya/p/17384773.html
+[7] 配置Pod 的liveness 和readiness 探针- kubernetes中文手册 - FreeMesh - 云原生 https://doc.cncf.vip/kubernetes-handbook/yong-hu-zhi-nan/resource-configuration/configure-liveness-readiness-probes
+[8] A Practical Guide to Kubernetes Startup Probe - Airplane.dev https://www.airplane.dev/blog/kubernetes-startup-probe
+[9] k8s 存活探针LivenessProbe - 【The_crossing] - 博客园 https://www.cnblogs.com/liujunjun/p/14383075.html
+[10] K8s Liveness/Readiness/Startup 探针机制原创 - CSDN博客 https://blog.csdn.net/IT_ZRS/article/details/128446388
+[11] Configure Kubernetes Readiness and Liveness Probes - Tutorial - DEV Community https://dev.to/pavanbelagatti/configure-kubernetes-readiness-and-liveness-probes-tutorial-478p
+[12] k8s中容器日志文件日志如何标准输出打印 https://www.niewx.cn/local-search.xml
+[13] What Are Startup, Liveness, and Readiness in Kubernetes Probes - Loft Labs https://loft.sh/blog/kubernetes-probes-startup-liveness-readiness/
+[14] 配置linux防止端口扫描-合作伙伴中心-认证鉴权:AK/SK认证-华为云 https://www.huaweicloud.com/guide/list-17508201-A-392
+[15] A Guide to Understanding your Kubernetes Liveness Probes Best Practices - Fairwinds https://www.fairwinds.com/blog/a-guide-to-understanding-kubernetes-liveness-probes-best-practices
+
+By Perplexity at https://www.perplexity.ai/search/71891259-2c7e-4096-8489-e56e11d7b46d
