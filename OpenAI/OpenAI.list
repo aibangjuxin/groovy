@@ -16,6 +16,8 @@ DOMAIN-SUFFIX,intercom.io
 DOMAIN-SUFFIX,intercomcdn.com
 DOMAIN-SUFFIX,sentry.io
 DOMAIN-SUFFIX,stripe.com
+DOMAIN-SUFFIX,oaistatic.com
+DOMAIN-SUFFIX,oaiusercontent.com
 # poe
 DOMAIN-SUFFIX,poe.com
 DOMAIN-SUFFIX,quoracdn.net
