@@ -53,3 +53,49 @@ Sources
 [6] 系统工程师实战 - GitHub Pages https://fifilyu.github.io/seia/
 
 By Perplexity at https://www.perplexity.ai/search/63b8591b-0680-4969-8b13-a3950d83746a
+
+
+"Squid 启动报错 kid1| ERROR: connection to dns address failed" 这个错误可能是由于 Squid 代理服务器在解析 DNS 地址时遇到了问题。这可能是由于代理服务器的 DNS 配置问题或者网络连接问题导致的。
+
+要解决这个问题，你可以尝试以下方法：
+
+1. 检查代理服务器的 DNS 配置：确保 `/etc/resolv.conf` 文件中的配置是正确的。如果配置不正确，请添加正确的配置信息，例如：
+
+```
+nameserver ###.###.###.###
+nameserver ###.###.###.###
+```
+
+可以配置多个 DNS 服务器。之后重新启动 Squid 服务[2]。
+
+2. 检查网络连接：确保 Squid 服务器可以正常访问网络。
+
+3. 检查 Squid 的配置：特别是与 DNS 相关的配置。你可以尝试在 Squid 的配置文件中添加 `dns_nameservers` 参数，指定一个可靠的 DNS 服务器，例如：
+
+```
+dns_nameservers 8.8.8.8
+```
+
+然后重新加载 Squid 配置[4]。
+
+如果问题仍然存在，你可能需要进一步调查或寻求专业的技术支持。
+
+Sources
+[1] Squid代理常见错误- 小围脖 - 博客园 https://www.cnblogs.com/xyd21c/archive/2012/12/19/2825314.html
+[2] Squid代理常见错误转载 - CSDN博客 https://blog.csdn.net/qq_31666147/article/details/52047358
+[3] squid启动失败，无任何报错，status命令提示/var/run/squid.pid: (13) Permission denied 原创 https://blog.csdn.net/u010039418/article/details/81775673
+[4] Squid代理FQ失败问题处理 - 阿里云开发者社区 https://developer.aliyun.com/article/534492
+[5] squid启动报错个人总结 - 51CTO博客 https://blog.51cto.com/fantefei/915775
+[6] 6．访问控制 - Squid权威指南 http://blog.zyan.cc/book/squid/chap06.html
+[7] How to debug Squid ERR_DNS_FAIL - Server Fault https://serverfault.com/questions/1081627/how-to-debug-squid-err-dns-fail
+[8] 代理服务器Squid | 管理指南| SUSE Linux Enterprise Server 15 https://documentation.suse.com/zh-cn/sles/15-GA/html/SLES-all/cha-squid.html
+[9] 第13章日志文件 - Squid权威指南 http://blog.zyan.cc/book/squid/chap13.html
+[10] 调试和故障处理- Squid权威指南NetPc http://www.netpc.com.cn/doc/squid/chap16.html
+[11] 如何知道squid已经启动 - 百度知道 https://zhidao.baidu.com/question/133950955.html
+[12] squid proxy secure connection failed - 稀土掘金 https://juejin.cn/s/squid%20proxy%20secure%20connection%20failed
+[13] Squid透明代理— Cloud Atlas 0.1 文档 https://cloud-atlas.readthedocs.io/zh-cn/latest/web/proxy/squid/squid_transparent_proxy.html
+[14] Squid中的一些错误-skybin090804-ChinaUnix博客 http://blog.chinaunix.net/uid-22270773-id-1778274.html
+[15] 云服务器ECS Linux 系统通过Squid 配置实现代理上网 - 淘宝开放平台 https://jaq-doc.alibaba.com/docs/doc.htm?articleId=113417&docType=1&treeId=608
+
+By Perplexity at https://www.perplexity.ai/search/63b8591b-0680-4969-8b13-a3950d83746a
+
