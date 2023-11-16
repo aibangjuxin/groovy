@@ -30,3 +30,26 @@ Squid 报错 kid1| Detected DEAD Parent:
 3. **父代配置问题：** 检查`cache_peer`配置是否正确，包括端口号、类型等。确保配置与父代服务器的实际配置相匹配。
 
 查看Squid的日志文件，通常位于`/var/log/squid/`目录下，以获取更详细的信息。这可以帮助你更准确地定位问题并解决。
+
+
+"Squid 报错 kid1| Detected DEAD Parent:" 这个错误通常表示 Squid 代理服务器在尝试与父代理服务器建立连接时遇到了问题。这可能是由于网络问题，或者父代理服务器本身的问题导致的[1]。
+
+在 Squid 的配置中，如果一个父代理服务器连续失败10次，那么这个父代理服务器就会被标记为 "dead" 状态，并从 "round-robin" 算法中排除[3]。这意味着 Squid 将不再尝试使用这个父代理服务器，直到它再次变为可用状态。
+
+如果你在日志中频繁看到这个错误，可能需要检查以下几点：
+
+1. 确保父代理服务器正在运行并且可以从 Squid 服务器访问。
+2. 检查网络连接，确保 Squid 服务器可以正常访问网络。
+3. 检查 Squid 的配置，特别是与父代理服务器相关的配置。
+
+如果问题仍然存在，你可能需要进一步调查，或者寻求专业的技术支持。
+
+Sources
+[1] [squid-users] Detected DEAD parent - Marc.info https://marc.info/?l=squid-users&m=109161303616893
+[2] Squid代理服务器原创 - CSDN博客 https://blog.csdn.net/weixin_55299423/article/details/119272385
+[3] squid配置參數round-robin嚴重不均衡的討論 - 開源互助社區 https://www.coctec.com/docs/service/show-post-11214.html
+[4] CCIE总结：路由器、交换机- effortsing - 博客园 https://www.cnblogs.com/effortsing/p/10012551.html
+[5] linux-RHEL7.0 —— 《Linux就该这么学》阅读笔记 - 博客园 https://www.cnblogs.com/dl610455894/p/14680854.html
+[6] 系统工程师实战 - GitHub Pages https://fifilyu.github.io/seia/
+
+By Perplexity at https://www.perplexity.ai/search/63b8591b-0680-4969-8b13-a3950d83746a
