@@ -1,3 +1,8 @@
+如果我的Squid在启动的时候，报了一个错误
+kid1|Error : Connection to my-cache-aibang.com 还有一个 
+kid1| Detected DEAD Parent: my-cache-aibang.com报错，这种原因可能是什么？
+
+
 是的，这可能是Squid在启动时无法获取或解析`cache_peer_access`中指定的地址导致的问题。请确保以下几点：
 
 1. **地址正确性：** 确保`cache_peer`的配置中指定的地址是正确的，并且可以通过网络访问。检查是否有拼写错误或者网络配置问题。
