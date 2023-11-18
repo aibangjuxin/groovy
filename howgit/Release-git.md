@@ -68,3 +68,11 @@
    ```
 
 现在，您只克隆了指定分支下的指定目录。请注意，这仅适用于较新版本的Git（2.25及以上）。如果您的Git版本较旧，请考虑升级到最新版本。
+
+- My Testing history
+```
+pwd
+/Users/lex/temp
+git clone --no-checkout git@github.com:aibangjuxin/groovy.git
+
+```
