@@ -153,7 +153,14 @@ git push origin <branch_name> OR git push
 ```
 
 
-要在命令行中将一个分支合并到主分支（通常称为`main`分支），您可以使用 `git merge` 命令。以下是一般步骤：
+# 合并分支到主分支
+
+当你已经在一个分支上工作，并且想要将其合并到主分支，那么你需要执行以下操作：
+
+1. 切换到主分支：`git checkout main`
+2. 将当前分支合并到主分支：`git merge <branch_name>`
+
+例如，如果你在`feature-branch`分支上工作，并且想要将其合并到主分要在命令行中将一个分支合并到主分支（通常称为`main`分支），您可以使用 `git merge` 命令。以下是一般步骤：
 
 1. **切换到主分支：**
    ```bash
