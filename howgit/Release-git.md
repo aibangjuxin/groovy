@@ -151,3 +151,52 @@ git commit -a -m "edit Lex-Release file and commit"
 git push origin <branch_name> OR git push
 
 ```
+
+
+要在命令行中将一个分支合并到主分支（通常称为`main`分支），您可以使用 `git merge` 命令。以下是一般步骤：
+
+1. **切换到主分支：**
+   ```bash
+   git checkout main
+   ```
+   或者如果您使用的是较新版本的Git：
+   ```bash
+   git switch main
+   ```
+
+2. **合并其他分支到主分支：**
+   ```bash
+   git merge <other_branch>
+   ```
+   替换 `<other_branch>` 为您要合并的分支的名称。
+
+   如果您想要将其他分支的变更合并到主分支，这将创建一个合并提交。
+
+3. **解决合并冲突（如果有的话）：**
+   如果合并过程中发生冲突，您需要解决冲突。Git会在冲突的文件中插入标记，您需要手动编辑这些文件以解决冲突。完成后，使用以下命令标记冲突已解决：
+   ```bash
+   git add <conflicted_files>
+   ```
+
+4. **完成合并：**
+   继续合并过程：
+   ```bash
+   git merge --continue
+   ```
+
+   或者，如果您使用的是较旧版本的Git：
+   ```bash
+   git commit -m "Merge branch '<other_branch>' into main"
+   ```
+
+   这将完成合并并创建一个新的合并提交。
+
+5. **推送到远程仓库（如果需要）：**
+   如果您想将合并后的变更推送到远程仓库，可以执行：
+   ```bash
+   git push origin main
+   ```
+
+   替换 `main` 和 `origin` 为您的主分支和远程仓库的名称。
+
+请注意，合并可能引起冲突，尤其是当多个分支修改了相同的文件时。在合并前最好确保您的工作目录是干净的，没有未提交的修改。****
