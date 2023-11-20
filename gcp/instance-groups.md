@@ -47,3 +47,14 @@ gcloud compute instance-groups managed rolling-action replace INSTANCE-GROUP-NAM
 ```bash
 for instance_group in $(gcloud compute instance-groups managed list --filter="name~YOUR-KEYWORD" --format="value(name, LOCATION)"); do name=$(echo $instance_group | cut -d ' ' -f1); location=$(echo $instance_group | cut -d ' ' -f2); gcloud compute instance-groups managed rolling-action replace $name --max-unavailable=0 --max-surge=3 --min-ready=10s --region=$location; done
 ```
+
+
+理解了，你可以使用`find`结合`grep`来找到匹配的文件路径，然后对每个文件追加内容。以下是一个示例：
+
+```bash
+find ./ -name "squid.conf" | grep abc | xargs -I {} sh -c 'echo "client_request_buffer_max_size 100M" >> {}'
+```
+
+这个命令使用`find`查找所有名为`squid.conf`且包含`abc`的文件路径，然后通过`xargs`对每个文件执行追加操作。追加的内容是指定的行。
+
+确保在运行之前备份文件，以防万一。
