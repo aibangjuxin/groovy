@@ -44,3 +44,6 @@ gcloud compute instance-groups managed rolling-action replace INSTANCE-GROUP-NAM
 - `--project=$my_project`: 指定 GCP 项目。
 
 这个命令实现了滚动替换的策略，确保在替换期间实例组一直保持可用性。具体而言，它限制了不可用的实例数量，允许超出目标实例数的一些额外实例，以及等待新实例准备就绪的最短时间。这有助于确保在进行替换时系统保持高度可用。
+```bash
+for instance_group in $(gcloud compute instance-groups managed list --filter="name~YOUR-KEYWORD" --format="value(name, LOCATION)"); do name=$(echo $instance_group | cut -d ' ' -f1); location=$(echo $instance_group | cut -d ' ' -f2); gcloud compute instance-groups managed rolling-action replace $name --max-unavailable=0 --max-surge=3 --min-ready=10s --region=$location; done
+```
