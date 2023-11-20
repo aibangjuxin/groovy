@@ -58,3 +58,14 @@ find ./ -name "squid.conf" | grep abc | xargs -I {} sh -c 'echo "client_request_
 这个命令使用`find`查找所有名为`squid.conf`且包含`abc`的文件路径，然后通过`xargs`对每个文件执行追加操作。追加的内容是指定的行。
 
 确保在运行之前备份文件，以防万一。
+
+你可以使用 `grep` 命令结合 `find` 来查找目录下所有文件名为`abc.conf`且包含关键字`def`的文件。以下是一个示例命令：
+
+```bash
+find /path/to/parent_directory -type f -name "abc.conf" -exec grep -l "def" {} +
+```
+
+这个命令会在指定的`/path/to/parent_directory`目录及其子目录中查找所有文件名为`abc.conf`且包含关键字`def`的文件，并列出它们的路径。
+
+请将 `/path/to/parent_directory` 替换为实际的目录路径。如果你想要查找包含关键字`def`的所有文件而不仅仅是`abc.conf`，则可以省略`-name "abc.conf"`部分。
+
