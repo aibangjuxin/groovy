@@ -133,6 +133,29 @@ spec:
 
 综合考虑应用程序的性质、架构和运行环境，选择最适合你需求的探针类型。
 
+**Explanation:**
+- **Liveness Probe (livenessProbe):** Used to check if the container is alive, performs an HTTP GET request to the health check page /.well_health, with an initial delay of 3 seconds and checks every 5 seconds.
+- **Readiness Probe (readinessProbe):** Used to check if the container is ready to receive traffic, performs an HTTP GET request to the health check page /.well_health, with an initial delay of 5 seconds and checks every 5 seconds.
+- **Startup Probe (startupProbe):** Used to check if the container has completed startup, performs an HTTP GET request to the health check page /.well_health, with an initial delay of 10 seconds and checks every 5 seconds.
+- The health check page is located at /.well_health, on port 8443.
+
+Choosing between HTTP and TCP probes typically depends on the nature and requirements of your application. Here are some recommendations:
+
+1. **HTTP Probe:**
+   - *Advantages:* Higher-level health checks, allowing you to inspect specific HTTP endpoints, validating if the application responds correctly to HTTP requests.
+   - *Use Cases:* Suitable for web applications, API services, and scenarios where the application can respond to HTTP requests.
+   - *Considerations:* Ensure your application provides a well-designed health check HTTP endpoint reflecting the actual health status of the application.
+
+2. **TCP Probe:**
+   - *Advantages:* More general, applicable to any TCP connection. No need for the application to provide specific health check endpoints.
+   - *Use Cases:* Suitable for scenarios where HTTP health checks are not feasible, such as database connections or other TCP-based services.
+   - *Considerations:* TCP probes typically only verify if the TCP connection is established and do not understand the specific health status of the application.
+
+3. **Combined Usage:**
+   - *Advantages:* In some cases, using both HTTP and TCP probes simultaneously can provide a more comprehensive health check.
+   - *Use Cases:* For complex applications, it may be necessary to check both TCP connections and specific HTTP endpoints to ensure a thorough health status.
+   - *Considerations:* Ensure not to overuse probes to avoid placing a burden on application performance.
+
 # squid
 ```yaml
 containers:
