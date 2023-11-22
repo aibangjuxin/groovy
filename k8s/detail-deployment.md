@@ -80,7 +80,35 @@ spec:
     apiVersion: apps/v1 # 目标对象的API版本为apps/v1
     kind: Deployment # 目标对象的类型为Deployment
     name: sprint-lex-hap-memroy-cpu # 目标对象的名称为sprint-lex-hap-memroy-cpu
+**Explanation of Deploy Configuration:**
 
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: sprint-lex-hap-memroy-cpu-hpa
+  namespace: teamsnamespace
+spec:
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 750
+        type: Utilization
+    type: Resource
+  - resource:
+      name: memory
+      target:
+        averageUtilization: 50
+        type: Utilization
+    type: Resource
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: sprint-lex-hap-memroy-cpu
 
 ```
 - deployment labels
