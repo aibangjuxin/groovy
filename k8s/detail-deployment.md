@@ -81,6 +81,8 @@ spec:
     kind: Deployment # 目标对象的类型为Deployment
     name: sprint-lex-hap-memroy-cpu # 目标对象的名称为sprint-lex-hap-memroy-cpu
 **Explanation of Deploy Configuration:**
+```markdown
+**Explanation of Deploy Configuration:**
 
 ```yaml
 apiVersion: autoscaling/v2
@@ -109,6 +111,46 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: sprint-lex-hap-memroy-cpu
+```
+
+- **apiVersion:** Specifies the version of the API being used (autoscaling/v2).
+
+- **kind:** Defines the type of resource being created (HorizontalPodAutoscaler).
+
+- **metadata:** Contains information about the resource, such as its name and namespace.
+
+- **name:** The name of the HorizontalPodAutoscaler resource (sprint-lex-hap-memroy-cpu-hpa).
+
+- **namespace:** Specifies the namespace in which the resource should be created (teamsnamespace).
+
+- **spec:** Describes the desired state of the HorizontalPodAutoscaler.
+
+  - **minReplicas:** Minimum number of replicas that should be maintained (1).
+
+  - **maxReplicas:** Maximum number of replicas that the autoscaler can scale up to (4).
+
+  - **metrics:** Specifies the metrics used for autoscaling.
+
+    - **resource:** Indicates the type of metric being used.
+
+      - **name:** The name of the resource being measured (cpu or memory).
+
+      - **target:** Specifies the target value for the metric.
+
+        - **averageUtilization:** The target utilization percentage.
+
+        - **type:** Indicates the type of target utilization (Utilization).
+
+      - **type:** Indicates the type of metric (Resource).
+
+  - **scaleTargetRef:** Specifies the target resource for scaling (Deployment).
+
+    - **apiVersion:** The API version of the target resource (apps/v1).
+
+    - **kind:** The kind of the target resource (Deployment).
+
+    - **name:** The name of the target Deployment (sprint-lex-hap-memroy-cpu).
+```
 
 ```
 - deployment labels
