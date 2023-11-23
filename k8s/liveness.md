@@ -418,5 +418,70 @@ By Perplexity at https://www.perplexity.ai/search/71891259-2c7e-4096-8489-e56e11
 
 请根据您的具体场景和 Squid 的配置调整上述示例。确保在测试时密切关注探针的执行日志和 Pod 的事件，以确保它们按预期工作。
 
+假设我的GKE deployment 启用了liveness那么我如何验证我的存活探针 就绪探针或者启动探针配置生效 有没有好的测试case
+
+要验证GKE deployment的存活探针（liveness probe）、就绪探针（readiness probe）和启动探针（startup probe）是否配置生效，可以通过以下测试案例进行验证：
+
+1. **存活探针（Liveness Probe）测试**：存活探针用于检测容器是否在运行。如果存活探针失败，Kubernetes会杀死容器，并根据其重启策略来决定是否创建新的容器。你可以通过故意让存活探针失败来测试其是否生效。例如，如果你的存活探针是一个HTTP GET请求，你可以尝试关闭应用的HTTP服务或者让其返回非200-399的HTTP状态码，然后观察Kubernetes是否会重新启动容器[1]。
+
+2. **就绪探针（Readiness Probe）测试**：就绪探针用于检测容器是否已经准备好接受请求。如果就绪探针失败，Kubernetes会停止将请求转发到该容器，直到探针再次成功。你可以通过故意让就绪探针失败来测试其是否生效。例如，如果你的就绪探针是一个HTTP GET请求，你可以尝试让应用返回非200-399的HTTP状态码，然后观察Kubernetes是否会停止将请求转发到该容器[1]。
+
+3. **启动探针（Startup Probe）测试**：启动探针用于检测应用程序在启动过程中是否运行正常。如果启动探针失败，Kubernetes会杀死容器，并根据其重启策略来决定是否创建新的容器。你可以通过故意让启动探针失败来测试其是否生效。例如，如果你的启动探针是一个HTTP GET请求，你可以在应用启动时让其返回非200-399的HTTP状态码，然后观察Kubernetes是否会重新启动容器[3]。
+
+在进行上述测试时，你可以使用`kubectl describe pod <pod-name>`命令来查看Pod的事件和状态，这可以帮助你确定探针是否按预期工作[1][4]。
+
+Sources
+[1] 配置存活、就绪和启动探针 - Kubernetes https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[2] 适用于应用负载均衡器的GKE Ingress - Google Cloud https://cloud.google.com/kubernetes-engine/docs/concepts/ingress?hl=zh-cn
+[3] GKE1.18中未使用启动探针” - 火山引擎 https://www.volcengine.com/theme/6941051-G-7-1
+[4] 【七】Kubernetes 探针介绍- 存活、就绪探针案例测试- 神奇二进制 - 博客园 https://www.cnblogs.com/l-hh/p/14848256.html
+[5] Kubernetes生产最佳实践-应用开发原创 - CSDN博客 https://blog.csdn.net/weixin_42526859/article/details/120066154
+[6] 在GKE非httpDocker构建中无法使活跃探针正常工作-火山引擎 https://www.volcengine.com/theme/5346567-Z-7-1
+[7] 一文带你检查Kubernetes应用是否为最佳实践 - 稀土掘金 https://juejin.cn/post/6844904024911642637
+[8] How to gracefully deploy applications on Kubernetes - Han Hongfa's personal blog https://www.hanhf.com/?p=38
+[9] 存活探针（Liveness Probe） - 华为云 https://support.huaweicloud.com/basics-cce/kubernetes_0010.html
+[10] GKE 最佳实践：设计和构建高可用性集群 - Google Cloud https://www.infoq.cn/zones/google/cloud/article/kIa3JMG2sJuGOKNLtytl
+[11] 【云原生| 从零开始学Kubernetes】十三、k8s的容器探测以及启动探测 - 阿里云开发者社区 https://developer.aliyun.com/article/1047055
+[12] 原生Kubernetes监控功能详解-Part2_文化& 方法 - InfoQ https://www.infoq.cn/article/oax5qaeczlk4ryaa7hfg
+[13] Kubernetes学习（一）之认识Kubernetes - 一只病猫 https://dinghuang.github.io/2019/01/12/Kubernetes%E5%AD%A6%E4%B9%A0%EF%BC%88%E4%B8%80%EF%BC%89%E4%B9%8B%E8%AE%A4%E8%AF%86Kubernetes/
+[14] 容器组设置 - KubeSphere https://kubesphere.io/zh/docs/v3.3/project-user-guide/application-workloads/container-image-settings/
+[15] [云原生] Kubernetes（k8s）健康检查详解与实战演示（就绪性探针和存活性探针） - 博客园 https://www.cnblogs.com/liugp/p/16630873.html
+[16] 就绪探针（Readiness Probe） - 华为云 https://support.huaweicloud.com/basics-cce/kubernetes_0026.html
+[17] GKE 最佳实践：设计和构建高可用性集群 - InfoQ https://www.infoq.cn/article/kia3jmg2sjugoknltytl
+[18] Kubernetes生产环境最佳实践 - 云原生知识星球 https://lyyao09.github.io/2020/11/12/k8s/Kubernetes-Production-Best-Practices/
+[19] pod健康检查之容器的存活探针、就绪探针、启动探针原创 - CSDN博客 https://blog.csdn.net/MssGuo/article/details/123037625
+[20] k8s架构及服务详解- 姚红 - 博客园 https://www.cnblogs.com/yaohong/p/11361784.html
+
+By Perplexity at https://www.perplexity.ai/search/bdac9fcc-f313-42d6-a1fd-07cb7f614f5c
+
+对于TCP场景，你可以使用TCP存活探针（Liveness Probe）、TCP就绪探针（Readiness Probe）和TCP启动探针（Startup Probe）进行测试。以下是一些测试建议：
+
+1. **TCP存活探针测试**：TCP存活探针尝试与容器指定端口建立TCP连接，如果连接成功建立，说明容器是健康的[4]。你可以尝试关闭应用的TCP服务或者让其无法建立连接，然后观察Kubernetes是否会重新启动容器。
+
+2. **TCP就绪探针测试**：TCP就绪探针尝试与容器建立TCP连接，如果能建立连接说明已经就绪[2]。你可以尝试让应用无法建立连接，然后观察Kubernetes是否会停止将请求转发到该容器。
+
+3. **TCP启动探针测试**：TCP启动探针的测试方法与TCP存活探针和TCP就绪探针类似，主要是在应用启动时进行测试。你可以尝试让应用在启动时无法建立连接，然后观察Kubernetes是否会重新启动容器。
+
+在进行测试时，你可以通过查看Kubernetes的事件或者容器的日志来验证探针是否生效。例如，如果探针失败，你应该能在Kubernetes的事件中看到相应的错误信息，或者在容器的日志中看到探针请求失败的记录[1]。
+
+Sources
+[1] 配置存活、就绪和启动探针 - Kubernetes https://kubernetes.io/zh-cn/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+[2] 就绪探针（Readiness Probe） - 华为云 https://support.huaweicloud.com/basics-cce/kubernetes_0026.html
+[3] 4.6.3 设置TCP 探针 https://kubernetes.renkeju.com/chapter_4/4.6.3.Setting_up_the_TCP_probe.html
+[4] 存活探针（Liveness Probe） - 华为云 https://support.huaweicloud.com/basics-cce/kubernetes_0010.html
+[5] 存活探针(Liveness)、就绪探针(Readiness)、启动探针(Startup)、容器钩子 - Akiraka https://www.akiraka.net/kubernetes/855.html
+[6] Kubernetes 三大探针及探针方式原创 - CSDN博客 https://blog.csdn.net/LiukuoDocker7/article/details/125518141
+[7] Kubernetes-存活探针(liveness probe) - Andya_net - 博客园 https://www.cnblogs.com/Andya/p/12434547.html
+[8] [云原生] Kubernetes（k8s）健康检查详解与实战演示（就绪性探针和存活性探针） - 博客园 https://www.cnblogs.com/liugp/p/16630873.html
+[9] Kubernetes探针原理详解- 史振兴 - 博客园 https://www.cnblogs.com/szx666/p/16109838.html
+[10] Kubernetes 就绪探针（Readiness Probe） - 人艰不拆_zmc - 博客园 https://www.cnblogs.com/zhangmingcheng/p/15654956.html
+[11] 配置Pod 的liveness 和readiness 探针· Kubernetes 中文指南 - Jimmy Song https://jimmysong.io/kubernetes-handbook/guide/configure-liveness-readiness-probes.html
+[12] 探针· 个人笔记 - 前言 http://www.ytool.cloud/k8s/pod/probe.html
+[13] Kubernetes-存活探针(liveness probe)（十六） 原创 - CSDN博客 https://blog.csdn.net/Andya_net/article/details/104715512
+[14] Istio 服务的健康检查 https://preliminary.istio.io/latest/zh/docs/ops/configuration/mesh/app-health-check/
+[15] Kubernetes--Pod存活性探测(设置TCP探针) - 稀土掘金 https://juejin.cn/post/7158619154587582495
+[16] Kubernetes-存活探针(liveness probe)（十六） - 51CTO博客 https://blog.51cto.com/u_16102572/6254777
+
+By Perplexity at https://www.perplexity.ai/search/bdac9fcc-f313-42d6-a1fd-07cb7f614f5c
 
 
