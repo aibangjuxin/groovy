@@ -319,3 +319,104 @@ Sources
 [15] A Guide to Understanding your Kubernetes Liveness Probes Best Practices - Fairwinds https://www.fairwinds.com/blog/a-guide-to-understanding-kubernetes-liveness-probes-best-practices
 
 By Perplexity at https://www.perplexity.ai/search/71891259-2c7e-4096-8489-e56e11d7b46d
+
+
+您可以使用以下方法验证GKE deployment 中 liveness、就绪和启动探针的配置是否生效：
+
+1. **Liveness Probe验证：**
+   - 使用`kubectl describe pod <pod名称>`查看有关Pod的详细信息，确认 liveness 探针的配置是否正确。
+   - 观察 liveness 探针的重试次数和间隔，确保与您的预期相符。
+   - 模拟容器内的故障条件，例如通过发送错误请求，验证 liveness 探针是否按预期触发 Pod 的重启。
+
+2. **就绪 Probe验证：**
+   - 同样使用`kubectl describe pod <pod名称>`检查就绪探针的配置。
+   - 确保就绪探针的成功阈值和失败阈值符合您的期望。
+   - 使用`kubectl get pods`检查 Pod 的就绪状态，确保就绪状态反映了就绪探针的状态。
+
+3. **启动 Probe验证：**
+   - 启动探针通常是容器启动后的初始化检查。确认您的应用程序启动时是否满足启动探针的条件。
+   - 查看 Pod 的事件，以确保启动探针没有引发 Pod 启动失败的问题。
+
+4. **测试 Case：**
+   - 创建测试容器，模拟正常运行条件，确保 liveness 和就绪探针返回成功。
+   - 模拟不正常的运行条件，例如资源不足或服务不可用，确保 liveness 和就绪探针返回失败。
+   - 使用 GKE 的自动修复功能观察是否根据 liveness 探针的状态进行 Pod 的自动重启。
+
+请注意，在进行这些测试时，确保您的测试环境与生产环境相似，以获得准确的结果。如果您有进一步的细节或特定的配置，我可以提供更具体的帮助。
+
+要模拟或触发 GKE deployment 中 liveness、就绪和启动探针的状态，您可以使用以下方法：
+
+1. **手动触发 Liveness Probe 失败：**
+   - 可以通过发送错误请求或模拟应用程序内部错误，使得 liveness 探针返回失败。例如，如果 liveness 探针是一个 HTTP 接口，您可以使用 `curl` 发送一个返回非 2xx 状态码的请求。
+
+2. **手动触发就绪状态的变化：**
+   - 改变应用程序的状态，使其不符合就绪探针的期望条件。例如，如果就绪探针要求某个服务可用，您可以模拟该服务不可用的情况，观察就绪状态是否相应地变化。
+
+3. **手动触发启动探针的条件：**
+   - 确保您的启动探针的条件是应用程序启动后的一些初始化检查。您可以手动触发这些条件，例如在容器中模拟某些资源的准备就绪。
+
+4. **使用 `kubectl exec` 进入容器进行手动测试：**
+   - 使用 `kubectl exec` 命令进入运行中的容器，手动运行一些命令，以模拟探针的条件。例如，您可以模拟某个服务不可用或检查应用程序的启动状态。
+
+5. **通过修改应用程序代码引发状态变化：**
+   - 在应用程序代码中引入一些模拟用的标志或配置，以在需要时触发状态变化。这可以包括在测试环境中引入特定的测试标志。
+
+请确保在进行这些测试时，您了解应用程序的行为，以避免对生产环境产生意外的影响。同时，可以通过监视 Pod 的事件和日志来检查这些状态的变化。
+
+对于运行 Squid 且使用 TCP 的 Pod，您可以使用以下测试方法来验证 liveness、就绪和启动探针的配置：
+
+1. **Liveness Probe 测试：**
+   - 配置 Squid Pod 的 liveness 探针，通常是通过检查 Squid 服务是否在运行。您可以使用 `nc`（netcat）等工具测试 Squid 服务的运行状态，以确保 liveness 探针按预期工作。
+
+     ```yaml
+     livenessProbe:
+       exec:
+         command:
+         - sh
+         - -c
+         - nc -zv localhost 3128
+       initialDelaySeconds: 5
+       periodSeconds: 5
+     ```
+
+   - 使用 `kubectl describe pod <pod名称>` 查看 liveness 探针的执行状态，确认是否在预定的时间间隔内成功执行。
+
+2. **就绪 Probe 测试：**
+   - Squid 就绪探针通常需要检查 Squid 是否已完成初始化，可以通过检查 Squid 服务端口是否打开来实现。
+
+     ```yaml
+     readinessProbe:
+       exec:
+         command:
+         - sh
+         - -c
+         - nc -zv localhost 3128
+       initialDelaySeconds: 10
+       periodSeconds: 5
+     ```
+
+   - 使用 `kubectl describe pod <pod名称>` 确认就绪探针是否按预期工作，且 Pod 在初始化完成后变为就绪状态。
+
+3. **启动 Probe 测试：**
+   - 启动探针可能需要检查 Squid 服务的初始化状态，确保 Squid 在启动后能够正常运行。
+
+     ```yaml
+     startupProbe:
+       exec:
+         command:
+         - sh
+         - -c
+         - nc -zv localhost 3128
+       failureThreshold: 30
+       periodSeconds: 5
+     ```
+
+   - 使用 `kubectl describe pod <pod名称>` 确认启动探针是否按预期工作，且在 Squid 服务初始化完成后，Pod 成功变为运行状态。
+
+4. **通过修改 Squid 配置引发状态变化：**
+   - 在测试环境中修改 Squid 配置，引入一些模拟用的变化，以触发探针的条件变化。例如，可以模拟 Squid 配置错误或特定场景的网络问题。
+
+请根据您的具体场景和 Squid 的配置调整上述示例。确保在测试时密切关注探针的执行日志和 Pod 的事件，以确保它们按预期工作。
+
+
+
