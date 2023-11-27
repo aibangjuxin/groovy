@@ -23,7 +23,7 @@ echo "Instance $INSTANCE_NAME has been running for: $(date -u -d "$CURRENT_TIME"
 使用 `gcloud compute instance list` 命令列出所有实例时，可以使用 `--format` 选项来指定输出格式。以下是获取启动时间的示例：
 
 ```
-gcloud compute instance list --format="value(zone, name, creation_timestamp)"
+gcloud compute instances list --format="value(zone, name, creation_timestamp)"
 ```
 
 此命令将输出以下格式的表格：
@@ -37,7 +37,7 @@ us-central1-a | my-instance | 2023-11-27T14:50:00.000-08:00
 `creation_timestamp` 列包含实例的启动时间戳。您可以使用 `date` 命令将此时间戳转换为更易读的格式，例如：
 
 
-date -d @$(gcloud compute instance list --format="value(zone, name, creation_timestamp)" | awk '{print $3}')
+date -d @$(gcloud compute instances list --format="value(zone, name, creation_timestamp)" | awk '{print $3}')
 
 
 此命令将输出以下内容：
@@ -46,10 +46,10 @@ date -d @$(gcloud compute instance list --format="value(zone, name, creation_tim
 2023-11-27T06:50:00+08:00
 ```
 
-您还可以使用 `gcloud compute instance describe` 命令获取实例的详细信息，包括启动时间。以下是获取启动时间的示例：
+您还可以使用 `gcloud compute instances describe` 命令获取实例的详细信息，包括启动时间。以下是获取启动时间的示例：
 
 ```
-gcloud compute instance describe my-instance
+gcloud compute instances describe my-instance
 ```
 
 此命令将输出以下内容：
