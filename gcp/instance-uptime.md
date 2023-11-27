@@ -183,10 +183,8 @@ done <<< "$instance_list"
 3. 基于两个UTC时间计算运行时间差
 
 优化后的脚本:
-
-```bash
+```
 #!/bin/bash
-
 keyword="aibangrt"
 instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
 
@@ -204,41 +202,16 @@ while read -r instances; do
   CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
   # 基于UTC时间计算持续时间
-  DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%H:%M:%S")
-  # 
-  DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%s")
+  #DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%H:%M:%S")
+  SECONDS1=$(date -u -d "$CURRENT_TIME" +"%s")
+  SECONDS2=$(date -u -d "$START_TIME_UTC" +"%s")
+  # 计算差值
+  DIFF_SECONDS=$((SECONDS1 - SECONDS2))
+  # # 将差值转换为时:分:秒格式
+  DIFF_TIME=$(date -u -d "@$DIFF_SECONDS" +"%H:%M:%S")
 
-  echo "Instance $NAME has been running for: $DURATION"
+  echo "Instance $NAME has been running for: $DIFF_TIME"
 
-done <<< "$instance_list"A
+done <<< "$instance_list"
 
-
-要计算两个时间戳之间的差异，您可以使用 `date` 命令。以下是一个示例：
-
-```bash
-#!/bin/bash
-
-# 两个时间戳
-TIME1="2023-11-27T09:30:29Z"
-TIME2="2023-11-27T08:24:47Z"
-
-# 将时间戳转换为秒
-SECONDS1=$(date -u -d "$TIME1" +"%s")
-SECONDS2=$(date -u -d "$TIME2" +"%s")
-
-# 计算差值
-DIFF_SECONDS=$((SECONDS1 - SECONDS2))
-
-# 将差值转换为时:分:秒格式
-DIFF_TIME=$(date -u -d "@$DIFF_SECONDS" +"%H:%M:%S")
-
-echo "Time difference: $DIFF_TIME"
-```
-
-这个脚本首先将两个时间戳转换为秒，然后计算它们之间的差值（以秒为单位），最后将差值转换为时:分:秒格式。
-
-请测试并确保适应您的需求。如果您有其他问题或需要进一步的帮助，请告诉我。
-```
-
-主要调整了启动时间和当前时间的UTC转换。请测试执行。
 ```
