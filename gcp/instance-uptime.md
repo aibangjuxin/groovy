@@ -174,4 +174,42 @@ while read -r instances; do
   echo "Instance $NAME has been running for: $DURATION"
 
 done <<< "$instance_list"
+
+
+您的需求我明白了,这里我重新调整了下逻辑:
+
+1. 将实例的本地启动时间转换为UTC时间
+2. 获取当前的UTC时间
+3. 基于两个UTC时间计算运行时间差
+
+优化后的脚本:
+
+```bash
+#!/bin/bash
+
+keyword="aibangrt"
+instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
+
+while read -r instances; do
+  NAME=$(echo "$instances" | cut -f1)
+  zone=$(echo "$instances" | cut -f2)
+
+  # 实例启动时间(本地时区时间)
+  START_TIMESTAMP=$(gcloud compute instances describe $NAME --zone $zone --format="value(creationTimestamp)")
+
+  # 本地时间转换为UTC时间
+  START_TIME_UTC=$(TZ=UTC date -d"$START_TIMESTAMP" +"%Y-%m-%dT%H:%M:%SZ")
+
+  # 当前UTC时间
+  CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # 基于UTC时间计算持续时间
+  DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%H:%M:%S")
+
+  echo "Instance $NAME has been running for: $DURATION"
+
+done <<< "$instance_list"
+```
+
+主要调整了启动时间和当前时间的UTC转换。请测试执行。
 ```
