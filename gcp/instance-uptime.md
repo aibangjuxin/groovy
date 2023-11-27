@@ -103,4 +103,75 @@ while read -r instances; do
     CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     echo "Instance $NAME has been running for: $(date -u -d "$CURRENT_TIME" -d "$START_TIME_LOCAL" +"%H:%M:%S")"
 done <<< "$instance_list"
+
+```
+
+# calude
+```
+#!/bin/bash
+
+keyword="aibangrt"
+
+instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
+
+while read -r instances; do
+  NAME=$(echo "$instances" | cut -f1)
+  zone=$(echo "$instances" | cut -f2)
+
+  # 实例启动时间戳(本地时区时间)
+  START_TIMESTAMP=$(gcloud compute instances describe $NAME --zone $zone --format="value(creationTimestamp)")
+
+  # 本地时间转换为时间戳
+  LOCAL_TS=$(date -d "$START_TIMESTAMP" +%s)
+
+  # 减去时区偏移得到UTC时间戳
+  UTC_OFFSET=$(date +%z)
+  UTC_TS=$((LOCAL_TS - UTC_OFFSET))
+
+  # UTC时间戳转换为时间字符串
+  START_TIME_UTC=$(date -u -d "@$UTC_TS" +"%Y-%m-%dT%H:%M:%SZ")
+
+  CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # 按UTC时间计算运行时间
+  DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%H:%M:%S")
+
+  echo "Instance $NAME has been running for: $DURATION"
+
+done <<< "$instance_list"
+```
+
+google
+```
+#!/bin/bash
+
+keyword="aibangrt"
+
+instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
+
+while read -r instances; do
+  NAME=$(echo "$instances" | cut -f1)
+  zone=$(echo "$instances" | cut -f2)
+
+  # 实例启动时间戳(本地时区时间)
+  START_TIMESTAMP=$(gcloud compute instances describe $NAME --zone $zone --format="value(creationTimestamp)")
+
+  # 本地时间转换为时间戳
+  LOCAL_TS=$(date -d "$START_TIMESTAMP" +%s)
+
+  # 减去时区偏移得到UTC时间戳
+  UTC_OFFSET=$(date +%z)
+  UTC_TS=$((LOCAL_TS - UTC_OFFSET))
+
+  # UTC时间戳转换为时间字符串
+  START_TIME_UTC=$(date -u -d "@$UTC_TS" +"%Y-%m-%dT%H:%M:%SZ")
+
+  CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+  # 按UTC时间计算运行时间
+  DURATION=$(date -u -d "$CURRENT_TIME" -d "$START_TIME_UTC" +"%H:%M:%S")
+
+  echo "Instance $NAME has been running for: $DURATION"
+
+done <<< "$instance_list"
 ```
