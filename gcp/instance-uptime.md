@@ -86,10 +86,6 @@ while read -r instances; do
     echo "Instance $NAME has been running for: $(date -u -d "$CURRENT_TIME" -d "$START_TIME_LOCAL" +"%H:%M:%S")"
 done <<< "$instance_list"
 
-
-抱歉造成混淆。如果您使用的 `gcloud` 不支持在输出中直接进行日期格式化，您可以使用以下方法来处理：
-
-```bash
 #!/bin/bash
 keyword="aibangrt"
 
@@ -101,13 +97,10 @@ while read -r instances; do
     # 获取实例的启动时间戳
     START_TIMESTAMP=$(gcloud compute instances describe $NAME --zone $zone --format="value(creationTimestamp.timestamp())")
 
-    # 将时间戳转换为本地时区时间
-    START_TIME_LOCAL=$(date -d "@$START_TIMESTAMP" +"%Y-%m-%dT%H:%M:%S%z")
+    # 使用awk处理时间戳格式
+    START_TIME_LOCAL=$(echo $START_TIMESTAMP | awk -F"." '{print strftime("%Y-%m-%dT%H:%M:%S%z", $1)}')
 
     CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
     echo "Instance $NAME has been running for: $(date -u -d "$CURRENT_TIME" -d "$START_TIME_LOCAL" +"%H:%M:%S")"
 done <<< "$instance_list"
-```
-
-这里，使用 `date -d "@$START_TIMESTAMP"` 将时间戳直接转换为本地时区时间。请测试并确保适应您的环境。如果仍然存在问题，请提供具体的错误或问题描述，我将尽力提供帮助。
 ```
