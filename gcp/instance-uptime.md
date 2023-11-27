@@ -69,4 +69,21 @@ Metadata:
 
 `creation-timestamp` 属性包含实例的启动时间戳。
 
+```bash
+#!/bin/bash
+keyword="aibangrt"
 
+instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
+while read -r instances; do
+    NAME=$(echo "$instances" | cut -f1)
+    zone=$(echo "$instances" | cut -f2)
+    
+    # 获取实例的启动时间，并将其转换为本地时区时间
+    START_TIME=$(gcloud compute instances describe $NAME --zone $zone --format="value(creationTimestamp)")
+    START_TIME_LOCAL=$(echo $START_TIME | awk '{print strftime("%Y-%m-%dT%H:%M:%S%z", $1)}')
+
+    CURRENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+    echo "Instance $NAME has been running for: $(date -u -d "$CURRENT_TIME" -d "$START_TIME_LOCAL" +"%H:%M:%S")"
+done <<< "$instance_list"
+
+```
