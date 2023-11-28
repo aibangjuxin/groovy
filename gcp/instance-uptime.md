@@ -176,14 +176,14 @@ while read -r instances; do
 done <<< "$instance_list"
 
 
-您的需求我明白了,这里我重新调整了下逻辑:
+# last 
 
 1. 将实例的本地启动时间转换为UTC时间
 2. 获取当前的UTC时间
 3. 基于两个UTC时间计算运行时间差
 
 优化后的脚本:
-```
+```bash
 #!/bin/bash
 keyword="aibangrt"
 instance_list=$(gcloud compute instances list --filter="name~${keyword}*" --format="value(name,ZONE)")
