@@ -234,3 +234,44 @@ spec:
 这就实现了使用 NetworkPolicy 的 egress 规则限制流量的出口端口范围的功能。
 
 另外,不能出口的端口可以通过设置一个空的 egress 规则 {} 来拒绝。
+
+
+好的,可以通过以下方法实现:
+
+1. 创建一个网络策略,匹配你要禁止访问该IP段的Pod的label:
+
+    ```
+    apiVersion: networking.k8s.io/v1
+    kind: NetworkPolicy
+    metadata:
+     name: deny-egress
+     namespace: $namespace
+    spec:
+     podSelector:
+      matchLabels:
+        access-level: restricted
+     policyTypes:
+     - Egress
+     egress: []  
+    ```
+
+2. 在上面的默认网络策略中,通过except子句排除这些带有特定label的Pod:
+
+    ```
+    spec:
+     podSelector: {}
+     except:
+      - podSelector: 
+         matchLabels:
+           access-level: restricted
+    ```	
+
+3. 为要禁止的Pod添加上面定义的label:
+   ```
+   labels:
+     access-level: restricted
+   ```
+
+这样就可以实现 differentiate Pod 的网络策略,允许其他 Pod 访问该IP段,而禁止带有 restrict label 的 Pod 访问。
+
+关键是通过 matchLabels 和 except 进行匹配和排除。
