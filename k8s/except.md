@@ -275,3 +275,61 @@ spec:
 这样就可以实现 differentiate Pod 的网络策略,允许其他 Pod 访问该IP段,而禁止带有 restrict label 的 Pod 访问。
 
 关键是通过 matchLabels 和 except 进行匹配和排除。
+
+好的,这里是一个完整的示例:
+
+```yaml
+# 默认策略,允许所有 Pod 访问 199.36.153.4/30 段
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy  
+metadata:
+ name: allow-egress
+ namespace: default
+spec:
+ podSelector: {}
+ policyTypes:
+ - Egress 
+ egress:
+ - to:
+   - ipBlock:
+      cidr: 199.36.153.4/30
+   ports:
+   - protocol: TCP
+     port: 443 
+ except:
+ - podSelector: 
+     matchLabels:
+       access-level: restricted
+
+---  
+
+# 禁止标记的 Pod 访问该网段  
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+ name: deny-egress
+ namespace: default
+spec:
+ podSelector:
+   matchLabels:
+     access-level: restricted
+ policyTypes:
+ - Egress
+ egress: []
+
+---
+
+# 示例 Pod 定义  
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-pod
+  labels:
+    access-level: restricted  # 禁止这个 Pod 访问
+spec:
+  containers:
+  - name: test
+    image: nginx
+```
+
+这样通过 label 和 NetworkPolicy 的 matchExpressions 与 except 组合,可以有效实现分组管理网络策略。
