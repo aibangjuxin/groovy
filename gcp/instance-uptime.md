@@ -174,7 +174,7 @@ while read -r instances; do
   echo "Instance $NAME has been running for: $DURATION"
 
 done <<< "$instance_list"
-
+```
 
 # last 
 
