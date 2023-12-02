@@ -115,7 +115,7 @@ done
 
 请测试执行脚本,并提出改进意见。感谢您提供代码场景,使我能针对实际需求调整和完善脚本开发能力。
 
-
+```bash
 #!/bin/bash
 
 # 定义变量
@@ -132,6 +132,246 @@ for IMAGE in $IMAGES; do
   gcloud container images delete "${REPO_NAME}/${IMAGE}" --force-delete-tags
 
 done
+```
 
+# auths
+
+
+# untags
+```bash
+#!/bin/bash
+# 定义仓库和项目
+PROJECT_ID="your-project-id"
+REPO_NAME="your-repository-name"
+
+# 列出仓库中的所有镜像
+ALL_IMAGES=$(gcloud container images list --repository="${REPO_NAME}" --format='value(name)')
+
+# 遍历每个镜像
+for IMAGE in $ALL_IMAGES; do
+  # 列出镜像的所有标签
+  ALL_TAGS=$(gcloud container images list-tags "${REPO_NAME}/${IMAGE}" --format='get(tags)')
+
+  # 将标签转换为数组
+  IFS=',' read -ra TAGS_ARRAY <<< "$ALL_TAGS"
+
+  # 遍历每个标签
+  for TAG in "${TAGS_ARRAY[@]}"; do
+    # 检查标签是否为空（未标记）
+    if [ -z "$TAG" ]; then
+      # 删除未标记的映像
+      gcloud container images delete "${REPO_NAME}/${IMAGE}" --force-delete-tags --quiet
+      echo "Deleted untagged image: ${REPO_NAME}/${IMAGE}"
+      break  # 一旦找到未标记的映像，就不需要继续检查其他标签
+    fi
+  done
+done
+
+
+: << 'END'
+
+
+- get deployment spec template spec containers env name value
+```bash
+      gcloud container clusters get-credentials "$cluster" --zone "$region" --project "$project"
+
+      export https_proxy=$https_proxy
+
+
+      dpname=$(kubectl get deployments -n abj-squid -o=jsonpath='{.items[*].metadata.name}')
+      counter=1
+      for deployment in ${dpname[@]}; do
+          # awk 'BEGIN{while (a++<50) s=s "-"; print s,"deployment",s}'
+          echo "--------------------- $counter: $deployment-------------------------"
+          code=$(kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.saaspcode}' -n abj-squid)
+          echo "code: $code"
+          #kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.saaspcode}{"\n"}' -n abj-squid
+          fqdn=$(kubectl get deployment $deployment -o=jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="TARGET_FQDN")].value}' -n abj-squid)
+          echo "fqdn: $fqdn"
+          #kubectl get deployment $deployment -o=jsonpath='{"\n"}{.spec.template.spec.containers[0].env[?(@.name=="TARGET_FQDN")].value}{"\n"}' -n abj-squid
+          echo "command reference"
+          echo "./saasp_install.sh -e "${environment}" -c "${code}" -f "\"${fqdn}\"" "
+          counter=$((counter + 1))
+      done
+```
+
+#!/bin/bash
+# 定义仓库和项目
+PROJECT_ID="your-project-id"
+REPO_NAMES=("your-repository-name1" "your-repository-name2" "your-repository-name3")
+
+# 遍历每个仓库
+for REPO_NAME in "${REPO_NAMES[@]}"; do
+  # 列出仓库中的所有镜像
+  ALL_IMAGES=$(gcloud container images list --repository="${REPO_NAME}" --format='value(name)')
+
+  # 遍历每个镜像
+  for IMAGE in $ALL_IMAGES; do
+    # 列出镜像的所有标签
+    ALL_TAGS=$(gcloud container images list-tags "${REPO_NAME}/${IMAGE}" --format='get(tags)')
+
+    # 将标签转换为数组
+    IFS=',' read -ra TAGS_ARRAY <<< "$ALL_TAGS"
+
+    # 遍历每个标签
+    for TAG in "${TAGS_ARRAY[@]}"; do
+      # 检查标签是否为空（未标记）
+      if [ -z "$TAG" ]; then
+        # 删除未标记的映像
+        gcloud container images delete "${REPO_NAME}/${IMAGE}" --force-delete-tags --quiet
+        echo "Deleted untagged image: ${REPO_NAME}/${IMAGE}"
+        break  # 一旦找到未标记的映像，就不需要继续检查其他标签
+      fi
+    done
+  done
+done
+
+
+
+#!/bin/bash
+# 定义项目
+PROJECT_ID="your-project-id"
+
+# 通过命令获取仓库名并过滤
+REPO_NAMES=$(command get_repo_names | grep "your-filter-pattern")
+
+# 将获取的仓库名转换为数组
+IFS=$'\n' read -rd '' -a REPO_NAMES_ARRAY <<< "$REPO_NAMES"
+
+# 遍历每个仓库
+for REPO_NAME in "${REPO_NAMES_ARRAY[@]}"; do
+  # 列出仓库中的所有镜像
+  ALL_IMAGES=$(gcloud container images list --repository="${REPO_NAME}" --format='value(name)')
+
+  # 遍历每个镜像
+  for IMAGE in $ALL_IMAGES; do
+    # 列出镜像的所有标签
+    ALL_TAGS=$(gcloud container images list-tags "${REPO_NAME}/${IMAGE}" --format='get(tags)')
+
+    # 将标签转换为数组
+    IFS=',' read -ra TAGS_ARRAY <<< "$ALL_TAGS"
+
+    # 遍历每个标签
+    for TAG in "${TAGS_ARRAY[@]}"; do
+      # 检查标签是否为空（未标记）
+      if [ -z "$TAG" ]; then
+        # 删除未标记的映像
+        gcloud container images delete "${REPO_NAME}/${IMAGE}" --force-delete-tags --quiet
+        echo "Deleted untagged image: ${REPO_NAME}/${IMAGE}"
+        break  # 一旦找到未标记的映像，就不需要继续检查其他标签
+      fi
+    done
+  done
+done
+
+
+#!/bin/bash
+
+# 设置你的项目ID和仓库名称
+PROJECT_ID="your-project-id"
+REPOSITORY="your-repository"
+
+# 获取仓库中的所有映像
+IMAGES=$(gcloud container images list --repository="gcr.io/${PROJECT_ID}/${REPOSITORY}" --format='value(name)')
+
+# 遍历每个映像
+for IMAGE in $IMAGES; do
+  # 获取未标记的映像摘要
+  UNTAGGED_DIGESTS=$(gcloud container images list-tags "${IMAGE}" --filter='-tags:*' --format='get(digest)')
+
+  # 遍历并删除未标记的映像
+  for DIGEST in $UNTAGGED_DIGESTS; do
+    gcloud container images delete "${IMAGE}@${DIGEST}" --quiet
+  done
+done
+
+END
+```
+
+# ar-create
+```bash
+#!/usr/local/bin/bash
+# Script for creating Google Artifact Registry repositories
+# Reference: https://cloud.google.com/sdk/gcloud/reference/artifacts/repositories/create
+
+environment=$1
+
+region="us-east4"
+location="${region}"
+project="aibang-11111111-abjus-dev"
+REPOSITORIES=("containers" "kong")
+
+if [[ ${environment} == *prd* ]]; then
+    echo "Setting proxy for prd environment"
+    kms_project="project-kms-prod"
+else
+    echo "Setting proxy for dev environment"
+    kms_project="project-kms-dev"
+fi
+
+echo "Using KMS project: ${kms_project}"
+
+kms_location="${region}"
+kms="projects/${kms_project}/locations/${kms_location}/keyRings/cloudStorage/cryptoKeys/cloudStorage"
+
+echo "Location: ${location}"
+echo "KMS Key: ${kms}"
+
+for repository in "${REPOSITORIES[@]}"
+do
+    echo "Creating repository: ${repository}"
+    echo "gcloud artifacts repositories create ${repository} \
+        --location=${location} \
+        --repository-format=docker \
+        --description=\"Docker repository for ${repository}\" \
+        --kms-key=${kms} --project ${project}"
+done
+
+
+
+: << 'END'
+#!/usr/local/bin/bash
+# for gcloud artifacts repositories create
+# reference
+# https://cloud.google.com/sdk/gcloud/reference/artifacts/repositories/create
+
+
+environment=$1
+
+region="us-east4"
+location=${region}
+project="aibang-11111111-abjus-dev"
+REPOSITORIES=("containers" "kong")
+
+if [[ ${environment} == *prd* ]]; then
+    echo "Setting proxy prd proxy"
+    kms_project=project-kms-prod
+else
+    echo "Setting proxy dev proxy"
+    kms_project=project-kms-dev
+fi
+
+
+echo ${kms_project}
+
+kms_location=$region
+kms="projects/${kms_project}/locations/${kms_location}/keyRings/cloudStorage/cryptoKeys/cloudStorage"
+
+echo "${location}"
+echo "${kms}"
+
+
+for repository in "${REPOSITORIES[@]}"
+do
+    echo "Creating repository ${repository}"
+    echo "gcloud artifacts repositories create ${repository} \
+        --location=${location} \
+        --repository-format=docker \
+        --description="Docker repository for ${repository}" \
+        --kms-key=${kms} --project ${project}"
+done
+
+END
+```
 
 
