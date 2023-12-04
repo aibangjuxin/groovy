@@ -274,13 +274,11 @@ for IMAGE in $ALL_IMAGES; do
 done
 
 
-: << 'END'
 
 
 - get deployment spec template spec containers env name value
 ```bash
-      gcloud container clusters get-credentials "$cluster" --zone "$region" --project "$project"
-
+      gcloud container clusters get-credentials "$cluster" --zone "$region" --project "$pro
       export https_proxy=$https_proxy
 
 
@@ -478,6 +476,53 @@ do
 done
 
 END
+```
+
+# cp images
+```bash
+#!/bin/bash
+# running-images.txt
+# eu.gcr.io/myproject/squid:3.0.0
+# eu.gcr.io/myproject/squid:2.0.0 
+
+kubectl get pods -A -o jsonpath="{..image}" | tr -s '[[:space:]]' '\n' > running-images.txt
+# 从文件中读取镜像列表
+while IFS= read -r image; do
+    # 提取镜像名称和版本号
+    image_name_version=$(echo "$image" | awk -F "/" '{print $NF}')
+
+    # 获取 old 镜像的详细信息
+    image_digest=$(gcloud container images describe "$image" --format='value(image_summary.digest)')
+
+    # 构建新的 Artifact Registry 镜像地址
+    target_dir="europe-west2-docker.pkg.dev/myproject/containers/"
+    target_image="$target_dir$image_name_version"
+
+    # 使用 gcrane 将镜像复制到 Artifact Registry
+    if gcrane cp "$image" "$target_image"; then
+        echo "Successfully copied $image to Artifact Registry"
+    else
+        echo "Failed to copy $image to Artifact Registry"
+        exit 1
+    fi
+
+    # 远程 Artifact Registry 镜像的 SHA256
+    #remote_sha256=""
+    #attempts=0
+    #max_attempts=5
+    #while [ "$remote_sha256" == "" ] && [ "$attempts" -lt "$max_attempts" ]; do
+    #    sleep 5
+        remote_sha256=$(gcloud container images describe "$target_image" --format='value(image_summary.digest)')
+    #   attempts=$((attempts + 1))
+    #done
+
+    # 验证本地和远程的 SHA256 是否一致
+    if [ "$remote_sha256" != "" ] && [ "$image_digest" == "$remote_sha256" ]; then
+        echo "image $image gcr with artifact SHA256 is the same"
+    else
+        echo "warning image $image gcr with artifact SHA256 is not the same"
+    fi
+done < running-images.txt
 ```
 
 
