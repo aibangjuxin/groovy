@@ -1,3 +1,109 @@
+# migrate gcr to ar
+# to do list
+Migrate gcr to Art factories 
+Google 将弃用Container Registry。Artifact Registry。
+- [ ] Running image 
+  - [ ] `kubectl get pods -A -o jsonpath="{..image}" | tr -s '[[:space:]]' '\n'` 
+- [ ] House keep untag images?
+  - [ ] gcr-untag.sh
+- [ ] Depend old repository then Create new repo for art and current old gcr 
+  - [ ] for artifact registry create new repo kong and container
+  - [ ] Region Or zone named rule for repository `ar-creat.sh`
+  - [ ] gcloud artifacts repositories add-iam-policy-binding 这个是需要的,因为我们后面账户需要上传之类的 `auth.sh`
+- [ ] Migration gcr to art or only copy Running image  or all of images
+  - [ ] `imageMigration.sh`
+- [ ] Change dns record ?
+- [ ] Edit deployment images 
+- [ ] Testing when dns changed. We can pull images from old and new repository 
+
+
+# named rule 
+## Container Registry 
+- reference
+- https://cloud.google.com/artifact-registry/docs/transition/transition-from-gcr?hl=zh-cn
+现有的Container Registry中的镜像同步到新的Artifact Registry
+
+Container Registry规则一般如下eu.gcr.io/my-project/repository-name/images
+
+是的，通常Container Registry的镜像路径规则类似于：
+
+```bash
+[REGION].gcr.io/[PROJECT-ID]/[REPOSITORY-NAME]/[IMAGE]
+```
+
+其中：
+- `[REGION]` 是Google Cloud Region，如`eu`或`asia`。`us`
+- `[PROJECT-ID]` 是您的Google Cloud项目的ID。
+- `[REPOSITORY-NAME]` 是您为存储库指定的名称。
+- `[IMAGE]` 是具体的镜像名称。
+
+
+## Artifact Registry  
+- Target Registry
+  - TARGET_REGISTRY="asia-south1-docker.pkg.dev/${project}/kong"
+
+Google Artifact Registry 的命名规则如下：
+* 仓库名称：仓库名称必须是唯一的，并且只能包含字母、数字、下划线和点。仓库名称的长度不能超过 255 个字符。
+* 镜像名称：镜像名称必须是唯一的，并且只能包含字母、数字、下划线和点。镜像名称的长度不能超过 255 个字符。
+仓库名称和镜像名称的格式如下：
+- Google Artifact Registry使用项目的资源路径来标识存储库。
+  - 例如，如果您的项目 ID 是`my-project`，
+  - 那么存储库的完整名称可能是`asia-east1-docker.pkg.dev/my-project/my-repo`。
+  - 这里的`my-repo`是您在Artifact Registry中创建的存储库名称。
+- for Our Environment 
+```bash
+  - ${region}-docker.pkg.dev/${project}/kong
+  - ${region}-docker.pkg.dev/${project}/containers
+```
+
+
+使用 Google Container Registry (GCR) 创建和管理镜像的。Artifact Registry
+
+关于平滑迁移，您可以考虑以下步骤：
+
+1. **创建新的Artifact Registry存储库：** 在新的Artifact Registry中创建您的存储库，确保使用新的命名规则。
+
+2. **同步镜像：** 将现有的Container Registry中的镜像同步到新的Artifact Registry。您可以使用工具如`docker pull`和`docker push`来完成这个过程。
+
+3. **更新部署配置：** 在您的工程中，更新使用这些镜像的部署配置，将原来的Container Registry地址替换为新的Artifact Registry地址。
+
+4. **逐步迁移：** 在不影响生产环境的前提下，逐步迁移部分工作负载，确保一切正常运行。
+
+5. **监控和验证：** 在迁移过程中，实时监控系统性能和服务可用性。确保所有的镜像和服务都在新的Artifact Registry中正确运行。
+
+关于mermaid格式的流程图，以下是一个简要示例：
+
+```mermaid
+graph TD;
+  A[创建新存储库] --> B[同步镜像];
+  B --> C[更新部署配置];
+  C --> D[逐步迁移];
+  D --> E[监控和验证];
+```
+
+# about zone region
+
+
+在Google Cloud Platform (GCP) 中，"location"、"zone" 和 "region" 是用于描述资源的位置和部署的概念，它们之间有以下区别：
+
+1. **Location（位置）:**
+   - "Location" 是一个更通用的术语，它可以包括 zone、region，或者其他一些特定的地理区域。
+   - "Location" 的使用取决于 GCP 服务。有些服务使用 "location" 这一术语来表示资源的地理位置，而不仅仅是 zone 或 region。
+   - 例如，Google Cloud Storage 中的 "location" 可能指代一个特定的 region。
+
+2. **Zone（区域）:**
+   - 一个"zone" 是 GCP 中的一个物理区域，通常对应于一个数据中心。每个 zone 都在一个特定的地理位置，且具有独立的电源、网络和冷却设施。
+   - 在一个 zone 内，你可以部署虚拟机、存储资源等。这些资源可以在一个 zone 内提供高可用性，但是不同 zone 之间是相互独立的。
+   - 例如，`us-central1-a` 是位于美国中部的一个 zone。
+
+3. **Region（区域）:**
+   - 一个"region" 是包含多个 zone 的更大的地理区域。在同一个 region 内的各个 zone 之间有较低的网络延迟，可以用于实现高可用性和冗余。
+   - 跨 region 部署资源可以提供更高级的容错性，因为它们在地理上更为分散。
+   - 例如，`us-central1` 是一个包含多个 zone 的 region。
+
+总体而言，"location" 是一个更宽泛的术语，可以用于指代 zone、region 或其他资源的地理位置。而 "zone" 和 "region" 是更具体的概念，用于描述资源的物理位置和部署方式。
+
+
 要移除未标记的旧映像，可以使用以下shell脚本。这个脚本会列出指定仓库中的所有映像，然后找出未标记的映像并删除它们。
 
 ```bash
