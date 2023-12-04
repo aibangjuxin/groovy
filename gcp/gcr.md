@@ -570,3 +570,22 @@ kubectl set image deployment/myapp web=new-image:tag
 
 因此，`kubectl set image deployment/myapp` 不会直接影响 ReplicaSet 的值，但会触发一个滚动更新，可能导致创建一个新的 ReplicaSet。
 ```
+
+# container name
+```
+如果你想要获取 Deployment 中的容器的名称（container name），可以使用以下命令：
+
+```bash
+kubectl get deployment <deployment-name> -o jsonpath='{.spec.template.spec.containers[*].name}'
+```
+
+其中 `<deployment-name>` 是你的 Deployment 名称。这个命令使用了 JSONPath 表达式，从 Deployment 的规范（spec）中提取容器的名称。
+
+如果你想要获取所有 Deployment 中所有容器的名称，你可以使用以下命令：
+
+```bash
+kubectl get deployments --all-namespaces -o jsonpath='{range .items[*].spec.template.spec.containers[*]}{.name}{"\n"}{end}'
+```
+
+这个命令使用了 `range` 关键字来遍历所有 Deployment 中的容器，并逐个输出容器的名称。
+```
