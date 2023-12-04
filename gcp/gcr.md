@@ -555,4 +555,18 @@ kubectl set image deployment/myapp web=new-image:tag
 ```
 
 这两个命令的效果是相同的。
+
+`kubectl set image deployment/myapp` 命令会触发滚动更新（RollingUpdate）的操作，而不是直接影响 ReplicaSet 的值。在进行滚动更新时，Kubernetes 会逐步创建新版本的 Pod，并逐步停止旧版本的 Pod，以确保应用程序的稳定性。
+
+下面是该命令的一般流程：
+
+1. **创建新的 ReplicaSet：** 当你更新 Deployment 中的容器镜像时，Kubernetes 会创建一个新的 ReplicaSet，对应于新版本的 Pod。
+
+2. **逐步调整 Pod 数量：** Kubernetes 会逐步调整新旧两个 ReplicaSet 中的 Pod 数量，确保新版本的 Pod 逐渐增加，而旧版本的 Pod 逐渐减少。
+
+3. **滚动更新完成：** 当新版本的 Pod 达到指定数量，而旧版本的 Pod 达到指定数量或全部停止时，滚动更新完成。
+
+这个过程确保了你的应用程序在更新时保持可用性。HPA（Horizontal Pod Autoscaler）会根据新版本 Pod 的性能和资源使用情况进行调整。
+
+因此，`kubectl set image deployment/myapp` 不会直接影响 ReplicaSet 的值，但会触发一个滚动更新，可能导致创建一个新的 ReplicaSet。
 ```
