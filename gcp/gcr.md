@@ -525,4 +525,34 @@ while IFS= read -r image; do
 done < running-images.txt
 ```
 
+# images setting
+```
+`kubectl set images` 是 Kubernetes 中的一个命令，用于更新 Deployment、StatefulSet 或者 ReplicaSet 中容器的镜像版本。它可以用于实现滚动更新，即将应用程序从一个版本逐渐升级到另一个版本，而不会中断服务。
 
+命令的基本语法是：
+
+```bash
+kubectl set image deployment/<deployment-name> <container-name>=<new-image>
+```
+
+其中：
+- `<deployment-name>` 是部署的名称。
+- `<container-name>` 是要更新镜像的容器的名称。
+- `<new-image>` 是新的镜像版本。
+
+例如，如果你有一个名为 `myapp` 的 Deployment，并且其中有一个叫做 `web` 的容器，你可以使用以下命令更新它的镜像：
+
+```bash
+kubectl set image deployment/myapp web=new-image:tag
+```
+
+这将触发 Kubernetes 启动一个滚动更新，逐步将新镜像应用到 Deployment 中的 Pod 中。这可以确保在升级过程中应用程序保持可用性。
+
+请注意，`kubectl set images` 命令已经被弃用，建议使用 `kubectl set image` 命令进行替代。例如：
+
+```bash
+kubectl set image deployment/myapp web=new-image:tag
+```
+
+这两个命令的效果是相同的。
+```
