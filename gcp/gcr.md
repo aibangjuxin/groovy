@@ -592,3 +592,28 @@ kubectl get deployments --all-namespaces -o jsonpath='{range .items[*].spec.temp
 
 这个命令使用了 `range` 关键字来遍历所有 Deployment 中的容器，并逐个输出容器的名称。
 ```
+# ReplicaSet
+
+在Kubernetes（K8S）中，`rs` 指的是 ReplicaSet，它是用于确保指定数量的 Pod 实例在集群中运行的控制器。`ReplicaSet` 是 `Deployment` 的底层实现之一。
+
+如果在 `Deployment` 变化后，你想继续使用原来的 `ReplicaSet`，你可以通过 `kubectl` 进行滚动更新。使用以下命令，假设 `deployment-name` 是你的 Deployment 名称：
+
+```bash
+kubectl rollout undo deployment deployment-name
+```
+
+这会将 `Deployment` 回滚到之前的版本，同时保留原来的 `ReplicaSet`。
+
+如果你想替换 `Deployment` 中的镜像而又不希望生成新的 `ReplicaSet`，你可以使用 `kubectl` 的 `set image` 命令，并指定 `--record` 选项来记录这次的修改。这会确保修改被记录在 `Deployment` 的注释中，而不会触发新的 `ReplicaSet`。
+
+以下是一个示例命令：
+
+```bash
+kubectl set image deployment/deployment-name container-name=new-image --record
+```
+
+请确保将 `deployment-name` 替换为你的 Deployment 名称，`container-name` 替换为实际容器的名称，而 `new-image` 替换为你想要使用的新镜像。
+
+这样做会更新 `Deployment`，并保留现有的 `ReplicaSet`，只替换容器中的镜像。
+
+
