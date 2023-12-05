@@ -591,7 +591,7 @@ kubectl get deployments --all-namespaces -o jsonpath='{range .items[*].spec.temp
 ```
 
 这个命令使用了 `range` 关键字来遍历所有 Deployment 中的容器，并逐个输出容器的名称。
-```
+
 # ReplicaSet
 
 在Kubernetes（K8S）中，`rs` 指的是 ReplicaSet，它是用于确保指定数量的 Pod 实例在集群中运行的控制器。`ReplicaSet` 是 `Deployment` 的底层实现之一。
