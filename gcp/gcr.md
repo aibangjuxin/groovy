@@ -272,7 +272,7 @@ for IMAGE in $ALL_IMAGES; do
     fi
   done
 done
-
+```
 
 
 
@@ -298,7 +298,8 @@ done
           counter=$((counter + 1))
       done
 ```
-
+- another
+```bash
 #!/bin/bash
 # 定义仓库和项目
 PROJECT_ID="your-project-id"
@@ -329,9 +330,10 @@ for REPO_NAME in "${REPO_NAMES[@]}"; do
     done
   done
 done
+```
+- new
 
-
-
+```bash
 #!/bin/bash
 # 定义项目
 PROJECT_ID="your-project-id"
@@ -367,8 +369,9 @@ for REPO_NAME in "${REPO_NAMES_ARRAY[@]}"; do
     done
   done
 done
-
-
+```
+- delete images
+```bash
 #!/bin/bash
 
 # 设置你的项目ID和仓库名称
