@@ -287,14 +287,14 @@ done
       for deployment in ${dpname[@]}; do
           # awk 'BEGIN{while (a++<50) s=s "-"; print s,"deployment",s}'
           echo "--------------------- $counter: $deployment-------------------------"
-          code=$(kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.saaspcode}' -n abj-squid)
+          code=$(kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.code}' -n abj-squid)
           echo "code: $code"
-          #kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.saaspcode}{"\n"}' -n abj-squid
+          #kubectl get deployment $deployment -o=jsonpath='{.metadata.labels.code}{"\n"}' -n abj-squid
           fqdn=$(kubectl get deployment $deployment -o=jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="TARGET_FQDN")].value}' -n abj-squid)
           echo "fqdn: $fqdn"
           #kubectl get deployment $deployment -o=jsonpath='{"\n"}{.spec.template.spec.containers[0].env[?(@.name=="TARGET_FQDN")].value}{"\n"}' -n abj-squid
           echo "command reference"
-          echo "./saasp_install.sh -e "${environment}" -c "${code}" -f "\"${fqdn}\"" "
+          echo "./a_install.sh -e "${environment}" -c "${code}" -f "\"${fqdn}\"" "
           counter=$((counter + 1))
       done
 ```
