@@ -43,3 +43,23 @@ end_time=$(date +%s)
 execution_time=$((end_time - start_time))
 echo "脚本执行时间: $execution_time 秒"
 ```
+
+
+```bash
+# Record the start time
+start_time=$(date +%s.%N)
+
+sleep 70
+
+# Record the end time
+end_time=$(date +%s.%N)
+
+# Calculate the elapsed time in seconds
+elapsed_time=$(echo "$end_time - $start_time" | bc)
+
+# Convert the elapsed time to minutes and seconds
+minutes=$(echo "$elapsed_time / 60" | bc)
+seconds=$(echo "$elapsed_time % 60" | bc)
+
+echo "Elapsed time: $minutes minutes $seconds seconds"
+``` 
