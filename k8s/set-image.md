@@ -101,3 +101,13 @@ kubectl -n my-namespace set image deploy/my-deployment my-init-container=gcr.io/
 
 
 您可以根据需要修改脚本，例如添加日志记录或错误处理。
+
+根据给定的脚本，它的逻辑是正确的。这个脚本的目的是更新 Kubernetes 集群中的容器镜像。
+
+脚本的主要步骤如下：
+1. 获取指定命名空间中的所有部署（deployments）的 JSON 数据。
+2. 使用 `jq` 工具解析 JSON 数据，提取每个部署的名称、容器名称和镜像名称。
+3. 对于每个部署，提取镜像名称的最后一部分（即去除镜像仓库前缀），并构建目标镜像的路径。
+4. 如果镜像不包含 "docker.pkg.dev" 字符串，则使用 `kubectl` 命令将部署的容器镜像更新为目标镜像。
+
+所以，这个脚本的目的是将非 "docker.pkg.dev" 仓库中的容器镜像更新为目标镜像。
