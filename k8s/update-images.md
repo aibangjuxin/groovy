@@ -106,3 +106,50 @@ kubectl -n my-namespace patch deployment my-deployment -p '{"spec":{"template":{
 [Image of 更新 Deployment 后 ReplicaSet 的变化]
 
 因此，通过 `kubectl -n $ns patch` 更新 Deployment 的容器镜像，ReplicaSet 的镜像也会发生改变。
+
+
+```bash
+#!/bin/bash
+gcp_region=asia
+project=my-project
+
+function update_images() {
+    local ns=$1
+    deployments=$(kubectl -n $ns get deploy -o json)
+
+    echo "$deployments" | jq -r '.items[] | .metadata.name + " " + (.spec.template.spec.containers[] | .name + " " + .image)' | while read -r line; do
+        deploy=$(echo "$line" | cut -d ' ' -f 1)
+        container=$(echo "$line" | cut -d ' ' -f 2)
+        image=$(echo "$line" | cut -d ' ' -f 3)
+
+        update_image $deploy $container $image
+    done
+
+    echo "$deployments" | jq -r '.items[] | .metadata.name + " " + (.spec.template.spec.initContainers[] | .name + " " + .image)' | while read -r line; do
+        deploy=$(echo "$line" | cut -d ' ' -f 1)
+        container=$(echo "$line" | cut -d ' ' -f 2)
+        image=$(echo "$line" | cut -d ' ' -f 3)
+
+        update_image $deploy $container $image
+    done
+}
+
+function update_image() {
+    deploy=$1
+    container=$2
+    image=$3
+
+    local ns=$4
+    image_name_version=$(echo "$image" | awk -F "/" '{print $NF}')
+    target_dir="${gcp_region}-docker.pkg.dev/${project}/containers/"
+    target_image="$target_dir$image_name_version"
+
+    if [[ "$image" != *"docker.pkg.dev"* ]]; then
+        echo "kubectl -n $ns set image deploy/$deploy $container=$target_image"
+        # Uncomment the following line to actually execute the command
+        # kubectl -n $ns set image deploy/$deploy $container=$target_image
+    fi
+}
+
+update_images "your_namespace"
+```
