@@ -164,6 +164,7 @@ update_images "your_namespace"
 
 # preplexity 
 根据你的需求，你需要在你的脚本中添加对initContainers的支持。这可以通过在你的函数中添加一个新的部分来实现，该部分会获取并处理initContainers的信息。以下是修改后的脚本：
+echo "$deployments" | jq -r '.items[] | .metadata.name + " " + (.spec.template.spec.initContainers[]? | .name + " " + .image)'
 
 ```bash
 #!/bin/bash
