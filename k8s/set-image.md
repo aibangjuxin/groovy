@@ -234,3 +234,45 @@ Citations:
 [23] https://cloud.tencent.com/developer/article/1629932
 [24] https://www.ghosind.com/2020/10/12/shell-string
 [25] https://quant67.com/post/shell/options.html
+
+# fix disabled
+```bash
+#!/bin/bash
+gcp_region=asia
+project=my-project
+
+function update_images() {
+    local ns=$1
+    deployments=$(kubectl -n $ns get deploy -o json)
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled") | .metadata.name + " " + (.spec.template.spec.containers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled") | .metadata.name + " " + (.spec.template.spec.initContainers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+}
+
+function update_image() {
+    local ns=$1
+    local line=$2
+
+    deploy=$(echo "$line" | cut -d ' ' -f 1)
+    container=$(echo "$line" | cut -d ' ' -f 2)
+    image=$(echo "$line" | cut -d ' ' -f 3)
+
+    image_name_version=$(echo "$image" | awk -F "/" '{print $NF}')
+    target_dir="${gcp_region}-docker.pkg.dev/${project}/containers/"
+    target_image="$target_dir$image_name_version"
+
+    if [[ "$image" != *"docker.pkg.dev"* ]]; then
+        echo "kubectl -n $ns set image deploy/$deploy $container=$target_image"
+        # Uncomment the following line to actually execute the command
+        # kubectl -n $ns set image deploy/$deploy $container=$target_image
+    fi
+}
+
+update_images "your_namespace"
+
+```
