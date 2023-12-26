@@ -296,3 +296,24 @@ function update_images() {
 ```
 
 在这里，我使用了 `select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null)` 来同时满足这两个条件。这样就可以获取到标签为 "disabled" 或者标签为空的部署。请测试并确保这满足你的要求。
+
+如果你得到这个错误，说明有一些资源的 `.spec.template.spec.initContainers` 字段是 `null`，导致在迭代时引发错误。为了处理这种情况，你可以在 `jq` 查询中添加一些额外的检查。
+
+以下是修改后的脚本，通过添加条件来确保 `.spec.template.spec.initContainers` 不为空：
+
+```bash
+function update_images() {
+    local ns=$1
+    deployments=$(kubectl -n $ns get deploy -o json)
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null) | .metadata.name + " " + (.spec.template.spec.containers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null) | select(has("spec") and (.spec.template.spec.initContainers | length > 0)) | .metadata.name + " " + (.spec.template.spec.initContainers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+}
+```
+
+在这里，我添加了 `select(has("spec") and (.spec.template.spec.initContainers | length > 0))` 条件来确保 `.spec.template.spec.initContainers` 不为空。这应该能够处理 `jq: error (at :1223): Cannot iterate over null (null)` 的问题。请尝试并检查是否满足你的要求。
