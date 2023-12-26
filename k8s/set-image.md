@@ -317,3 +317,57 @@ function update_images() {
 ```
 
 在这里，我添加了 `select(has("spec") and (.spec.template.spec.initContainers | length > 0))` 条件来确保 `.spec.template.spec.initContainers` 不为空。这应该能够处理 `jq: error (at :1223): Cannot iterate over null (null)` 的问题。请尝试并检查是否满足你的要求。
+
+# bash 
+根据您的需求，我们可以使用Bash脚本来实现。这个脚本将首先使用您提供的命令来找到匹配的行，然后将api-version-teams.txt文件的第三列添加到匹配的行后面。以下是实现这个功能的脚本：
+
+```bash
+#!/bin/bash
+
+# 创建一个临时文件来存储匹配的行
+temp_file=$(mktemp)
+
+# 使用您提供的命令找到匹配的行
+cut -d ',' -f 1 api-version-teams.txt | grep -F -f - no-teams-apis.txt > $temp_file
+
+# 读取临时文件中的每一行
+while IFS= read -r line
+do
+    # 从api-version-teams.txt文件中找到匹配的行，并获取第三列
+    column=$(grep "${line%% *}" api-version-teams.txt | cut -d ',' -f 3)
+
+    # 将第三列添加到匹配的行后面
+    echo "$line $column"
+done < "$temp_file"
+
+# 删除临时文件
+rm $temp_file
+```
+
+这个脚本首先创建了一个临时文件来存储匹配的行。然后，它读取临时文件中的每一行，并从api-version-teams.txt文件中找到匹配的行，获取第三列。最后，它将第三列添加到匹配的行后面，并输出结果[1][2][3][6][7][8]。
+
+Citations:
+[1] https://blog.csdn.net/fjssharpsword/article/details/73742361
+[2] https://cloud.tencent.com/developer/article/1366507
+[3] https://www.runoob.com/w3cnote/shell-read-line.html
+[4] https://blog.csdn.net/qq_35902025/article/details/129974302
+[5] http://lixingcong.github.io/2015/10/31/sed/
+[6] https://blog.csdn.net/Asa_Prince/article/details/111944942
+[7] https://www.cnblogs.com/lasclocker/p/5981597.html
+[8] https://www.cnblogs.com/dwdxdy/archive/2012/07/25/2608816.html
+[9] https://www.yiibai.com/bash/bash-read-file.html
+[10] https://cloud.tencent.com/developer/ask/sof/1372553
+[11] https://101.lug.ustc.edu.cn/Ch06/
+[12] https://blog.csdn.net/cen50958/article/details/90108677
+[13] https://juejin.cn/s/shell%E5%9C%A8%E6%96%87%E4%BB%B6%E4%B8%AD%E5%A2%9E%E5%8A%A0%E4%B8%80%E5%88%97%E5%88%97
+[14] https://blog.csdn.net/qq_21933797/article/details/118284891
+[15] https://www.cnblogs.com/iloveyoucc/archive/2012/07/10/2585529.html
+[16] http://bbs.chinaunix.net/thread-582846-1-1.html
+[17] https://blog.csdn.net/JWbonze/article/details/124731041
+[18] https://cloud.tencent.com/developer/article/1910386
+[19] https://www.cnblogs.com/5201351/p/14799609.html
+[20] http://blog.itpub.net/69955379/viewspace-2772407/
+[21] https://www.jianshu.com/p/d990bf4d0bee
+[22] https://zhidao.baidu.com/question/1672291922074554747.html
+[23] https://renqlsysu.github.io/2021/10/19/linux_ascii_method/
+[24] https://cloud.tencent.com/developer/article/2129028
