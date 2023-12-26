@@ -276,3 +276,23 @@ function update_image() {
 update_images "your_namespace"
 
 ```
+
+# fix disable and null
+如果你想同时拿到 `.spec.template.metadata.labels.sms == "disabled"` 和 `sms==null` 的部分，你可以使用逻辑或 (`||`) 来结合两个条件。以下是修改后的脚本：
+
+```bash
+function update_images() {
+    local ns=$1
+    deployments=$(kubectl -n $ns get deploy -o json)
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null) | .metadata.name + " " + (.spec.template.spec.containers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+
+    echo "$deployments" | jq -r '.items[] | select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null) | .metadata.name + " " + (.spec.template.spec.initContainers[] | .name + " " + .image)' | while read -r line; do
+        update_image "$ns" "$line"
+    done
+}
+```
+
+在这里，我使用了 `select(.spec.template.metadata.labels.sms == "disabled" or .spec.template.metadata.labels.sms == null)` 来同时满足这两个条件。这样就可以获取到标签为 "disabled" 或者标签为空的部署。请测试并确保这满足你的要求。
