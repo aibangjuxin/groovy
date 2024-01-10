@@ -6,6 +6,7 @@
 # DOMAIN-SUFFIX: 12
 # TOTAL: 13
 DOMAIN-SUFFIX,ai.com
+DOMAIN-SUFFIX,bard.google.com
 DOMAIN-SUFFIX,auth0.com
 DOMAIN-SUFFIX,challenges.cloudflare.com
 DOMAIN-SUFFIX,client-api.arkoselabs.com
