@@ -333,3 +333,118 @@ spec:
 ```
 
 这样通过 label 和 NetworkPolicy 的 matchExpressions 与 except 组合,可以有效实现分组管理网络策略。
+
+
+```bash
+#!/bin/bash
+# define The pod labels
+echo "prd environment apxy1: enabled"
+echo "non-prod environment intpxy6: enabled"
+# define forbidden fqdn domain 
+domain_list=(www.baidu.com www.sohu.com)
+ip_list=()
+ip_list_10=()
+ip_list_other=()
+
+#因为我们的IP是2个段落，所以这个过程中，直接把不同段落的IP赋值给了2个列表，因为10段的赋值是多个IP other段的赋值是一个IP，所以应该是不受影响
+for fqdn in "${domain_list[@]}"; do
+    ip=$(dig +short "$fqdn" | grep -v "[a-z]")
+    ip_list+=("$ip")
+    if [[ $ip == 10* ]]; then
+        ip_list_10+=("$ip")
+    else
+        ip_list_other+=("$ip")
+    fi
+done
+# define except_section The ip range for dev environment
+except_section_other=""
+while IFS= read -r ip; do
+  except_section_other+="    - $ip/32\n        "
+done <<< "$ip_list_other"
+# define except_section The ip range for prd environment
+except_section_10=""
+while IFS= read -r ip; do
+  except_section_10+="    - $ip/32\n        "
+done <<< "$ip_list_10"
+
+# define need updated ns for Testing only grep maclex and
+# apply_namespace=$(kubectl get namespace -l nsType=runtime -o name -o jsonpath='{.items[*].metadata.name}')
+apply_namespace=$(echo maclex abx-test-int)
+
+for ns in ${apply_namespace[@]}; do
+# define allow-rt-egress-l3-to-drn-scc for all namespace
+cat - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-l3-to-drn-scc
+  namespace: $ns
+spec:
+  podSelector: {}
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 128.0.0.0/2
+            except:
+        $(echo -e "$except_section_other")
+        - ipBlock:
+            cidr: 10.0.0.0/8
+            except:
+        $(echo -e "$except_section_10")
+EOF
+
+# define allow-rt-egress-l3-to-apxy1-proxy for prd environment
+echo "if I want block for non-prod environment"
+
+cat - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-l3-to-apxy1-proxy
+  namespace: $ns
+spec:
+  podSelector:
+    matchLabels:
+      apxy1: enabled
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+        $(echo -e "$except_section_other")
+EOF
+
+echo "if I want block for prd environment"
+cat - <<EOF
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-l3-to-intpxy6-proxy
+  namespace: $ns
+spec:
+  podSelector:
+    matchLabels:
+      intpxy6: enabled
+  policyTypes:
+    - Egress
+  egress:
+    - to:
+        - ipBlock:
+            cidr: 0.0.0.0/0
+            except:
+        $(echo -e "$except_section_10")
+EOF
+
+done
+
+if [[ $? == "1" ]]; then
+    echo "allow rt egress l3-to-drn-scc for namespace: $ns created fail, exit"
+else
+    echo "allow rt egress l3-to-drn-scc for namespace: $ns created successfully"
+    kubectl describe networkpolicy allow-rt-egress-l3-to-drn-scc -n $ns
+fi
+```
