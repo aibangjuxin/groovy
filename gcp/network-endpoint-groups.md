@@ -82,3 +82,30 @@ gcloud compute network-endpoint-groups set-service-type NEG_NAME HTTP
 * **子网**：您必须选择要将 NEG 与之关联的子网。NEG 将使用子网中的 IP 地址。
 
 如果您不满足上述所有条件，您将收到错误消息。
+
+ 这个错误信息的意思是在GCP项目中,不允许为私有连接GOOGLE_APIS创建网络端点组(Network Endpoint Group)。
+
+Google APIs是GCP提供的一组公共API和服务接口。这些API默认是公开的,用于GCP项目与Google服务集成。
+
+而网络端点组(NEG)通常用于管理负载均衡后端集群的私有IP地址,提供更灵活的网络管理。
+
+所以创建NEG时不应该选择Google API服务,这属于公共接口。相反,NEG应该关联在项目内的私有负载均衡后端资源上,比如GKE集群或者VM实例组。
+
+所以在你创建NEG时选择的后端目标是Google APIs私有连接,这是不被允许的。你应该将后端目标改为项目内的Compute Engine实例或GKE集群工作负载。
+
+总结一下原因:
+
+1. Google APIs是公共接口,不能作为NEG的私有后端目标
+2. NEG用于管理内部私有负载均衡后端集群
+3. 所以不能在项目内为Google APIs创建NEG
+
+我理解这可能是一个误操作。希望上述解释能帮助你明确原因和解决方法。
+
+
+这个错误提示表明你正在尝试为 "GOOGLE_APIS" 创建私有连接（Private Google Access）时出现了问题。
+
+Private Google Access 允许你的虚拟机实例（VM）访问 Google API 和服务，而不需要公共 IP 地址。但是，并非所有 Google 服务都支持 Private Google Access。
+
+错误表明你尝试为 "GOOGLE_APIS" 创建 Network Endpoint Group（网络端点组），但是对于该服务来说，这是不被允许的。这可能是因为该服务不支持 Private Google Access，或者可能有其他限制。
+
+你可以检查一下文档或者相关的错误消息，以获取更详细的信息。可能需要查看网络端点组和 Private Google Access 的文档，了解哪些服务支持私有连接，以及如何正确配置。确保你的操作是符合 Google Cloud 平台的限制和要求的。
