@@ -109,3 +109,26 @@ Private Google Access 允许你的虚拟机实例（VM）访问 Google API 和�
 错误表明你尝试为 "GOOGLE_APIS" 创建 Network Endpoint Group（网络端点组），但是对于该服务来说，这是不被允许的。这可能是因为该服务不支持 Private Google Access，或者可能有其他限制。
 
 你可以检查一下文档或者相关的错误消息，以获取更详细的信息。可能需要查看网络端点组和 Private Google Access 的文档，了解哪些服务支持私有连接，以及如何正确配置。确保你的操作是符合 Google Cloud 平台的限制和要求的。
+
+
+是的，在 GKE 中创建 ingress deployment 时，系统会自动创建一个相应的 Network Endpoint Group (NEG)。NEG 是一个由 Pod IP 地址组成的逻辑集合，用于将流量负载均衡到这些 Pod 上。
+
+当您创建 ingress deployment 时，系统会创建一个新的 NEG，并将该 NEG 与 ingress deployment 相关联。当您更新 ingress deployment 时，系统也会相应地更新 NEG。当您删除 ingress deployment 时，系统也会删除相应的 NEG。
+
+您可以使用以下命令查看与 ingress deployment 关联的 NEG：
+
+```
+kubectl get networkendpointgroups -n <namespace>
+```
+
+其中 `<namespace>` 是您创建 ingress deployment 的命名空间。
+
+您还可以使用以下命令查看 NEG 的详细信息：
+
+```
+kubectl describe networkendpointgroups <neg-name> -n <namespace>
+```
+
+其中 `<neg-name>` 是 NEG 的名称，`<namespace>` 是 NEG 所在的命名空间。
+
+请注意，NEG 是一个内部资源，您无法直接访问它。但是，您可以通过查看 ingress deployment 的详细信息或使用 `kubectl` 命令来了解与 ingress deployment 关联的 NEG。
