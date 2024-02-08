@@ -185,3 +185,29 @@ dd if=/dev/zero bs=100M count=1
 ```
 
 这个命令将会从/dev/zero中读取数据，但不会将数据写入硬盘，而是直接丢弃。由于数据来自/dev/zero，它实际上是一系列的空字节，不会占用硬盘空间，但会占用内存。
+
+Sure, here are a few ways you can simulate an increase in memory usage:
+
+1. **Stress Command**: You can use the `stress` command-line tool to consume memory. First, install it if it's not already available on your system. Then, run a stress test to consume memory:
+   ```
+   sudo apt-get install stress  # Install stress tool (Ubuntu/Debian)
+   stress --vm 1 --vm-bytes 512M  # Consume 512MB of memory
+   ```
+
+2. **Allocate Memory with dd**: You can use the `dd` command to allocate memory. For example, to allocate 1GB of memory, you can run:
+   ```
+   dd if=/dev/zero of=/dev/null bs=1M count=1024
+   ```
+
+3. **Python Script**: Write a simple Python script to allocate memory. Here's an example:
+   ```python
+   #!/usr/bin/env python3
+   import os
+
+   mem = bytearray(1024*1024*512)  # Allocate 512MB of memory
+   input("Press Enter to release memory...")
+   ```
+
+4. **Container with High Memory Usage**: Deploy a container that consumes a large amount of memory. You can find many container images designed for stress testing on Docker Hub or other container registries.
+
+Choose the method that best suits your needs and environment, and adjust the amount of memory consumed according to your testing requirements. Make sure to monitor your system's resource usage while performing these tests to avoid any negative impact on other applications or services running on the same cluster.
