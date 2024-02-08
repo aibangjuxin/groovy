@@ -197,6 +197,8 @@ Sure, here are a few ways you can simulate an increase in memory usage:
 2. **Allocate Memory with dd**: You can use the `dd` command to allocate memory. For example, to allocate 1GB of memory, you can run:
    ```
    dd if=/dev/zero of=/dev/null bs=1M count=1024
+   dd if=/dev/zero bs=100M count=1
+   命令将会从/dev/zero中读取数据，但不会将数据写入硬盘，而是直接丢弃。由于数据来自/dev/zero，它实际上是一系列的空字节，不会占用硬盘空间，但会占用内存
    ```
 
 3. **Python Script**: Write a simple Python script to allocate memory. Here's an example:
