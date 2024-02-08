@@ -178,30 +178,10 @@ stress --vm 1 --vm-bytes 512M --timeout 10m
 
 以下是一个示例shell脚本，它会不断地分配内存并保持一定时间后释放内存：
 
+
+
 ```bash
-#!/bin/bash
-
-# Function to allocate memory
-allocate_memory() {
-    # Allocate 100MB of memory
-    memory=$(printf "%100MB" | tr ' ' 'a')
-    # Sleep for 1 second
-    sleep 1
-}
-
-# Loop to continuously allocate memory
-while true; do
-    allocate_memory
-done
+dd if=/dev/zero bs=100M count=1
 ```
 
-这个脚本将不断循环执行`allocate_memory`函数，该函数分配了100MB的内存并在每次循环中休眠1秒钟。这样，内存使用会持续增加，直到系统内存不足或者脚本被终止。
-
-您可以通过将脚本保存到文件中（例如`increase_memory.sh`），然后通过`bash increase_memory.sh`来运行它。请注意，运行此脚本会占用大量内存，可能会影响系统的稳定性，因此请谨慎操作并在测试环境中使用。
-
-
-
-- `printf "%100MB"`：这个命令使用printf格式化字符串来创建一个长度为100MB的字符串。在这个字符串中，每个字符都是一个空格符。
-- `tr ' ' 'a'`：这个命令使用tr工具将字符串中的空格符替换为字母'a'。因为这里的目的是为了占用内存而不是实际使用数据，所以我们只需要一个字符来代表数据。
-
-因此，即使数据本身并没有实际意义，它依然会在内存中占用100MB的空间。
+这个命令将会从/dev/zero中读取数据，但不会将数据写入硬盘，而是直接丢弃。由于数据来自/dev/zero，它实际上是一系列的空字节，不会占用硬盘空间，但会占用内存。
