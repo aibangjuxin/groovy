@@ -152,3 +152,7 @@ ERROR: (gcloud.kms.keys.versions.enable) PERMISSION_DENIED: Permission 'cloudkms
 - --keyring: The name of the Cloud KMS key ring where the key is located. This key ring must also be in the same project as the project ID specified with the --project flag.
 - 密钥所在的Cloud KMS密钥环的名称。此密钥环还必须与使用--project标志指定的项目ID在同一项目中
 gcloud kms decrypt --project ${project_kms} --ciphertext-file=/etc/pki/tls/certs/abc.cer.en --plaintext-file=/etc/pki/tls/certs/abc.cer --key=${key} --keyring=${project_keyring} --location=global
+
+# other
+- https://github.com/LeCoupa/awesome-cheatsheets/blob/master/tools/gcp.md
+
