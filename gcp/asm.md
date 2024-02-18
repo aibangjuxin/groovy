@@ -309,11 +309,20 @@ https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-serv
 
 # 建议使用的方案如下:
 - recommend using the fleet feature API to automatically configure managed Anthos Service Mesh
+```bash
 注意：我们建议使用舰队功能的 API 自动配置代管式 Anthos Service Mesh，
 不过您也可以使用 asmcli 工具配置代管式 Anthos Service Mesh。
 如果您要使用 VPC-SC、私有证书授权机构 (CA) 或要选择与您的 Google Kubernetes Engine (GKE) 渠道不同的 Anthos Service Mesh 渠道，则必须使用该手动配置方法。
 
-Note: We recommend using the fleet feature API to automatically configure managed Anthos Service Mesh, but you can also configure managed Anthos Service Mesh using the asmcli tool. You must use that manual configuration to use VPC-SC, Private CA, or to choose an Anthos Service Mesh channel that is different from your Google Kubernetes Engine (GKE) channel.
+Note: We recommend using the fleet feature API to automatically configure managed Anthos Service Mesh, 
+but you can also configure managed Anthos Service Mesh using the asmcli tool.
+You must use that manual configuration to use VPC-SC, Private CA, or to choose an Anthos Service Mesh channel that is different from your Google Kubernetes Engine (GKE) channel.
+
+```
+
+
+
+
 
 
 - https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh?hl=zh-cn
