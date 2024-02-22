@@ -11,7 +11,6 @@
   - [使用要求](#使用要求)
     - [依据上面要求, 我这边可能需要操作的步骤](#依据上面要求-我这边可能需要操作的步骤)
     - [ask ai](#ask-ai)
-    - [对于自行安装的集群内 Anthos Service Mesh，Google 支持当前 Anthos Service Mesh 版本和前两个 (n-2) 次要版本](#对于自行安装的集群内-anthos-service-meshgoogle-支持当前-anthos-service-mesh-版本和前两个-n-2-次要版本)
 - [asm sidecar](#asm-sidecar)
 - [asm](#asm)
   - [Claude](#claude)
@@ -22,12 +21,16 @@
   - [ASM功能介绍](#asm功能介绍)
   - [使用 ASM 管理流量](#使用-asm-管理流量)
   - [更多信息](#更多信息)
+  - [学习文档和ASM功能概述](#学习文档和asm功能概述)
+  - [使用 ASM 管理流量](#使用-asm-管理流量-1)
   - [总结](#总结)
+  - [其他资源](#其他资源)
+  - [总结](#总结-1)
 - [enables ASM \&\& Create a service mesh](#enables-asm--create-a-service-mesh)
   - [使用 Google Cloud 控制台启用 ASM 和创建服务网格](#使用-google-cloud-控制台启用-asm-和创建服务网格)
   - [将应用程序部署到服务网格](#将应用程序部署到服务网格)
   - [定义流量控制、安全和监控策略](#定义流量控制安全和监控策略)
-  - [总结](#总结-1)
+  - [总结](#总结-2)
   - [about gcloud container service mesh create](#about-gcloud-container-service-mesh-create)
 - [traffic flows between your services](#traffic-flows-between-your-services)
 - [istio Multicluster](#istio-multicluster)
@@ -35,7 +38,7 @@
 - [asm with fleet](#asm-with-fleet)
   - [Fleet 在 Google 工程中的目的和作用](#fleet-在-google-工程中的目的和作用)
   - [Fleet 与 ASM 的关系](#fleet-与-asm-的关系)
-  - [总结](#总结-2)
+  - [总结](#总结-3)
   - [更多信息](#更多信息-1)
   - [ASM 如何进行流量管理](#asm-如何进行流量管理)
   - [在不同集群之间进行流量管理的条件](#在不同集群之间进行流量管理的条件)
@@ -52,6 +55,11 @@
     - [结语](#结语)
     - [Gemini](#gemini-1)
   - [使用 VirtualServices 和 DestinationRules 控制流量路由和策略](#使用-virtualservices-和-destinationrules-控制流量路由和策略)
+- [网关是 Envoy 代理](#网关是-envoy-代理)
+  - [Envoy 代理简介](#envoy-代理简介)
+- [Virtual services](#virtual-services)
+  - [Istio VirtualService 中 subset 的用法](#istio-virtualservice-中-subset-的用法)
+- [从边缘到网格：通过 GKE Gateway 公开服务网格应用](#从边缘到网格通过-gke-gateway-公开服务网格应用)
 # Compare ASM in cluster control plane and google-managed control plane
 
 **install ASM in cluster control plane**
@@ -481,20 +489,8 @@ gcloud services enable mesh.googleapis.com \
 
 主要准备工作就是配置好集群和IAM,以及对接应用程序。ASM组件和控制平面会自动安装。可以根据需要配置探针,policies等进一步自定义服务网格。
 
-希望这给了您一个基本的ASM启用流程概述!有任何问题随时问我。
 
 
-
-
-
-
-
-
-
-
-
-
-### 对于自行安装的集群内 Anthos Service Mesh，Google 支持当前 Anthos Service Mesh 版本和前两个 (n-2) 次要版本
 For self-installed in-cluster Anthos Service Mesh, Google supports the current and previous two (n-2) minor versions of Anthos Service Mesh.
 
 
@@ -509,11 +505,43 @@ For self-installed in-cluster Anthos Service Mesh, Google supports the current a
 学习下面2个文档
 - https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh?hl=zh-cn#gcloud
 - https://cloud.google.com/anthos/service-mesh?hl=zh-cn
-轻松管理流量
 借助 Service Mesh，您可以控制服务间流量的传输和 API 的调用，同时还能清晰了解流量情况。这有助于确保调用更加可靠、网络更加稳健，即使出现不利状况，您也可以及早发现问题，防患于未然。
 我想了解更多的ASM的功能, 以及如何使用ASM来管理流量.比如我的典型的场景如下
 3个Cluster 都加入了fleet舰队. 那么三个Cluster上分别去部署我的应用?
 那我这些应用之间如何去控制流量比如A应用调用B应用, 如何去控制流量的流动, 如何去控制流量的传输, 如何去控制流量的路由, 如何去控制流量的加密, 如何去控制流量的认证等等.
+我是否需要给我的每个Cluster都Deploy一个Ingress的Gateway?
+又或者需要对应的cluster去Deployment对应的VirtualService?
+如果我仅仅把我的3个Cluster加入了fleet,那么这样,会有什么好处?
+
+
+Anthos Service Mesh (ASM) 提供了一套功能完备的流量管理和可观测性解决方案,可以帮助您在多集群环境下轻松管理跨集群的服务通信。以下是一些关键功能及使用方式:
+
+1. 流量控制和路由
+   - 通过创建 VirtualService 和 DestinationRule 等资源,可以对服务流量进行细粒度控制,比如设置流量权重、retry策略、熔断策略等。
+   - 支持基于 HTTP 头、URI、版本等多种路由规则,实现灰度发布、金丝雀发布等能力。
+
+2. 安全
+   - 自动为集群内服务提供mutual TLS,不需要手动管理证书。
+   - 通过创建 AuthenticationPolicy 资源,可以对服务通信进行双向、单向或完全禁止 mTLS。
+   - 支持基于命名空间、IP范围的 RBAC 访问控制策略。
+
+3. 可观测性
+   - 自动收集和导出服务的监控指标,通过 GCP 控制台查看服务健康状况、流量等。  
+   - 自动注入 Envoy Proxy 实现分布式链路追踪,通过 Stackdriver 查看跨集群服务调用链路。
+
+4. 多集群管理
+   - 在 GKE Fleet 集群上部署的 ASM,会自动同步流量管理配置到加入其中的所有集群。
+   - 在非 Fleet 模式下,需要在每个集群安装 ASM 并手动同步配置。
+
+5. 架构示例
+   - 在您的场景中,可以先在 Fleet 集群上启用 ASM,然后部署您的应用到不同集群。
+   - 应用间的流量通过创建 VirtualService 等资源统一配置和控制,无需单独部署 Ingress Gateway。
+   - 如果需要集群外部流量访问应用,则需要在目标集群部署 IngressGateway 资源。
+
+总的来说,ASM 为您提供了统一的流量控制入口,通过声明式配置即可轻松管理多集群下的服务通信,提高了可靠性、安全性和可观测性。ASM 的配置资源可以实现诸如流量路由、安全认证、策略控制等功能,极大简化了多集群环境下的服务管理复杂度。
+
+
+
 使用预配代管式 Anthos Service Mesh 进行流量管理能否给我详细的操作步骤?
 ASM的功能有哪些? 我应该如何使用ASM来管理流量?
 ## Claude
@@ -628,6 +656,76 @@ ASM（Anthos Service Mesh）是 Google Cloud 提供的托管服务网格，可�
 * ASM 文档: [https://cloud.google.com/anthos/service-mesh?hl=zh-cn](https://cloud.google.com/anthos/service-mesh?hl=zh-cn)
 * ASM 教程: [移除了无效网址]
 * ASM 示例: [移除了无效网址]
+
+## 学习文档和ASM功能概述
+
+**文档:**
+
+1.  **为 Anthos Service Mesh 配置 Istio: [https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh?hl=zh-cn#gcloud](https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh?hl=zh-cn#gcloud)**：该文档介绍了如何在 Google Kubernetes Engine (GKE) 上使用 gcloud 命令行工具配置 Anthos Service Mesh。
+2.  **Anthos Service Mesh 简介: [https://cloud.google.com/anthos/service-mesh?hl=zh-cn](https://cloud.google.com/anthos/service-mesh?hl=zh-cn)**：该文档概述了 Anthos Service Mesh 的功能和优势。
+
+**ASM功能概述:**
+
+ASM（Anthos Service Mesh）是一种用于管理微服务通信的工具。它可以帮助您控制服务间流量的传输和 API 的调用，同时还能清晰了解流量情况。ASM 的主要功能包括：
+
+* **流量控制:**  ASM 可以控制服务间流量的流动、传输、路由、加密和认证。
+* **服务发现:**  ASM 可以自动发现服务并将其注册到服务注册表中。
+* **负载均衡:**  ASM 可以将流量分散到多个服务实例上，以提高负载均衡和可靠性。
+* **熔断:**  ASM 可以自动熔断故障服务，以防止故障影响其他服务。
+* **超时:**  ASM 可以为服务调用设置超时时间，以防止服务调用超时。
+* **监控:**  ASM 可以提供详细的服务流量和性能监控指标。
+
+## 使用 ASM 管理流量
+
+**典型场景:**
+
+假设您有三个集群都加入了 Fleet 舰队，您希望在这些集群上部署您的应用程序。
+
+**部署应用程序:**
+
+您可以将应用程序部署到每个集群中的一个或多个服务实例上。ASM 可以自动发现这些服务并将其注册到服务注册表中。
+
+**控制流量:**
+
+您可以使用 ASM 控制应用程序之间的流量。例如，您可以配置以下规则：
+
+*  **A 应用调用 B 应用时，必须使用 HTTPS 进行加密。**
+*  **B 应用的流量必须负载均衡到三个集群中的所有服务实例上。**
+*  **如果 B 应用出现故障，则流量必须自动熔断到 C 应用。**
+
+**配置 ASM:**
+
+您可以使用 Istioctl 命令行工具或 Istio 仪表板来配置 ASM。
+
+**Ingress 和 Virtual Service:**
+
+*  **Ingress Gateway:**  如果您希望将流量从外部路由到您的应用程序，则需要在每个集群中部署一个 Ingress Gateway。
+*  **Virtual Service:**  您可以使用 Virtual Service 来控制特定服务的流量。
+
+**加入 Fleet 的好处:**
+
+将您的集群加入 Fleet 舰队可以提供以下好处：
+
+*  **统一管理:**  您可以使用 Fleet 舰队统一管理所有集群中的应用程序。
+*  **简化操作:**  Fleet 舰队可以自动执行许多操作，例如服务发现、负载均衡和故障转移。
+*  **提高安全性:**  Fleet 舰队可以提供额外的安全功能，例如加密和身份验证。
+
+## 总结
+
+ASM 是一款功能强大的工具，可以帮助您控制和管理微服务通信。通过使用 ASM，您可以提高应用程序的可靠性、安全性 and 性能。
+
+**建议:**
+
+*  阅读上述文档以了解更多有关 ASM 的功能和配置的信息。
+*  使用 Istioctl 命令行工具或 Istio 仪表板来配置 ASM。
+*  根据您的具体需求调整 ASM 配置。
+
+## 其他资源
+
+*  **Istio 官方文档: [https://istio.io/docs/](https://istio.io/docs/)**
+*  **Anthos Service Mesh 文档: [移除了无效网址]**
+
+
 
 ## 总结
 
@@ -1381,3 +1479,129 @@ kubectl apply -f destination-rule-b.yaml
 * Istio 文档: [https://istio.io/docs/reference/config/networking/](https://istio.io/docs/reference/config/networking/)
 * VirtualService 文档: [https://istio.io/docs/reference/config/networking/virtual-service/](https://istio.io/docs/reference/config/networking/virtual-service/)
 * DestinationRule 文档: [https://istio.io/docs/reference/config/networking/destination-rule/](https://istio.io/docs/reference/config/networking/destination-rule/)
+
+
+
+
+# 网关是 Envoy 代理
+## Envoy 代理简介
+
+Envoy 是一个高性能的边缘和服务代理，由 C++ 开发。它可以用于处理网络流量的转发、负载均衡、故障恢复、限流等功能，是 Google Cloud Anthos Service Mesh (ASM) 的数据平面基础。
+
+**Envoy 的主要功能:**
+
+* **流量转发:** Envoy 可以将流量转发到不同的目标服务，例如 HTTP、gRPC、TCP 等。
+* **负载均衡:** Envoy 可以根据不同的策略将流量分散到不同的服务实例。
+* **故障恢复:** Envoy 可以自动检测和恢复服务故障。
+* **限流:** Envoy 可以限制每秒钟或每分钟允许通过的流量请求数。
+* **安全:** Envoy 支持 mTLS 和 Istio 认证等安全功能。
+* **监控:** Envoy 提供详细的流量指标和日志，帮助您了解服务之间的通信情况。
+
+**Envoy 在 ASM 中的作用:**
+
+* 在 ASM 中，Envoy 作为每个服务的 sidecar 运行，负责处理该服务的网络流量。
+* Envoy 可以根据 VirtualService 和 DestinationRule 等配置来控制流量的路由和策略。
+* Envoy 可以提供丰富的监控和日志信息，帮助您了解服务之间的通信情况。
+
+**Envoy 的优势:**
+
+* **高性能:** Envoy 能够处理大量的网络流量。
+* **可扩展性:** Envoy 可以支持多集群和多地域部署。
+* **可靠性:** Envoy 提供故障恢复和熔断机制等功能，提高服务的可靠性。
+* **安全性:** Envoy 支持 mTLS 和 Istio 认证等安全功能。
+
+**有关 Envoy 的更多信息:**
+
+* Envoy 文档: [https://www.envoyproxy.io/docs/envoy/latest](https://www.envoyproxy.io/docs/envoy/latest)
+* ASM 文档: [https://cloud.google.com/anthos/service-mesh](https://cloud.google.com/anthos/service-mesh)
+
+**Envoy 与 Nginx 的比较:**
+
+Envoy 和 Nginx 都是高性能的 web 服务器和反向代理，但它们有一些关键的区别:
+
+* **Envoy:**
+    * 专为微服务架构设计
+    * 支持 mTLS 和 Istio 认证等安全功能
+    * 提供丰富的监控和日志信息
+* **Nginx:**
+    * 通用 web 服务器
+    * 不支持 mTLS 和 Istio 认证等安全功能
+    * 监控和日志信息有限
+
+**总体而言，Envoy 是一个功能强大且可扩展的代理，适用于微服务架构中的流量管理。**
+
+
+# Virtual services 
+https://istio.io/v1.19/zh/docs/concepts/traffic-management/#virtual-services
+
+## Istio VirtualService 中 subset 的用法
+
+在 Istio VirtualService 中，`subset` 用于将流量路由到服务的不同版本或实例。
+
+**语法:**
+
+```
+subset:
+  name: <子集名称>
+  labels:
+    <键1>: <值1>
+    <键2>: <值2>
+    ...
+```
+
+**参数:**
+
+* `name`: 子集名称，必须唯一
+* `labels`: 服务实例的标签，用于匹配子集
+
+**示例:**
+
+```
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: reviews
+spec:
+  hosts:
+  - reviews
+  http:
+  - match:
+    - headers:
+        end-user:
+          exact: jason
+    route:
+    - destination:
+        host: reviews
+        subset: v2
+  - route:
+    - destination:
+        host: reviews
+        subset: v3
+```
+
+**解释:**
+
+* 此配置将根据 HTTP 头部 `end-user` 的值将流量路由到不同的服务版本。
+* 如果 `end-user` 的值为 `jason`，则流量将路由到服务版本 `v2`。
+* 否则，流量将路由到服务版本 `v3`。
+
+**使用 subset 的优势:**
+
+* 可以根据不同的需求将流量路由到不同的服务版本或实例。
+* 可以实现金丝雀发布、蓝绿发布等发布策略。
+* 可以提高服务的可靠性和可用性。
+
+**有关 subset 的更多信息:**
+
+* Istio 文档: [移除了无效网址]
+
+**其他相关概念:**
+
+* **DestinationRule:** 用于定义对目标服务的策略，例如负载均衡策略、连接池大小和熔断机制的配置。
+* **ServiceEntry:** 用于配置服务发现，例如跨集群服务调用。
+
+
+# 从边缘到网格：通过 GKE Gateway 公开服务网格应用
+- 您可以通过多种方式为集群外部的客户端提供对应用的访问权限。GKE Gateway 是 Kubernetes Gateway API 的实现。GKE Gateway 会优化 Ingress 资源并对其进行改进。
+- https://cloud.google.com/architecture/exposing-service-mesh-apps-through-gke-ingress?hl=zh-cn
+- ![image](https://cloud.google.com/static/architecture/images/exposing-service-mesh-apps-through-gke-ingress-standard-approach.svg?hl=zh-cn)
