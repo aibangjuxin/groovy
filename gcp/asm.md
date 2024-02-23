@@ -26,8 +26,6 @@
   - [总结](#总结)
   - [其他资源](#其他资源)
   - [总结](#总结-1)
-- [enables ASM \&\& Create a service mesh](#enables-asm--create-a-service-mesh)
-  - [使用 Google Cloud 控制台启用 ASM 和创建服务网格](#使用-google-cloud-控制台启用-asm-和创建服务网格)
   - [将应用程序部署到服务网格](#将应用程序部署到服务网格)
   - [定义流量控制、安全和监控策略](#定义流量控制安全和监控策略)
   - [总结](#总结-2)
@@ -403,7 +401,6 @@ You must use that manual configuration to use VPC-SC, Private CA, or to choose a
   - https://cloud.google.com/service-mesh/docs/managed/provision-managed-anthos-service-mesh?hl=zh-cn#register_clusters_to_a_fleet
   - https://cloud.google.com/anthos/fleet-management/docs/register/gke?hl=zh-cn
     - 如果集群已启用 GKE Workload Identity，则这两个命令都会为集群启用舰队 Workload Identity。
-    - 如果集群已启用 GKE Workload Identity，则这两个命令都会为集群启用舰队 Workload Identity。
     - 如需将 Google Cloud 上的现有 GKE 集群注册到其项目的舰队，请运行以下命令：
     - gcloud container clusters update CLUSTER_NAME --enable-fleet
     - 将 CLUSTER_NAME 替换为您要注册的集群的名称。此名称也会成为集群的成员资格名称。
@@ -731,55 +728,6 @@ ASM 是一款功能强大的工具，可以帮助您控制和管理微服务通�
 
 ASM 可以帮助您轻松管理 Kubernetes 上的微服务流量。通过使用 ASM，您可以提高服务的可靠性、安全性、可观测性和性能。
 
-
-# enables ASM && Create a service mesh
-在 Google Cloud 控制台中启用 ASM。
-创建一个服务网格。
-将您的应用程序部署到服务网格中。
-定义流量控制、安全和监控策略
-
-
-## 使用 Google Cloud 控制台启用 ASM 和创建服务网格
-
-**步骤 1：启用 ASM**
-
-1. 登录 Google Cloud 控制台。
-2. 从左侧菜单中选择 **Kubernetes Engine**。
-3. 点击 **服务网格** 选项卡。
-4. 点击 **启用** 按钮。
-
-**步骤 2：创建服务网格**
-
-1. 点击 **创建服务网格** 按钮。
-2. 在 **名称** 框中输入服务网格的名称。
-3. 在 **位置** 框中选择服务网格的位置。
-4. 选择要加入服务网格的集群。
-5. 点击 **创建** 按钮。
-
-**使用命令行模式创建服务网格**
-
-1. 安装 Google Cloud SDK。
-2. 运行以下命令：
-
-```
-gcloud container service mesh create SERVICE_MESH_NAME \
-  --location LOCATION \
-  --enable-kubernetes-default-service-account
-```
-
-**参数说明:**
-
-* `SERVICE_MESH_NAME`: 服务网格的名称
-* `LOCATION`: 服务网格的位置
-* `--enable-kubernetes-default-service-account`: 启用 Kubernetes 默认服务账户
-
-**示例:**
-
-```
-gcloud container service mesh create my-service-mesh \
-  --location us-central1 \
-  --enable-kubernetes-default-service-account
-```
 
 ## 将应用程序部署到服务网格
 
