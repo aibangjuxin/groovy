@@ -29,5 +29,7 @@ DOMAIN-KEYWORD,openai
 #DOMAIN-SUFFIX,claude.ai
 # perplexity.ai
 DOMAIN-SUFFIX,perplexity.ai
+# groq
+DOMAIN-SUFFIX,groq.com
 
 
