@@ -646,3 +646,22 @@ exports.cleanDirectory = async (event, context) => {
 请注意，这只是一个简单的示例，你可能需要根据你的具体需求来调整和扩展这个逻辑。另外，你还需要配置 Cloud Function 的触发器，以确保它在适当的时候被触发。
 
 最后，记得在编写和部署 Cloud Function 时，确保遵循最佳实践和安全要求。
+
+```json
+{
+  "lifecycle": {
+    "rule": [
+      {
+        "action": {
+          "type": "Delete"
+        },
+        "condition": {
+          "age": 10,
+          "matchesSuffix": [".json"],
+          "matchesPrefix": ["firestore"]
+        }
+      }
+    ]
+  }
+}
+```
