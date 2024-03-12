@@ -305,3 +305,67 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 - [12] 节点自动预配简介| Google Kubernetes Engine (GKE) https://www.web-bci.com/?_=%2Fkubernetes-engine%2Fdocs%2Fconcepts%2Fnode-auto-provisioning%23cueErMT%2FvVvj%2BLk830MWgjBhlUBpjyLL&hl=zh-cn
 - [13] 视频转码器破解版- OSCHINA - 中文开源技术交流社区 - 开源中国 https://www.oschina.net/informat/%E8%A7%86%E9%A2%91%E8%BD%AC%E7%A0%81%E5%99%A8%E7%A0%B4%E8%A7%A3%E7%89%88
 
+
+学习这个文章
+https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services
+我去创建msc
+我现在遇到的问题gke-msc-controller 并没有创建出对应的endpoints
+对应的SVC是创建出来了.SVC后面需要是endpoint但是并没有生成endpoint
+这种问题如何去排查?
+
+
+## 排查 GKE Multi-Cluster Services Endpoints 未创建问题
+
+根据您提供的文章和描述，您在创建 GKE Multi-Cluster Services (MCS) 时遇到了 Endpoints 未创建的问题，但 SVC 已经创建成功。以下是排查此问题的步骤：
+
+**1. 检查 MCS 配置:**
+
+* 确保您的 MCS 配置文件正确无误，特别是 `spec.endpoints` 部分。
+* 检查 `spec.endpoints` 中的 `serviceName` 是否与您创建的 SVC 名称一致。
+* 检查 `spec.endpoints` 中的 `ports` 是否与您想要公开的端口一致。
+
+**2. 检查 GKE 日志:**
+
+* 查看 GKE 控制器日志 (`kubectl logs -n kube-system gke-msc-controller`)，是否有任何错误信息或警告。
+* 搜索与 Endpoints 创建相关的日志条目，例如 `Failed to create endpoint` 或 `Endpoint creation failed`。
+
+**3. 检查 Kubernetes 事件:**
+
+* 查看 Kubernetes 事件 (`kubectl get events -n kube-system`), 是否有任何与 Endpoints 创建相关的事件。
+* 搜索与 `endpoints` 或 `gke-msc-controller` 相关的事件，例如 `Failed to create endpoints for service` 或 `Error creating endpoint for service`。
+
+**4. 检查网络配置:**
+
+* 确保您的集群之间能够相互通信。
+* 确保您的防火墙规则允许 MCS 流量通过。
+
+**5. 使用调试工具:**
+
+* 使用 `kubectl describe endpoint` 命令查看 Endpoints 的详细信息。
+* 使用 `kubectl debug` 命令进入 GKE 控制器 Pod 并进行调试。
+
+**其他资源:**
+
+* GKE Multi-Cluster Services 文档: [https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services](https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services)
+* Kubernetes Endpoints 文档: [移除了无效网址]
+* Kubernetes Troubleshooting Guide: [移除了无效网址]
+
+如果您仍然无法解决问题，建议您向 Google Cloud 支持团队寻求帮助。
+
+**以下是一些可能导致 Endpoints 未创建的具体原因:**
+
+* MCS 配置错误，例如 `serviceName` 或 `ports` 配置不正确。
+* GKE 控制器 Pod 遇到错误，无法创建 Endpoints。
+* 集群之间无法相互通信。
+* 防火墙规则阻止了 MCS 流量。
+
+**解决方法:**
+
+* 检查并修正 MCS 配置。
+* 检查 GKE 日志和事件，并解决任何错误或问题。
+* 检查网络配置，并确保集群之间能够相互通信。
+* 配置防火墙规则允许 MCS 流量通过。
+
+希望以上信息能帮助您解决问题。
+
+
