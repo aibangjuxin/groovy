@@ -1,16 +1,19 @@
-
-
 # reference:
 
-https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn#using-mcs
-https://github.com/GoogleCloudPlatform/gke-networking-recipes/tree/main/services/multi-cluster/mcs-basic
+- https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn#using-mcs
+- https://github.com/GoogleCloudPlatform/gke-networking-recipes/tree/main/services/multi-cluster/mcs-basic
 
 https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn
+
 注册 Service 以导出到舰队中的其他集群
+
 创建 ServiceExport 资源 成功
+
 MCS 会在将 Service 导入集群的过程中创建一个 Endpoints 对象
+
 查找 Endpoints 对象以检查 MCS 是否已将端点传播到导入集群。Endpoints 对象在与 ServiceImport 对象相同的命名空间中创建，其名称存储在 net.gke.io/derived-service 注解中。例如
-kubectl get endpoints DERIVED_SERVICE_NAME -n lextest
+
+`kubectl get endpoints DERIVED_SERVICE_NAME -n lextest`
 
 # Reference:
 https://github.com/GoogleCloudPlatform/gke-networking-recipes/tree/main/services/multi-cluster/mcs-basic
@@ -262,10 +265,11 @@ kubectl describe endpointslice <endpointslice-name> -n lextest
 通过上述步骤，您应该能够进一步缩小问题的范围并确定导致端点未能创建的原因。如果问题仍然无法解决，您可能需要搜索相关文档或联系技术支持获取帮助。
 
 为 MCS 导入工具授予所需的 Identity and Access Management (IAM) 权限：
+```bash
 gcloud projects add-iam-policy-binding PROJECT_ID \
     --member "serviceAccount:PROJECT_ID.svc.id.goog[gke-mcs/gke-mcs-importer]" \
     --role "roles/compute.networkViewer"
-
+```
 在使用 Google Kubernetes Engine (GKE) 的 Multi-Cluster Services (MCS) 功能时，如果 Endpoint 没有获取到对应的 IP 地址，可以通过以下步骤进行排查：
 
 1. **检查 MCS 和 GKEHub 服务账号权限**：确保 MCS 和 GKEHub 服务账号在拥有所有必要权限的舰队宿主项目中已自动创建。可以通过运行 `gcloud projects get-iam-policy PROJECT_ID | grep gcp-sa-mcsd` 和 `gcloud projects get-iam-policy PROJECT_ID | grep gcp-sa-gkehub` 来验证服务账号是否存在[2]。
@@ -286,18 +290,18 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 
 通过以上步骤，您应该能够诊断和解决 Endpoint 未获取到对应 IP 地址的问题。如果问题仍然存在，建议详细检查相关的 Kubernetes 和 GKE 文档，或联系 Google Cloud 支持获取进一步帮助。
 
-Sources
-[1] 排查GKE 身份验证问题 - Google Cloud https://cloud.google.com/kubernetes-engine/docs/troubleshooting/authentication?hl=zh-cn
-[2] 配置多集群Service | Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn
-[3] GKE Dataplane V2 | Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2?hl=zh-cn
-[4] 多集群Ingress 的问题排查和操作| Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/how-to/troubleshooting-and-ops?hl=zh-cn
-[5] 使用Google Kubernetes Engine (GKE) Autopilot 和Standard 集群迁移到多集群网络 https://cloud.google.com/kubernetes-engine/docs/how-to/migrate-gke-multi-cluster?hl=zh-cn
-[6] [PDF] Docker开发指南 - 天籁教育云系统升级成功公告 http://crm.tianlaijiaoyu.com:2237/tianlaibbs/0tianlai_workbench/assets/book/Docker%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.pdf
-[7] 在GCP 中部署EMQX - EMQ Technologies https://docs.emqx.com/zh/emqx-operator/2.2.0/deployment/on-gcp-gke.html
-[8] 使用节点自动预配功能| Google Kubernetes Engine (GKE) https://www.web-bci.com/?_=%2Fkubernetes-engine%2Fdocs%2Fhow-to%2Fnode-auto-provisioning%23cueErMT%2FvVvj%2BLk830MWgjBhlUBpjyLL&hl=zh-cn
-[9] 在GKE 上部署高可用性PostgreSQL 数据库 | Google Cloud https://checksprocessing.com/?_=%2Fkubernetes-engine%2Fdocs%2Ftutorials%2Fstateful-workloads%2Fpostgresql%23p0spOJvYDKaNU8doRvTBdHv8VcQNjQ2e&hl=zh-cn
-[10] 自动升级节点| Google Kubernetes Engine (GKE) https://wirtschaftjetzt.com/?_=%2Fkubernetes-engine%2Fdocs%2Fhow-to%2Fnode-auto-upgrades%23KJWqMdlUlBnoJ%2BIAVFPniITydIQuGFCs&hl=zh-cn
-[11] Full text of "IT计算机精选合集" - Internet Archive https://archive.org/stream/ittushu-1500/PDF/Docker%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97_djvu.txt
-[12] 节点自动预配简介| Google Kubernetes Engine (GKE) https://www.web-bci.com/?_=%2Fkubernetes-engine%2Fdocs%2Fconcepts%2Fnode-auto-provisioning%23cueErMT%2FvVvj%2BLk830MWgjBhlUBpjyLL&hl=zh-cn
-[13] 视频转码器破解版- OSCHINA - 中文开源技术交流社区 - 开源中国 https://www.oschina.net/informat/%E8%A7%86%E9%A2%91%E8%BD%AC%E7%A0%81%E5%99%A8%E7%A0%B4%E8%A7%A3%E7%89%88
+- Sources
+- [1] 排查GKE 身份验证问题 - Google Cloud https://cloud.google.com/kubernetes-engine/docs/troubleshooting/authentication?hl=zh-cn
+- [2] 配置多集群Service | Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn
+- [3] GKE Dataplane V2 | Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/concepts/dataplane-v2?hl=zh-cn
+- [4] 多集群Ingress 的问题排查和操作| Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/how-to/troubleshooting-and-ops?hl=zh-cn
+- [5] 使用Google Kubernetes Engine (GKE) Autopilot 和Standard 集群迁移到多集群网络 https://cloud.google.com/kubernetes-engine/docs/how-to/migrate-gke-multi-cluster?hl=zh-cn
+- [6] [PDF] Docker开发指南 - 天籁教育云系统升级成功公告 http://crm.tianlaijiaoyu.com:2237/tianlaibbs/0tianlai_workbench/assets/book/Docker%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97.pdf
+- [7] 在GCP 中部署EMQX - EMQ Technologies https://docs.emqx.com/zh/emqx-operator/2.2.0/deployment/on-gcp-gke.html
+- [8] 使用节点自动预配功能| Google Kubernetes Engine (GKE) https://www.web-bci.com/?_=%2Fkubernetes-engine%2Fdocs%2Fhow-to%2Fnode-auto-provisioning%23cueErMT%2FvVvj%2BLk830MWgjBhlUBpjyLL&hl=zh-cn
+- [9] 在GKE 上部署高可用性PostgreSQL 数据库 | Google Cloud https://checksprocessing.com/?_=%2Fkubernetes-engine%2Fdocs%2Ftutorials%2Fstateful-workloads%2Fpostgresql%23p0spOJvYDKaNU8doRvTBdHv8VcQNjQ2e&hl=zh-cn
+- [10] 自动升级节点| Google Kubernetes Engine (GKE) https://wirtschaftjetzt.com/?_=%2Fkubernetes-engine%2Fdocs%2Fhow-to%2Fnode-auto-upgrades%23KJWqMdlUlBnoJ%2BIAVFPniITydIQuGFCs&hl=zh-cn
+- [11] Full text of "IT计算机精选合集" - Internet Archive https://archive.org/stream/ittushu-1500/PDF/Docker%E5%BC%80%E5%8F%91%E6%8C%87%E5%8D%97_djvu.txt
+- [12] 节点自动预配简介| Google Kubernetes Engine (GKE) https://www.web-bci.com/?_=%2Fkubernetes-engine%2Fdocs%2Fconcepts%2Fnode-auto-provisioning%23cueErMT%2FvVvj%2BLk830MWgjBhlUBpjyLL&hl=zh-cn
+- [13] 视频转码器破解版- OSCHINA - 中文开源技术交流社区 - 开源中国 https://www.oschina.net/informat/%E8%A7%86%E9%A2%91%E8%BD%AC%E7%A0%81%E5%99%A8%E7%A0%B4%E8%A7%A3%E7%89%88
 
