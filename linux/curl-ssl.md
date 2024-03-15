@@ -285,3 +285,40 @@ openssl pkcs12 -in encrypted.p12 -nodes -password pass:<password>
 - `<secret-name>` 是您的 Secret 的名称。
 - `<namespace>` 是 Secret 所在的命名空间。
 - `<password>` 是 P12 文件的密码。
+
+
+在SSL/TLS证书中，"alt fqdn"和"fqdn"都涉及到域名，但在不同的上下文中有着不同的含义。
+
+Cert FQDN（Fully Qualified Domain Name）：
+
+在 SSL/TLS 证书中，Cert FQDN 是指证书的主题（Subject）字段中包含的完全限定域名（Fully Qualified Domain Name）。主题字段通常包含了证书的持有者的信息，包括其域名。例如，如果证书是为 example.com 网站颁发的，则其 Cert FQDN 将为 example.com。
+Cert Alt FQDN（Alternate Fully Qualified Domain Name）：
+
+Cert Alt FQDN 则是指证书的主题（Subject）或者主题备用名称（Subject Alternative Name，SAN）字段中包含的备用完全限定域名。SAN 字段允许在一个证书中指定多个备用域名，这些备用域名可以是证书的有效域名。这样做的好处是可以在同一个证书中涵盖多个域名，使得证书可以用于多个不同的域名或子域名。
+
+例如，如果证书为 example.com 颁发，并且 SAN 字段包含了 www.example.com 和 blog.example.com，则 www.example.com 和 blog.example.com 就是 Cert Alt FQDN。
+
+区别：
+
+Cert FQDN 是证书的主要域名，即证书颁发给的域名。
+Cert Alt FQDN 则是证书中包含的备用域名，允许证书覆盖多个域名。
+
+
+
+
+在SSL/TLS证书中，"cert alt fqdn"（Certificate Alternative Fully Qualified Domain Name）和"cert fqdn"（Certificate Fully Qualified Domain Name）是两个相关但略有不同的概念。
+
+1. **Cert FQDN (Certificate Fully Qualified Domain Name)**:
+   
+   这是SSL/TLS证书中的主要域名，也称为"Common Name"（通用名称）。在过去，SSL/TLS证书中的通用名称主要用于指定证书适用于哪个域名。例如，如果您的域名是example.com，那么证书的通用名称将是example.com。然而，现代的证书颁发机构更倾向于使用Subject Alternative Name（SAN）扩展来指定多个域名，因此通常主要域名不再被强制要求。
+
+2. **Cert Alt FQDN (Certificate Alternative Fully Qualified Domain Name)**:
+
+   这是SSL/TLS证书中的备用域名，也称为Subject Alternative Name（SAN）。SAN是一种证书扩展，允许您将多个域名添加到单个证书中。Cert Alt FQDN是在SAN中列出的其他域名，它们允许同一个证书适用于多个域名。例如，如果您的主要域名是example.com，但您还拥有example.net和example.org这两个备用域名，那么在证书中可以包含这两个备用域名作为Cert Alt FQDN。
+
+**区别**:
+
+- Cert FQDN 是主要的、最常见的域名，用于标识证书的主体。
+- Cert Alt FQDN 是其他域名，可以作为备用域名列在证书中，并允许证书适用于多个域名。
+
+在实际使用中，主要域名和备用域名都可以在SSL/TLS证书中进行指定，以确保证书可以覆盖多个域名，并为用户提供更灵活的选择。
