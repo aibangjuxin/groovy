@@ -262,3 +262,26 @@ data:
   my-key: YWRtaW4=
   my-key.pwd: <PASSWORD>==
 ```
+了解了，您可以使用以下步骤来获取P12加密的Secret中的信息：
+
+1. 获取P12文件的Base64编码字符串。
+2. 将Base64编码字符串解码为二进制文件。
+3. 使用 OpenSSL 命令来解密 P12 文件，并提取其中的信息。
+
+下面是一个演示如何执行这些步骤的例子：
+
+```bash
+# 获取P12文件的Base64编码字符串
+P12_BASE64=$(kubectl get secret <secret-name> -n <namespace> -o jsonpath="{.data.my-key}" | tr -d '\n')
+
+# 将Base64编码字符串解码为二进制文件
+echo $P12_BASE64 | base64 --decode > encrypted.p12
+
+# 使用 OpenSSL 命令来解密 P12 文件，并提取其中的信息
+openssl pkcs12 -in encrypted.p12 -nodes -password pass:<password>
+```
+
+请注意：
+- `<secret-name>` 是您的 Secret 的名称。
+- `<namespace>` 是 Secret 所在的命名空间。
+- `<password>` 是 P12 文件的密码。
