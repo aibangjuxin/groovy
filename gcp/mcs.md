@@ -1,5 +1,21 @@
-# reference:
 
+- [summary](#summary)
+  - [Pricing](#pricing)
+- [reference:](#reference)
+- [Reference:](#reference-1)
+  - [排查 GKE Multi-Cluster Services Endpoints 未创建问题](#排查-gke-multi-cluster-services-endpoints-未创建问题)
+
+# summary 
+## Pricing 
+```
+多集群服务包含在 GKE 集群管理费用中，不会产生额外的使用费用。您必须启用 Traffic Director API，但 MCS 不会产生任何 Traffic Director 端点费用。不需要 GKE Enterprise 许可即可使用 MCS
+```
+
+
+
+
+# reference:
+- https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services
 - https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services?hl=zh-cn#using-mcs
 - https://github.com/GoogleCloudPlatform/gke-networking-recipes/tree/main/services/multi-cluster/mcs-basic
 
