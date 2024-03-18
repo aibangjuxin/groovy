@@ -7,6 +7,46 @@ Deployment 资源通常用于定义应用副本的数量以及如何更新这些
 
 不过，你可以在 Deployment 的 Pod 模板中使用 init 容器或者通过在 Pod 的命令中添加脚本，来动态地将 `HostAlias` 信息写入到 Pod 的 `/etc/hosts` 文件中。以下是一个使用 init 容器来实现这一目的的示例：
 
+在 Kubernetes 中，您可以使用 hostAliases 字段来为 Pod 中的 /etc/hosts 添加自定义条目。这个字段是放在 Pod 规范中的，您可以在 Deployment 定义里指定它。以下是一个Deployment模板示例，展示如何在Pod规范中使用 hostAliases 字段：
+
+yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+  labels:
+    app: my-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      hostAliases:
+      - ip: "192.168.1.1" # 替换为您希望指向的 IP 地址
+        hostnames:
+        - "customhost.local"
+        - "additionalhost.local"
+      containers:
+      - name: my-container
+        image: nginx
+        ports:
+        - containerPort: 80
+
+
+这个示例 Deployment 将创建拥有自定义 /etc/hosts 条目的 Pod。当 Pod 启动时，`/etc/hosts` 文件将包含以下条目：
+
+192.168.1.1 customhost.local additionalhost.local
+
+
+您可以调整 ip 和 hostnames 来满足您的特定需求。这是一种在不需要挂载自定义 /etc/hosts 文件的情况下添加条目的方法。当您希望Pod能够解析在DNS中不存在的域名或需要覆盖某些域名的解析时，此方法特别有用。
+
+
+
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
