@@ -9,7 +9,7 @@ Deployment 资源通常用于定义应用副本的数量以及如何更新这些
 
 在 Kubernetes 中，您可以使用 hostAliases 字段来为 Pod 中的 /etc/hosts 添加自定义条目。这个字段是放在 Pod 规范中的，您可以在 Deployment 定义里指定它。以下是一个Deployment模板示例，展示如何在Pod规范中使用 hostAliases 字段：
 
-yaml
+``` yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -36,7 +36,7 @@ spec:
         image: nginx
         ports:
         - containerPort: 80
-
+``` 
 
 这个示例 Deployment 将创建拥有自定义 /etc/hosts 条目的 Pod。当 Pod 启动时，`/etc/hosts` 文件将包含以下条目：
 
