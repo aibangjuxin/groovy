@@ -1,6 +1,7 @@
 
 - [summary](#summary)
   - [Pricing](#pricing)
+- [Architecture](#architecture)
 - [reference:](#reference)
 - [Reference:](#reference-1)
   - [排查 GKE Multi-Cluster Services Endpoints 未创建问题](#排查-gke-multi-cluster-services-endpoints-未创建问题)
@@ -11,8 +12,64 @@
 多集群服务包含在 GKE 集群管理费用中，不会产生额外的使用费用。您必须启用 Traffic Director API，但 MCS 不会产生任何 Traffic Director 端点费用。不需要 GKE Enterprise 许可即可使用 MCS
 ```
 
+# Architecture
+下面是一个用Mermaid格式绘制的架构图，展示了通过ClusterIP连接两个集群的Google MCS（Multiple Cluster Services）架构：
 
+```mermaid
+graph TD;
+    subgraph Cluster1
+    A[Service1] -->|ClusterIP| B[Google MCS Gateway]
+    end
 
+    subgraph Cluster2
+    C[Service2] -->|ClusterIP| B
+    end
+
+    B --> D[External Service]
+```
+
+在这个架构中，Cluster1和Cluster2分别有一个服务（Service1和Service2），它们通过ClusterIP连接到Google MCS网关（Google MCS Gateway）。Google MCS网关充当中间层，允许来自两个集群的服务相互访问。此外，Google MCS网关还可以连接到外部服务（External Service）。
+
+```mermaid
+graph LR
+  subgraph "Cluster A"
+    CR1[("ClusterIP Service A\ncluster.local")] -- "Selects backend pods" --> PODA1[("Pod A1\napp=A")]
+    CR1 -- "Selects backend pods" --> PODA2[("Pod A2\napp=A")]
+  end
+  subgraph "Cluster B"
+    CR2[("ClusterIP Service B\ncluster.local")] -- "Selects backend pods" --> PODB1[("Pod B1\napp=B")]
+    CR2 -- "Selects backend pods" --> PODB2[("Pod B2\napp=B")]
+  end
+  subgraph "Google MCS"
+    MCS[("Multiple Cluster Services\nManaged by Google Kubernetes Engine")]
+  end
+  MCS --- CR1 & CR2
+  style MCS fill:#f9f,stroke:#333,stroke-width:2px
+  style CR1 fill:#bbf,stroke:#333,stroke-width:2px
+  style CR2 fill:#bbf,stroke:#333,stroke-width:2px
+
+``` 
+此Mermaid图表示了一个通过Google Kubernetes Engine（GKE）管理的Google MCS来连接两个集群的示例架构。在这个架构中，Cluster A和Cluster B都有各自内部的ClusterIP服务，它们用来在各自集群内部选择后端Pods。通过Google MCS（在图中表现为连接两个ClusterIP服务的组件），两个集群之间可以相互通信和跨集群提供服务。
+
+```bash
+graph LR
+  subgraph "Cluster A"
+    CR1[("ClusterIP Service A\ncluster.local")] -- "Selects backend pods" --> PODA1[("Pod A1\napp=A")]
+    CR1 -- "Selects backend pods" --> PODA2[("Pod A2\napp=A")]
+  end
+  subgraph "Cluster B"
+    CR2[("ClusterIP Service B\ncluster.local")] -- "Selects backend pods" --> PODB1[("Pod B1\napp=B")]
+    CR2 -- "Selects backend pods" --> PODB2[("Pod B2\napp=B")]
+  end
+  subgraph "Google MCS"
+    MCS[("Multiple Cluster Services\nManaged by Google Kubernetes Engine")]
+  end
+  MCS --- CR1 & CR2
+  style MCS fill:#f9f,stroke:#333,stroke-width:2px
+  style CR1 fill:#bbf,stroke:#333,stroke-width:2px
+  style CR2 fill:#bbf,stroke:#333,stroke-width:2px
+
+```
 
 # reference:
 - https://cloud.google.com/kubernetes-engine/docs/how-to/multi-cluster-services
