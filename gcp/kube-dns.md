@@ -35,3 +35,88 @@ Source: Conversation with Bing, 3/20/2024
 (5) Troubleshoot DNS in GKE | Google Kubernetes Engine (GKE .... https://cloud.google.com/kubernetes-engine/docs/troubleshooting/dns.
 (6) An Introduction to the Kubernetes DNS Service | DigitalOcean. https://www.digitalocean.com/community/tutorials/an-introduction-to-the-kubernetes-dns-service.
 (7) Debugging DNS Resolution | Kubernetes. https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/.
+
+根据您提供的搜索结果，我将为您提供一个关于如何配置kube-dns的详细指南。这个指南将包括前提要求、安装步骤、配置存根域和上游DNS服务器的方法，以及如何调试DNS解析。
+
+### 前提要求
+
+- Kubernetes 1.6 及以上版本。
+- 集群必须使用 `kube-dns` 插件进行配置。
+
+### 安装和配置步骤
+
+1. **安装 kube-dns**:
+   - 当您使用kubeadm安装Kubernetes集群时，kube-dns通常会自动安装。
+   - 如果需要手动安装，可以使用以下命令：
+     ```bash
+     kubectl apply -f https://github.com/feiskyer/kubernetes-handbook/raw/master/manifests/kubedns/kube-dns.yaml
+     ```
+
+2. **配置 kube-dns**:
+   - 通过编辑 `kube-dns` ConfigMap 来配置自定义存根域和上游nameserver。
+   - ConfigMap 示例：
+     ```yaml
+     apiVersion: v1
+     kind: ConfigMap
+     metadata:
+       name: kube-dns
+       namespace: kube-system
+     data:
+       stubDomains: |
+         {“acme.local”: [“1.2.3.4”]}
+       upstreamNameservers: |
+         [“8.8.8.8”, “8.8.4.4”]
+     ```
+   - 应用ConfigMap的命令：
+     ```bash
+     kubectl apply -f <your-configmap-file>.yaml
+     ```
+
+### 配置存根域和上游DNS服务器
+
+- **存根域**:
+  - 用于指定特定域的DNS查询应该被发送到的DNS服务器。
+  - 示例：如果您有一个Consul DNS服务发现系统，并且希望它与kube-dns集成，您可以创建一个ConfigMap来配置它。
+
+- **上游DNS服务器**:
+  - 用于处理不匹配任何存根域的DNS查询的服务器。
+  - 示例：如果您希望所有非集群DNS查询都通过您自己的nameserver（例如172.16.0.1），您可以在ConfigMap中指定上游nameserver。
+
+### 调试DNS解析
+
+- **创建测试Pod**:
+  - 使用一个简单的Pod（如BusyBox）来测试DNS解析。
+  - 示例Pod配置文件：
+    ```yaml
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: busybox
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        command:
+        - sleep
+        - "3600"
+    ```
+  - 应用Pod配置并检查其状态。
+
+- **检查DNS配置**:
+  - 在Pod中执行`nslookup`命令来测试DNS解析是否正常工作。
+
+- **检查DNS Pod状态**:
+  - 使用`kubectl get pods --namespace=kube-system -l k8s-app=kube-dns`来检查DNS Pod是否正在运行。
+
+- **查看DNS Pod日志**:
+  - 如果`nslookup`失败，使用`kubectl logs`命令查看DNS Pod的日志，以确定是否存在错误。
+
+- **检查DNS服务和端点**:
+  - 使用`kubectl get service --namespace=kube-system`和`kubectl get endpoints kube-dns --namespace=kube-system`来验证DNS服务和端点是否正确设置。
+
+### 参考文档
+
+- [Kubernetes官方文档 - 自定义DNS服务](https://kubernetes.io/zh-cn/docs/tasks/administer-cluster/dns-custom-nameservers/)
+- [Kubernetes官方文档 - Service与Pod的DNS](https://kubernetes.io/zh/docs/concepts/services-networking/dns-pod-service/)
+
+以上步骤和示例应该能够帮助您配置和调试kube-dns。如果您遇到任何问题，可以参考提供的参考文档或在Kubernetes社区寻求帮助。
