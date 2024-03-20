@@ -43,3 +43,41 @@ Source: Conversation with Bing, 3/20/2024
 (6) 基于 Google GKE 的 DevOps 学习指南与实战演示 | Google .... https://zhuanlan.zhihu.com/p/635608250.
 (7) undefined. https://www.toutiao.com/.
 
+你看一下我这种思路是否可行，首先基于namespace 去配置允许的DNS查询比如指定到我内部自己搭建的一个DNS 服务 比如我这个服务使用unbound 来配置。在我的配置里边，我将所有请求都forward cloud dns 仅仅将我需要hardcode 的那条记录解析到我对应的集群内SVC
+
+您的思路是可行的。在Kubernetes环境中，您可以基于namespace来配置DNS查询，这样可以将特定的DNS查询指向您内部搭建的DNS服务。使用Unbound作为您的DNS服务是一个不错的选择，因为它提供了灵活的配置选项，包括forwarding和记录重写等功能。
+
+以下是基于您的需求，使用Unbound进行配置的一般步骤：
+
+1. **安装Unbound**：在您的集群内部署Unbound服务。
+
+2. **配置Unbound**：编辑Unbound的配置文件`unbound.conf`，设置forwarding规则，将所有请求转发到Cloud DNS，同时为您需要的特定记录设置静态解析。
+
+   ```conf
+   server:
+     # 其他必要的配置...
+
+     # 转发所有请求到Cloud DNS
+     forward-zone:
+       name: "."
+       forward-addr: <Cloud DNS IP>
+
+     # 静态解析特定记录到集群内SVC
+     local-data: "特定记录 A <集群内SVC IP>"
+   ```
+
+3. **应用网络策略**：确保您的Pods可以访问Unbound服务，并且根据namespace应用相应的网络策略。
+
+4. **测试解析**：在Pod中测试DNS解析，确保配置生效。
+
+请注意，这个过程可能需要您根据实际的网络环境和安全策略进行调整。此外，确保您的Unbound服务安全地部署在集群内，并且仅对授权的namespace开放。
+
+更多关于Unbound的配置细节，您可以参考相关的[文档](^1^)和社区资源。如果您在配置过程中遇到任何问题，建议您咨询专业的网络管理员或安全专家。如果您有任何疑问，请随时提问。
+
+Source: Conversation with Bing, 3/20/2024
+(1) 第 2 章 设置 unbound DNS 服务器 - Red Hat Customer Portal. https://access.redhat.com/documentation/zh-cn/red_hat_enterprise_linux/8/html/managing_networking_infrastructure_services/assembly_setting-up-an-unbound-dns-server_networking-infrastructure-services.
+(2) DNS：使用 Unbound 配置 DNS 缓存服务器 - 腾讯云. https://cloud.tencent.com/developer/article/2314579.
+(3) dns unbound 常识及应用 - 知乎. https://zhuanlan.zhihu.com/p/452363791.
+
+
+
