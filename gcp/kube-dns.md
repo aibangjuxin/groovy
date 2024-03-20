@@ -1,3 +1,39 @@
+
+在Kubernetes集群中实现特定的DNS解析行为,您可以通过修改kube-dns的ConfigMap来设置stub domains。具体步骤如下:
+
+1. 获取kube-dns的ConfigMap
+
+```
+kubectl get configmap --namespace=kube-system kube-dns -o yaml > kube-dns.yaml
+```
+
+2. 在该文件中,找到data.stubDomains字段,添加需要重写或转发的域名,域名之间用空格分隔。例如:
+
+```yaml
+stubDomains: {
+  "abc.com": ["1.2.3.4"],
+  "my.cluster.local": ["10.0.0.5"]
+}
+```
+
+上面的配置将把所有指向abc.com的DNS查询重定向到1.2.3.4,而把所有指向my.cluster.local的DNS查询重定向到10.0.0.5。
+
+3. 更新ConfigMap
+
+```
+kubectl apply -f kube-dns.yaml
+```
+
+4. 删除kube-dns pods以使更改生效
+
+```
+kubectl delete pods --namespace=kube-system -l k8s-app=kube-dns
+```
+
+新的kube-dns pods将根据更新后的ConfigMap重新创建,并应用新的stub domains配置。
+
+需要注意的是,修改stub domains会影响整个集群的DNS解析行为,请谨慎操作。另外,上游DNS服务器也可能会对查询结果产生影响,因此结合具体需求进行设置。
+
 是的，Google Kubernetes Engine (GKE) 使用kube-dns作为默认的DNS提供者。在GKE集群中，当您创建一个集群时，GKE会自动部署kube-dns pods在`kube-system`命名空间。所有的pods默认使用这个服务来解析DNS查询¹。
 
 如果您想要实现特定的DNS解析行为，比如重写或转发某些DNS查询到特定的服务，您可以通过修改kube-dns的ConfigMap来设置stub domains。这允许您配置自定义的每个域的解析器，使得kube-dns将对这些域的DNS请求转发到特定的上游DNS服务器。
