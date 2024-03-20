@@ -282,5 +282,24 @@ Source: Conversation with Bing, 3/20/2024
 (4) kubernetes的服务发现（二）-CSDN博客. https://blog.csdn.net/weixin_40763897/article/details/134887203.
 (5) Kubernetes的服务发现是如何工作的 – PingCode. https://docs.pingcode.com/ask/76954.html.
 
+在Kubernetes中，Pod可以使用集群内置的DNS服务（通常是CoreDNS）来发现服务。当您在Kubernetes中创建一个Service时，它会自动获得一个DNS条目，这样Pod就可以通过服务的名称来解析它的IP地址，而不是直接使用IP地址。
 
+例如，如果您有一个名为`my-service`的Service在`default`命名空间中，Pod可以通过`my-service.default.svc.cluster.local`来解析该服务的ClusterIP。这是因为Kubernetes为每个Service创建了一个DNS记录，格式通常是`<service-name>.<namespace>.svc.cluster.local`。
+
+在Pod中，您可以像在任何Linux系统中一样使用DNS解析服务。您可以在应用程序代码中直接使用服务的DNS名称，或者在命令行中使用像`nslookup`、`dig`或`curl`这样的工具来解析服务的DNS名称。
+
+以下是一个简单的示例，展示了如何在Pod中使用`curl`命令来访问一个名为`my-service`的服务：
+
+```bash
+curl http://my-service.default.svc.cluster.local:8080
+```
+
+在这个例子中，`curl`将解析`my-service.default.svc.cluster.local`的DNS名称，找到对应的Service IP，并向该地址的8080端口发送HTTP请求。
+
+更多关于Kubernetes DNS解析的详细信息和高级配置，您可以参考官方文档¹²。
+
+Source: Conversation with Bing, 3/20/2024
+(1) DNS for Services and Pods | Kubernetes. https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/.
+(2) Service 与 Pod 的 DNS | Kubernetes. https://kubernetes.io/zh/docs/concepts/services-networking/dns-pod-service/.
+(3) Kubernetes(k8s)如何使用kube-dns实现服务发现 - 阿里云 .... https://bing.com/search?q=Kubernetes+Pod+%e4%bd%bf%e7%94%a8DNS%e8%a7%a3%e6%9e%90%e5%8f%91%e7%8e%b0%e6%9c%8d%e5%8a%a1%e6%96%b9%e6%b3%95.
 
