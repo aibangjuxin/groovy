@@ -173,3 +173,35 @@ data:
 在这个示例中，我们将所有对 "example.com" 域名的 DNS 查询重定向到 IP 地址 "10.0.0.1"。您可以根据您的需求设置更多的 stub domains 来实现不同的 DNS 解析行为。
 
 确保将此 ConfigMap 应用到 kube-dns 所在的 Kubernetes 集群中。
+
+Kubernetes 集群中的 DNS 解析行为可以通过多种方式实现。以下是一些常见的方法：
+
+1. 使用 Kubernetes 的 DNS Policy
+
+Kubernetes 提供了一种 DNS 策略机制，可以用来配置 DNS 解析行为。您可以使用 Kubernetes 的 DNS 策略来配置 DNS 解析行为，例如，将 DNS 请求转发到指定的 DNS 服务器或者使用自定义的 DNS 规则。
+
+2. 使用 Kubernetes 的 Service 资源
+
+Kubernetes 的 Service 资源可以用来实现 DNS 解析行为。您可以创建一个 Service 资源，并将其配置为使用自定义的 DNS 规则。例如，您可以创建一个 Service 资源，并将其配置为将 DNS 请求转发到指定的 DNS 服务器。
+
+3. 使用 Kubernetes 的 ConfigMap 和 Secret
+
+Kubernetes 的 ConfigMap 和 Secret 可以用来存储 DNS 规则和凭据。您可以创建一个 ConfigMap 或 Secret，并将其配置为包含 DNS 规则和凭据。然后，您可以使用 Kubernetes 的 DNS 策略机制来引用 ConfigMap 或 Secret 中的 DNS 规则。
+
+4. 使用 Kubernetes 的 CNI 插件
+
+Kubernetes 的 CNI（Container Networking Interface）插件可以用来实现 DNS 解析行为。您可以使用 CNI 插件来配置 DNS 解析行为，例如，将 DNS 请求转发到指定的 DNS 服务器或者使用自定义的 DNS 规则。
+
+5. 使用第三方工具
+
+有多种第三方工具可以帮助您实现 Kubernetes 集群中的 DNS 解析行为，例如：
+
+* kubedns：这是一个由 Google 开发的 Kubernetes 插件，可以帮助您实现 DNS 解析行为。
+* external-dns：这是一个开源的 Kubernetes 插件，可以帮助您实现 DNS 解析行为。
+* dns-controller：这是一个由 Red Hat 开发的 Kubernetes 插件，可以帮助您实现 DNS 解析行为。
+
+无论您选择哪种方法，都需要确保 DNS 解析行为的安全性和可靠性。您可以考虑使用加密来保护 DNS 解析行为，并将 DNS 解析行为存储在安全的位置，例如 Kubernetes 的 Secret 中。
+
+
+
+
