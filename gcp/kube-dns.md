@@ -1,4 +1,6 @@
 
+https://cloud.google.com/kubernetes-engine/docs/how-to/kube-dns?hl=zh-cn
+
 在Kubernetes集群中实现特定的DNS解析行为,您可以通过修改kube-dns的ConfigMap来设置stub domains。具体步骤如下:
 
 1. 获取kube-dns的ConfigMap
