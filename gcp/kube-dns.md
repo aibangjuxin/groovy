@@ -120,3 +120,20 @@ Source: Conversation with Bing, 3/20/2024
 - [Kubernetes官方文档 - Service与Pod的DNS](https://kubernetes.io/zh/docs/concepts/services-networking/dns-pod-service/)
 
 以上步骤和示例应该能够帮助您配置和调试kube-dns。如果您遇到任何问题，可以参考提供的参考文档或在Kubernetes社区寻求帮助。
+
+要实现特定的DNS解析行为，如重写或转发某些DNS查询到特定的服务，您可以通过修改 kube-dns 的 ConfigMap 来设置 stub domains。下面是一个示例，演示如何配置 stub domains：
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-dns
+  namespace: kube-system
+data:
+  stubDomains: |
+    {"example.com": ["10.0.0.1"]}
+```
+
+在这个示例中，我们将所有对 "example.com" 域名的 DNS 查询重定向到 IP 地址 "10.0.0.1"。您可以根据您的需求设置更多的 stub domains 来实现不同的 DNS 解析行为。
+
+确保将此 ConfigMap 应用到 kube-dns 所在的 Kubernetes 集群中。
