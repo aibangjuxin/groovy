@@ -16,3 +16,30 @@ Source: Conversation with Bing, 3/20/2024
 (5) DNS and GKE network configuration on Google Cloud Platform. https://faun.pub/dns-and-gke-network-configuration-on-google-cloud-platform-1bfdc74fe2e.
 (6) undefined. https://www.googleapis.com/auth/ndev.clouddns.readwrite.
 (7) undefined. https://www.googleapis.com/auth/cloud-platform.
+
+
+在Google Kubernetes Engine (GKE) 集群中进行DNS劫持通常是指通过配置来控制DNS查询的响应，这样可以将流量重定向到不同的IP地址。这种做法可能用于测试或特定的网络管理任务。然而，需要注意的是，DNS劫持在大多数情况下被认为是一种恶意行为，因为它可能会导致安全问题，如流量劫持或中间人攻击。
+
+如果您的目的是合法的，例如在测试环境中重定向流量，您可以通过以下步骤在GKE集群中配置DNS：
+
+1. **使用Response Policy**：您可以在Cloud DNS中创建Response Policy规则，这些规则可以定义DNS查询的自定义响应，从而实现DNS查询的重写。
+
+2. **修改CoreDNS配置**：GKE使用CoreDNS作为其DNS服务提供者。您可以修改CoreDNS的配置文件，添加重定向规则来改变DNS解析的行为。
+
+3. **使用ExternalName Service**：在Kubernetes中，您可以创建一个类型为ExternalName的Service，这允许您将服务名称映射到外部的DNS名称。
+
+4. **配置Network Policy**：通过配置Network Policy，您可以控制Pod之间的流量流向，包括DNS查询。
+
+请确保您了解修改DNS设置的影响，并且您有适当的权限和知识来进行这些更改。如果您不熟悉这些操作，建议您咨询专业的网络管理员或安全专家。此外，始终确保您的操作符合您组织的政策和法律法规¹²。
+
+如果您需要更详细的步骤或遇到具体的技术问题，建议您查看Google Cloud的官方文档或联系Google Cloud支持团队以获得帮助¹。请记住，任何DNS配置的更改都应该谨慎进行，以避免不必要的服务中断或安全风险。如果您有任何疑问，请随时提问。
+
+Source: Conversation with Bing, 3/20/2024
+(1) Using Cloud DNS for GKE | Google Kubernetes Engine (GKE .... https://cloud.google.com/kubernetes-engine/docs/how-to/cloud-dns.
+(2) Best practices for GKE networking - Google Cloud. https://cloud.google.com/kubernetes-engine/docs/best-practices/networking.
+(3) DNS on GKE: Everything you need to know - Medium. https://medium.com/google-cloud/dns-on-gke-everything-you-need-to-know-b961303f9153.
+(4) 黑客技术？没你想象的那么难！——dns劫持篇 - 腾讯云. https://cloud.tencent.com/developer/article/1197474.
+(5) DNS域名劫持，DNS域名劫持的6种方式及解决方法详解 - 知乎. https://zhuanlan.zhihu.com/p/435106322.
+(6) 基于 Google GKE 的 DevOps 学习指南与实战演示 | Google .... https://zhuanlan.zhihu.com/p/635608250.
+(7) undefined. https://www.toutiao.com/.
+
