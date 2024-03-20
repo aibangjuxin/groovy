@@ -265,7 +265,22 @@ Source: Conversation with Bing, 3/20/2024
 (3) Pods | Kubernetes. https://kubernetes.io/docs/concepts/workloads/pods/.
 (4) undefined. https://k8s.io/examples/service/networking/hostaliases-pod.yaml.
 
+在Kubernetes中，服务发现是通过DNS解析或环境变量来实现的。这些机制允许Pods在不知道服务IP地址的情况下，通过服务名来发现和通信。
 
+**DNS解析**:
+Kubernetes集群通常包含一个内置的DNS服务，如CoreDNS，它为集群中的每个服务创建DNS记录。当你创建一个Service时，它会被分配一个稳定的ClusterIP和一个DNS名称。Pods可以通过这个DNS名称来解析服务的ClusterIP，而无需知道其实际的IP地址。例如，如果你有一个名为`my-service`的Service在默认的命名空间中，Pods可以通过`my-service.default.svc.cluster.local`来解析它的IP地址¹²。
+
+**环境变量**:
+当Pod启动时，Kubernetes会为集群中运行的每个活跃的Service添加一组环境变量到Pod中。这些环境变量包括服务的名称和后端Pod的IP地址。格式通常遵循`<SERVICE_NAME>_SERVICE_HOST`和`<SERVICE_NAME>_SERVICE_PORT`的结构，其中`<SERVICE_NAME>`是大写的服务名称，横线被转换成下划线³⁴。
+
+使用这些方法，Pods可以在启动时或运行时动态地发现服务的IP地址，从而实现服务之间的通信和协作。这样，你就不需要硬编码IP地址，也不需要手动修改`/etc/hosts`文件。请根据您的具体需求选择合适的服务发现方法。
+
+Source: Conversation with Bing, 3/20/2024
+(1) kubernetes第八章：服务发现 - 知乎. https://zhuanlan.zhihu.com/p/393138613.
+(2) K8S学习指南(25)-k8s的服务发现机制 - 知乎. https://zhuanlan.zhihu.com/p/676245796.
+(3) kubernetes的服务发现（二）-CSDN博客. https://bing.com/search?q=Kubernetes+%e6%9c%8d%e5%8a%a1%e5%8f%91%e7%8e%b0+%e8%a7%a3%e6%9e%90%e6%9c%8d%e5%8a%a1IP%e5%9c%b0%e5%9d%80.
+(4) kubernetes的服务发现（二）-CSDN博客. https://blog.csdn.net/weixin_40763897/article/details/134887203.
+(5) Kubernetes的服务发现是如何工作的 – PingCode. https://docs.pingcode.com/ask/76954.html.
 
 
 
