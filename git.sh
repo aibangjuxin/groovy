@@ -43,7 +43,7 @@ if [ -n "$(git status --porcelain)" ]; then
   full_path=$(pwd)/$filename
 
   # 调用替换脚本
-  ./Users/lex/shell/replace.sh "$full_path"
+  /Users/lex/shell/replace.sh "$full_path"
   git add .
   if [ $? -eq 0 ]; then
     echo "Changes added successfully."
