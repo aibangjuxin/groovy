@@ -36,6 +36,14 @@ riqi=$(date)
 # Check if there are any changes
 if [ -n "$(git status --porcelain)" ]; then
   # Add all changes
+  # Get the latest changed filename
+  filename=$(git diff --name-only HEAD | tail -n 1)
+
+  # 获取文件的完整路径
+  full_path=$(pwd)/$filename
+
+  # 调用替换脚本
+  ./Users/lex/shell/replace.sh "$full_path"
   git add .
   if [ $? -eq 0 ]; then
     echo "Changes added successfully."
