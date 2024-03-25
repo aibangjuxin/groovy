@@ -38,13 +38,36 @@ riqi=$(date)
 if [ -n "$(git status --porcelain)" ]; then
   # Add all changes
   # Get the latest changed filename
-  filename=$(git diff --name-only HEAD | tail -n 1)
+  #filename=$(git diff --name-only HEAD | tail -n 1)
 
   # 获取文件的完整路径
-  full_path=$(pwd)/$filename
+  #full_path=$(pwd)/$filename
 
   # 调用替换脚本
+  #/Users/lex/shell/replace.sh "$full_path"
+
+  # 获取所有改变的文件列表
+changed_files=$(git diff --name-only HEAD)
+
+# 遍历每个改变的文件并调用替换脚本
+for filename in $changed_files; do
+  # 获取文件的完整路径
+  full_path=$(pwd)/$filename
+  
+  # 调用替换脚本
   /Users/lex/shell/replace.sh "$full_path"
+  
+  # 检查替换脚本是否执行成功
+  if [ $? -eq 0 ]; then
+    echo "Replace script executed successfully for $filename."
+  else
+    echo "Failed to execute replace script for $filename."
+    exit 1
+  fi
+done
+
+
+
   git add .
   if [ $? -eq 0 ]; then
     echo "Changes added successfully."
