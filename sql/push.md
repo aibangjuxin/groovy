@@ -1,0 +1,148 @@
+
+1. **定义表结构模式**
+
+脚本首先定义了多个BigQuery表的模式,包括`gke_pods_table_schema`、`firestore_apis_table_schema`等。这些表结构将在后面加载数据到BigQuery时使用。
+
+2. **构建Firestore文档字典**
+
+`construct_doc_dict`函数根据Firestore集合名称和文档对象,构建一个Python字典,表示该文档的键值对数据。这些数据将被用于后续上传到GCS和加载到BigQuery。
+
+3. **将Firestore数据导出到GCS**
+
+`sink_firestore_collection_to_gcs`函数连接指定的Firestore项目,读取给定集合中的所有文档,构建它们的字典表示,并将这些数据作为newline-delimited JSON格式上传到Google Cloud Storage (GCS)存储桶中。
+
+4. **从GCS加载数据到BigQuery**
+
+`load_table_uri_gcs`函数使用BigQuery客户端从GCS URI加载数据到BigQuery表中。它接收表ID、URI和表结构作为输入参数。
+
+5. **创建请求以推送数据**
+
+`create_request_to_push`函数是该脚本的核心部分。它执行以下操作:
+- 从GCS加载GKE Pod数据到BigQuery的`gke_pods`表中。
+- 对于每个Firestore项目ID,遍历指定的集合列表,将其数据导出到GCS存储桶。
+- 对于每个集合,从GCS存储桶加载数据到对应的BigQuery表中。
+
+6. **创建定时任务**
+
+`create_job`函数使用`schedule`模块设置一个循环,每1440分钟(24小时)执行一次`create_request_to_push`函数。
+
+7. **环境配置**
+
+脚本根据`API_AIBANG_ENV`和`API_AIBANG_REGION`环境变量,配置要处理的BigQuery项目ID、Firestore项目ID列表和集合列表。它专门针对`env-region`、`penv-region`和`env-region`等环境。
+
+总的来说,这个脚本的主要目的是定期从GKE集群和Firestore数据库中提取监控和元数据,并将其加载到BigQuery中,以支持数据分析和可视化。它利用GCS作为中间存储,以实现Firestore到BigQuery的数据迁移。该脚本涵盖了多个项目和环境,为数据管道提供了自动化流程。
+
+
+
+对于在GKE Pod中运行这个脚本并希望更灵活地控制调度时间的需求,有以下几种解决方案:
+
+1. **使用Kubernetes CronJob**
+
+Kubernetes提供了CronJob资源对象,可以基于类似Cron的时间调度语法来运行作业。您可以在CronJob的spec中定义所需的调度时间,例如每15分钟或30分钟运行一次。CronJob会自动创建新的Pod实例来执行作业。
+
+2. **使用Cloud Scheduler**
+
+Cloud Scheduler是谷歌云平台提供的作业调度服务。它允许您创建HTTP或Pub/Sub目标的定时作业。您可以在Cloud Scheduler中创建一个定时任务,指定触发时间(如每15分钟),并让其调用GKE集群中的服务URL来执行您的脚本逻辑。
+
+3. **使用Pub/Sub和Cloud Functions**
+
+您可以在Cloud Functions中编写一个函数,该函数执行您的脚本逻辑。然后使用Cloud Scheduler或其他方式在指定时间向Pub/Sub发送消息。Cloud Functions会订阅该Pub/Sub主题并执行您的逻辑代码。
+
+4. **使用自定义调度器(如Airflow)**
+
+您也可以在GKE集群中部署一个自定义调度器,例如Apache Airflow。在Airflow中,您可以创建定时任务(DAG),并设置所需的触发时间,如每15分钟或30分钟。Airflow会在指定时间自动执行您的任务逻辑。
+
+5. **修改当前的schedule模块**
+
+如果您希望继续使用当前的`schedule`模块,您可以修改`create_job`函数,将`schedule.every(1440).minutes.do(create_request_to_push)`替换为`schedule.every(15).minutes.do(create_request_to_push)`或`schedule.every(30).minutes .do(create_request_to_push)`。
+
+总的来说,Kubernetes CronJob和Cloud Scheduler是最直接的解决方案,可以灵活调度您的作业。其他方案如Cloud Functions或自定义调度器也提供了更多定制化选项。您可以根据项目需求、团队偏好和现有基础设施选择最合适的方案。
+
+
+好的,如果您希望使用 Kubernetes CronJob 来替换当前脚本中的`schedule`模块,可以按照以下步骤进行改造:
+
+1. **创建 CronJob 资源清单文件**
+
+首先,您需要创建一个 Kubernetes CronJob 资源清单文件,例如 `cronjob.yaml`。在该文件中,您需要定义 CronJob 的元数据、规格和作业模板等信息。例如:
+
+```yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: api-data-cronjob
+spec:
+  schedule: "*/15 * * * *" # 每 15 分钟运行一次
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: OnFailure
+          containers:
+          - name: api-data-loader
+            image: gcr.io/your-project/api-data-loader:v1
+            env:
+            - name: API_AIBANG_ENV
+              value: dev  # 根据需要设置环境变量
+            - name: API_AIBANG_REGION
+              value: uk
+```
+
+在上面的示例中,我们定义了一个名为 `api-data-cronjob` 的 CronJob,它会根据 `schedule` 字段中的 Cron 表达式(`*/15 * * * *`)每 15 分钟运行一次作业。作业模板中定义了一个容器 `api-data-loader`,使用了您的容器镜像,并设置了所需的环境变量。
+
+2. **构建容器镜像**
+
+接下来,您需要将您的 Python 脚本构建成一个容器镜像,并推送到 Google Container Registry(GCR)或其他容器注册表。您可以创建一个 `Dockerfile` 文件,例如:
+
+```dockerfile
+FROM python:3.9-slim
+
+WORKDIR /app
+COPY . /app
+
+RUN pip install --no-cache-dir -r requirements.txt
+
+CMD ["python", "main.py"]
+```
+
+在上面的 `Dockerfile` 中,我们基于 Python 3.9 slim 镜像,将您的脚本复制到容器中,安装所需的依赖项,并设置容器启动命令为运行 `main.py` 文件。
+
+然后,您可以使用 `docker build` 命令构建容器镜像,并使用 `docker push` 命令将其推送到 GCR 或其他容器注册表。
+
+3. **部署 CronJob**
+
+最后,您可以使用 `kubectl` 命令在 GKE 集群中部署 CronJob 资源:
+
+```
+kubectl apply -f cronjob.yaml
+```
+
+这将在集群中创建 CronJob 资源,并根据定义的调度规则自动创建 Pod 实例来执行您的脚本逻辑。
+
+4. **监控和日志**
+
+您可以使用 `kubectl get cronjobs` 命令监控 CronJob 的状态,使用 `kubectl describe cronjob api-data-cronjob` 查看更多详细信息。您还可以使用 `kubectl logs` 命令查看 Pod 实例的日志输出,以便排查任何问题。
+
+通过使用 Kubernetes CronJob,您可以灵活地控制作业的调度时间,并利用 Kubernetes 的自动化功能来管理作业的执行。同时,您还可以使用 Kubernetes 的其他功能,如资源限制、健康检查和自动缩放等,来优化您的工作负载。
+
+如果您需要更多指导或示例,请随时提出。我也可以为您提供一个更完整的示例资源清单文件。
+
+
+
+如果您想直接执行 `create_request_to_push` 函数而不是使用调度器，您可以简单地将其调用移至 `create_job` 函数中，并删除调度器的相关部分。以下是修改后的代码示例：
+
+```python
+import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
+
+def create_job():
+    log.info("app started")
+    create_request_to_push()
+
+if __name__ == "__main__":
+    create_job()
+```
+
+这个修改后的 `create_job` 函数将直接执行 `create_request_to_push` 函数，并且如果作为脚本直接运行时，会执行 `create_job` 函数。因此，您可以将此脚本作为 Cron 作业直接调用，而不需要使用调度器。0

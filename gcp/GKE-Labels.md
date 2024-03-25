@@ -98,13 +98,23 @@ project=your-project
 您可以使用以下 gcloud 命令获取当前集群的标签：
 
 ```
-gcloud container clusters describe CLUSTER_NAME --format='value(labels)'
+gcloud container clusters describe my-cluster --format='value(resourceLabels)'
 ```
+
+**解释**
+
+* `gcloud container clusters describe` 命令用于描述指定的集群。
+* `--format='value(resourceLabels)'` 选项用于仅输出集群的资源标签。
+
+**区别**
+
+* `labels` 是集群标签，用于组织和管理集群。
+* `resourceLabels` 是集群的资源标签，用于控制成本和跟踪资源使用情况。
 
 **示例**
 
 ```
-gcloud container clusters describe my-cluster --format='value(labels)'
+gcloud container clusters describe my-cluster --format='value(resourceLabels)'
 ```
 
 **输出**
