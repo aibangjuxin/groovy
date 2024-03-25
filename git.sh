@@ -5,15 +5,16 @@ os_type=""
 os_name=$(uname -s)
 
 case $os_name in
-  Linux)
-    os_type="Linux"
-    ;;
-  Darwin)
-    os_type="macOS"
-    ;;
-  *)
-    # 其他未知系统类型默认为iPhone
-    os_type="iPhone"
+Linux)
+  os_type="Linux"
+  ;;
+Darwin)
+  os_type="macOS"
+  ;;
+*)
+  # 其他未知系统类型默认为iPhone
+  os_type="iPhone"
+  ;;
 esac
 
 # 输出操作系统类型
