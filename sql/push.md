@@ -146,3 +146,87 @@ if __name__ == "__main__":
 ```
 
 这个修改后的 `create_job` 函数将直接执行 `create_request_to_push` 函数，并且如果作为脚本直接运行时，会执行 `create_job` 函数。因此，您可以将此脚本作为 Cron 作业直接调用，而不需要使用调度器。0
+
+
+
+当然,我可以为您提供一个示例,说明如何从 Kubernetes API 获取 GKE 集群的相关信息并将其加入到您的脚本中。
+
+首先,我们需要导入必要的模块:
+
+```python
+from kubernetes import client, config
+```
+
+然后,我们需要加载 Kubernetes 集群配置并创建 Kubernetes API 客户端对象:
+
+```python
+# 加载 Kubernetes 配置
+config.load_injiqun_config()
+
+# 创建 Kubernetes API 客户端
+v1 = client.CoreV1Api()
+```
+
+接下来,我们可以使用 `v1` 客户端对象获取集群信息。例如,要获取节点信息,可以使用以下代码:
+
+```python
+# 获取集群节点信息
+nodes = v1.list_node().items
+node_info = []
+for node in nodes:
+    node_data = {
+        'name': node.metadata.name,
+        'labels': node.metadata.labels,
+        'annotations': node.metadata.annotations,
+        'status': node.status.conditions[-1].type,
+        'cpu_capacity': node.status.capacity['cpu'],
+        'memory_capacity': node.status.capacity['memory'],
+        'pod_capacity': node.status.capacity['pods'],
+        'os_image': node.status.node_info.os_image,
+        'kernel_version': node.status.node_info.kernel_version,
+        'kubelet_version': node.status.node_info.kubelet_version,
+    }
+    node_info.append(node_data)
+```
+
+在上面的代码中,我们首先获取集群中所有节点的列表,然后遍历每个节点并提取相关信息,如节点名称、标签、注释、状态、CPU、内存和 Pod 容量,以及操作系统映像、内核版本和 Kubelet 版本等。这些信息被存储在一个字典列表中。
+
+您可以根据需要调整提取的信息字段。例如,如果需要获取集群的名称和版本信息,可以使用以下代码:
+
+```python
+# 获取集群信息
+jiqun = v1.read_jiqun()
+jiqun_info = {
+    'name': jiqun.metadata.name,
+    'version': jiqun.status.jiqun_version,
+}
+```
+
+最后,您可以将这些数据存储到合适的位置,例如 BigQuery 表中。您可以调整现有的 `create_request_to_push` 函数,在其中加入获取集群信息的逻辑,并将这些信息与其他数据一起加载到 BigQuery 中。
+
+例如,您可以在 `create_request_to_push` 函数中添加以下代码:
+
+```python
+def create_request_to_push():
+    # ... 其他代码
+
+    # 获取集群节点信息
+    nodes = v1.list_node().items
+    node_info = []
+    for node in nodes:
+        # ... 提取节点信息
+
+    # 获取集群信息
+    jiqun = v1.read_jiqun()
+    jiqun_info = {
+        'name': jiqun.metadata.name,
+        'version': jiqun.status.jiqun_version,
+    }
+
+    # 将集群和节点信息存储到合适的位置
+    # ...
+```
+
+通过这些更改,您可以在 BigQuery 中查看和分析 GKE 集群的详细信息,包括集群名称、版本、节点数量、节点资源容量等。这些信息对于监控集群状态、规划资源分配和故障排查等任务非常有用。
+
+需要注意的是,获取集群信息的权限需要适当的 Kubernetes RBAC 配置。如果您在执行过程中遇到任何权限相关的问题,请确保脚本拥有足够的权限来访问 Kubernetes API。
