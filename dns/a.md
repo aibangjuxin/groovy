@@ -1,12 +1,12 @@
 ```bash
 #!/bin/bash
 team_name="teamname"
-project=aibang-111111111-apigwpdv-dev
+project=aibang-111111111-kongapi-dev
 ENV=$1
 REGION=$2
-AUTHN_FQDN=auths.$ENV-sb-rt.gcp.cloud.$REGION.local
-networks=projects/aibang-111111111-apigwpdv-dev/global/networks/aibang-111111111-apigwpdv-dev-cinternal-vpc2
-if [[ $REGION == hk || $REGION == uk ]];then AUTHN_FQDN=auths.$ENV-sb-rt.gcp.cloud.$REGION.aibang; fi
+AUTHN_FQDN=auths.$ENV-sb-rt.aliyun.cloud.$REGION.local
+networks=projects/aibang-111111111-kongapi-dev/global/networks/aibang-111111111-kongapi-dev-cinternal-vpc2
+if [[ $REGION == hk || $REGION == uk ]];then AUTHN_FQDN=auths.$ENV-sb-rt.aliyun.cloud.$REGION.aibang; fi
 # private-dev-gke-cloud-uk-local
 # define a scoped project for the DNS zone
 # create a DNS zone for the private environment
