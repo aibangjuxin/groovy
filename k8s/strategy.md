@@ -110,3 +110,6 @@ kubectl rollout undo deployment/my-deployment
 这将撤销最近的一次更新，并将Deployment回滚到之前稳定的状态。
 
 通过合理配置滚动更新策略，你可以确保应用程序在更新过程中的高可用性和平滑过渡。
+
+
+https://www.bluematador.com/blog/kubernetes-deployments-rolling-update-configuration
