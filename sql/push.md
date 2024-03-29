@@ -33,6 +33,34 @@
 总的来说,这个脚本的主要目的是定期从GKE集群和Firestore数据库中提取监控和元数据,并将其加载到BigQuery中,以支持数据分析和可视化。它利用GCS作为中间存储,以实现Firestore到BigQuery的数据迁移。该脚本涵盖了多个项目和环境,为数据管道提供了自动化流程。
 
 
+Defining Table Structure Schemas
+ The script begins by defining several BigQuery table schemas, including gke_pods_table_schema, firestore_apis_table_schema, and others. These table structures will be used later when loading data into BigQuery.
+
+ Construct Firestore document dictionary
+ The construct_doc_dict function constructs a Python dictionary representing the key-value pair data for the document based on the Firestore collection name and the document object. This data will be used for subsequent uploads to GCS and loads into BigQuery.
+
+ Export Firestore data to GCS
+ The sink_firestore_collection_to_gcs function connects to the specified Firestore project, reads all the documents in the given collection, builds a dictionary representation of them, and uploads this data as newline-delimited JSON to a Google Cloud Storage (GCS ) in the storage bucket.
+
+ Loading data from GCS to BigQuery
+ The load_table_uri_gcs function uses the BigQuery client to load data from a GCS URI into a BigQuery table. It receives the table ID, URI and table structure as input parameters.
+
+ Create a request to push data
+ The create_request_to_push function is the core part of the script. It performs the following operations.
+
+ Load GKE Pod data from GCS into BigQuery's gke_pods table.
+ For each Firestore item ID, iterates through the specified list of collections and exports their data to a GCS bucket.
+ For each collection, load data from the GCS storage bucket into the corresponding BigQuery table.
+ Creating a Timed Job
+ The create_job function uses the schedule module to set up a loop that executes the create_request_to_push function every 1440 minutes (24 hours).
+
+ Environment Configuration
+ The script configures the BigQuery item IDs, the list of Firestore item IDs and the list of collections to be processed according to the API_AIBANG_ENV and API_AIBANG_REGION environment variables. It is specialized for env-region, penv-region and env-region environments.
+
+ Overall, the main purpose of this script is to periodically extract monitoring and metadata from the GKE cluster and Firestore databases and load it into BigQuery to support data analysis and visualization. It utilizes GCS as an intermediate store for Firestore to BigQuery data migration. This script covers multiple projects and environments, providing an automated process for data pipelines.
+
+Translated with DeepL (https://www.deepl.com/app/?utm_source=ios&utm_medium=app&utm_campaign=share-translation)
+
 
 对于在GKE Pod中运行这个脚本并希望更灵活地控制调度时间的需求,有以下几种解决方案:
 
