@@ -1,5 +1,10 @@
 filter-deployment 
-# reference Release-ar.md
+# reference
+https://github.com/aibangjuxin/groovy/issues/35
+
+要获取 kubectl get deployment 命令输出中 containers 下 env 中 apiName 的值，你可以使用 kubectl 命令结合 jq 工具来提取。假设 kubectl get deployment 命令输出的 JSON 部分为 deployment.json，可以使用以下命令：
+`kubectl get deployment <deployment_name> -o=json | jq '.spec.template.spec.containers[0].env[] | select(.name=="apiName") | .value'`
+其中 <deployment_name> 是你要查询的部署名称。这个命令会输出 apiName 的值。
 
 # filter images 
 - running images
@@ -65,7 +70,7 @@ https://alm-aibang.os.aaaaa.aibang/sp-api-platform/aib-infra-gcp/blob/APICLOUD-8
   template:
     metadata:
       annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        jiqun-autoscaler.kubernetes.io/safe-to-evict: "true"
       creationTimestamp: null
       labels:
         app: woup-wcl-bblsmp-pa-woup-servicenow-1-1-16
@@ -141,7 +146,7 @@ kubectl get deployments --all-namespaces -o jsonpath='{range .items[?(@.spec.tem
 sms diabled
 kubectl get deployments --all-namespaces -o jsonpath='{range .items[?(@.spec.template.metadata.labels.sms=="disabled")]}{@.metadata.namespace} {@.metadata.name}{"\n"}{end}'|wc -l
 asp-rdcsp woup-wcl-bblsmp-pa-instabase-1-1-5-deployment
-aib-common-ext cmb-kuaiyong-aib-pa-healthcheck-2-0-0-deployment
+aib-common-ext abj-kuaiyong-aib-pa-healthcheck-2-0-0-deployment
 
 
 - sms blank 这个比较少基本都是我们自己的 API 
@@ -276,10 +281,10 @@ aib-common dcs-pa-form-translator-1-0-4-deployment
 aib-common dcs-pa-form-translator-1-0-5-deployment
 aib-common dcs-pa-gdms-service-1-0-0-deployment
 dbbhk-api woup-dbbhk-onboarding-ea-quantum-1-0-22-deployment
-dbbhk-obf cmb-dbbhk-onboarding-pa-customer-auth-ua-1-1-6-deployment
-kuaiyong-ext cmb-kuaiyong-aib-pa-healthcheck-1-0-0-deployment
+dbbhk-obf abj-dbbhk-onboarding-pa-customer-auth-ua-1-1-6-deployment
+kuaiyong-ext abj-kuaiyong-aib-pa-healthcheck-1-0-0-deployment
 kuaiyong-ext woup-kuaiyong-aib-ea-amw-scanner-1-0-1-deployment
-kuaiyong cmb-kuaiyong-aib-pa-healthcheck-1-0-0-deployment
+kuaiyong abj-kuaiyong-aib-pa-healthcheck-1-0-0-deployment
 kuaiyong wsopenai-analysis-service
 kuaiyong wsopenai-suggestion-service
 
@@ -315,7 +320,7 @@ cat no-teams-apis-addteam.txt all-apis-filter.txt|wc -l
 $ cat add-result.txt|awk 'NF !=3'
 aib-common-ext glcm-whaleh-dlt-aib-pa-sb-0-1-0-deployment
 aib-common-ext ums-gateway-pa-external-response-1-0-0-deployment
-obai cmb-aibangnet-is-au-ob-pa-account-1-0-11-deployment
+obai abj-aibangnet-is-au-ob-pa-account-1-0-11-deployment
 ```
 
 
@@ -401,7 +406,7 @@ spec:
   template:
     metadata:
       annotations:
-        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        jiqun-autoscaler.kubernetes.io/safe-to-evict: "true"
       creationTimestamp: null
       labels:
         app: woup-wcl-bblsmp-pa-health-monitor-0-0-2
