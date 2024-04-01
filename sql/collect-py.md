@@ -38,7 +38,7 @@
 # Fetch pods data from gke master and send to bucket
 def create_request_to_push():
     log.info("inside create_request_to_push")
-    config.load_incluster_config()
+    config.load_injiqun_config()
     log.info("after config load")
     log.info("Retrieving pods data")
     core_v1 = client.CoreV1Api()
@@ -56,18 +56,6 @@ def create_request_to_push():
                 pod = {
                     "api_name": api_name,
                     "api_name_with_major_version": api_name_with_major_version,
-                    "major_version": major_version,
-                    "minor_version": minor_version,
-                    "pod_name": item.metadata.name,
-                    "namespace": item.metadata.namespace,
-                    "labels_app": item.metadata.labels.get("app"),
-                    "labels_type": item.metadata.labels.get("type"),
-                    "labels_sms": item.metadata.labels.get("sms"),
-                    "labels_kdp": item.metadata.labels.get("kdp"),
-                    "started": item.status.container_statuses[0].started,
-                    "restart_count": item.status.container_statuses[0].restart_count,
-                    "last_update": json.dumps(item.status.start_time, default=time_format).strip('"'),
-                    "image": item.spec.containers[0].image,
                     "env": env,
                     "region": region,
                     "cpu_request": item.spec.containers[0].resources.requests.get("cpu") if item.spec.containers[0].resources.requests else None,
@@ -86,17 +74,6 @@ def create_request_to_push():
             log.error(e, item.metadata.name)
 
     # 后续代码保持不变
-    ...
-
-def create_job():
-    log.info("app started")
-    schedule.every(15).minutes.do(create_request_to_push)
-    while True:
-        schedule.run_pending()
-        time.sleep(1)
-
-if __name__ == '__main__':
-    create_job()
 ```
 
 在修改后的代码中,我们引入了 `client.MetricsV1beta1Api()` 来获取 Pod 的指标数据。在 `create_request_to_push` 函数中,我们使用 `metrics_v1beta1.read_namespaced_pod_metrics` 方法获取指定 Pod 的指标数据,其中包括当前的 CPU 和内存使用量。
