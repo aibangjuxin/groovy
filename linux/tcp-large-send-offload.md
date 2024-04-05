@@ -1,3 +1,26 @@
+TCP Large Send Offload (LSO) 是一种网络技术，旨在减轻 TCP 分段造成的 CPU 负载。它理论上可以改善传输性能，降低网络延迟。LSO 允许网络适配器在发送数据包时直接将数据分段为最大数据分段长度，而不是由操作系统进行分段。这有助于减少 CPU 负载，提高处理性能。
+
+LSO 的作用包括：
+
+1. **减少 CPU 负载**：由于网络适配器直接进行数据分段，因此操作系统的 CPU 负载会降低。
+
+2. **提高传输性能**：通过减少 CPU 负载，LSO 可以提高网络传输的性能。
+
+3. **降低网络延迟**：由于网络适配器直接进行数据分段，因此网络延迟会降低。
+
+请注意，LSO 的使用和支持取决于您的网络接口和操作系统版本。如果您的网络接口或操作系统不支持 LSO，您可能需要更新驱动程序或操作系统。
+
+Citations:
+[1] https://blog.csdn.net/wangyequn1124/article/details/103664856
+[2] https://www.wavecn.com/content.php?id=363
+[3] https://huataihuang.gitbooks.io/cloud-atlas/content/network/packet_analysis/tcpdump/udp_tcp_checksum_errors_from_tcpdump_nic_hardware_offloading.html
+[4] https://ms2008.github.io/2018/06/01/tcp-troubleshooting/
+[5] https://blog.csdn.net/maimang1001/article/details/120273632
+[6] https://www.cnblogs.com/AllenWoo/p/16160796.html
+[7] https://github.com/moooofly/MarkSomethingDown/blob/master/Linux/TCP%20%E4%B9%8B%20TSO%20GSO%20LSO.md
+[8] https://blog.51cto.com/u_1923895/5939791
+
+
 TCP 大型发送卸载选项允许 AIX® TCP 层创建长达 64 KB 的 TCP 报文。适配器通过 IP 和以太网设备驱动程序在堆栈中一次调用即可发送报文。
 
 然后，适配器将报文分解成多个 TCP 帧，在电缆上传输数据。电缆上发送的 TCP 数据包要么是媒体传输单元 (MTU) 为 1500 的 1500 字节帧，要么是媒体传输单元 (MTU) 为 9000 的 9000 字节帧（巨帧）。
@@ -90,3 +113,31 @@ Citations:
 [12] https://blog.csdn.net/qq_33745102/article/details/103699802
 [13] https://blog.crazytaxii.com/posts/linux_network_performance_optimization_reference/
 [14] https://liuhao163.github.io/%E7%B3%BB%E7%BB%9F%E4%BC%98%E5%8C%96-%E7%BD%91%E7%BB%9C-%E9%98%B6%E6%AE%B5%E6%80%A7%E6%80%BB%E7%BB%93/
+
+
+
+如果您的 Linux 系统上的 ethtool 命令输出中显示了 `large-receive-offload: on`，则表明您的系统已启用了大型接收缓冲区，而您的对应的 `send` 可能未设置。要启用 `send`，您可以使用以下命令：
+
+```bash
+ethtool -K <interface> tso on
+```
+
+将 `<interface>` 替换为您要启用 `send` 的网络接口名称。例如，如果您要启用 `eth0` 接口上的 `send`，则可以使用以下命令：
+
+```bash
+ethtool -K eth0 tso on
+```
+
+这将启用 `send` 功能，使您的网络接口能够更有效地处理大型 TCP 数据包。请注意，在启用 `send` 功能之前，您可能需要确保您的网络接口和操作系统支持这一特性。
+
+Citations:
+[1] https://serverfault.com/questions/1004458/how-to-verify-status-of-tcp-segmentation-offloading
+[2] https://docs.gz.ro/tuning-network-cards-on-linux.html
+[3] https://www.linux-magazine.com/Issues/2016/182/Ethtool/%28offset%29/3
+[4] https://www.suse.com/support/kb/doc/?id=000017259
+[5] https://docs.vmware.com/en/VMware-vSphere/7.0/com.vmware.vsphere.networking.doc/GUID-FB4F8DB7-B4AC-4442-9B0B-B776F0C7BCCB.html
+[6] https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-nic-offloads
+[7] https://kb.vmware.com/s/article/2055140
+[8] https://www.ibm.com/docs/en/linux-on-z?topic=offload-tcp-segmentation
+
+
