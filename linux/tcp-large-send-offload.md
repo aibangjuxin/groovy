@@ -1,14 +1,59 @@
-TCP Large Send Offload (LSO) 是一种网络技术，旨在减轻 TCP 分段造成的 CPU 负载。它理论上可以改善传输性能，降低网络延迟。LSO 允许网络适配器在发送数据包时直接将数据分段为最大数据分段长度，而不是由操作系统进行分段。这有助于减少 CPU 负载，提高处理性能。
 
-LSO 的作用包括：
+在 Linux 系统中，TCP Segmentation Offload (TSO) 是一种网络技术，旨在减轻 TCP 分段造成的 CPU 负载。它允许网络适配器直接将大型数据分段为最大数据分段长度，而不是由操作系统进行分段。这有助于减少 CPU 负载，提高处理性能。
+
+TSO 的作用包括：
 
 1. **减少 CPU 负载**：由于网络适配器直接进行数据分段，因此操作系统的 CPU 负载会降低。
 
-2. **提高传输性能**：通过减少 CPU 负载，LSO 可以提高网络传输的性能。
+2. **提高传输性能**：通过减少 CPU 负载，TSO 可以提高网络传输的性能。
 
 3. **降低网络延迟**：由于网络适配器直接进行数据分段，因此网络延迟会降低。
 
-请注意，LSO 的使用和支持取决于您的网络接口和操作系统版本。如果您的网络接口或操作系统不支持 LSO，您可能需要更新驱动程序或操作系统。
+要查看 TSO 的当前状态，您可以使用以下命令：
+
+```bash
+ethtool -K <interface> tso on
+```
+
+将 `<interface>` 替换为您要检查的网络接口名称。例如，如果您要检查 `eth0` 接口上的 TSO 状态，则可以使用以下命令：
+
+```bash
+ethtool -K eth0 tso on
+```
+
+如果 TSO 已启用，您将看到类似以下输出：
+
+```bash
+tso: on
+```
+
+如果 TSO 已禁用，您将看到类似以下输出：
+
+```bash
+tso: off
+```
+
+要启用 TSO，您可以使用以下命令：
+
+```bash
+ethtool -K <interface> tso on
+```
+
+这将启用 TSO 功能，使您的网络接口能够更有效地处理大型 TCP 数据包。请注意，在启用 TSO 功能之前，您可能需要确保您的网络接口和操作系统支持这一特性。
+
+Citations:
+[1] https://docs.nvidia.com/networking/display/rdmacore50/tcp%2Bsegmentation%2Boffload%2B%28tso%29
+[2] https://www.baeldung.com/linux/tcp-offload-disable
+[3] https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/6/html/performance_tuning_guide/network-nic-offloads
+[4] https://docs.vmware.com/en/VMware-vSphere/8.0/vsphere-networking/GUID-E105A601-9331-496C-A213-F76EA3863E31.html
+[5] https://serverfault.com/questions/1004458/how-to-verify-status-of-tcp-segmentation-offloading
+[6] https://kb.vmware.com/s/article/2055140
+[7] https://www.kernel.org/doc/Documentation/networking/segmentation-offloads.txt
+[8] https://www.ibm.com/docs/en/linux-on-z?topic=offload-tcp-segmentation
+
+
+TCP Large Send Offload (LSO) 是一种网络技术，旨在减轻 TCP 分段造成的 CPU 负载。它理论上可以改善传输性能，降低网络延迟。LSO 允许网络适配器在发送数据包时直接将数据分段为最大数据分段长度，而不是由操作系统进行分段。这有助于减少 CPU 负载，提高处理性能。
+
 
 Citations:
 [1] https://blog.csdn.net/wangyequn1124/article/details/103664856
