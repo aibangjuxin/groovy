@@ -82,11 +82,14 @@ for namespace in $all_namespaces; do
     echo "Number of Horizontal Pod Autoscalers: $hpa_count"
 
     # 获取 pod 的数量
-    pod_count=$(kubectl get pods --namespace=$namespace --no-headers | wc -l)
+    pod_count=$(kubectl get pods --namespace=$namespace --no-headers|grep -v "^certificate" | wc -l)
     echo "Number of Pods: $pod_count"
+    if [ $deployment_count -eq 0 ]; then
+        echo -e "\033[31m  Delete this namespace: $namespace \033[0m"
+    fi
     # 判断 Pod、Deployment 和 Service 的数量是否都为0
     if [ $pod_count -eq 0 ] && [ $deployment_count -eq 0 ] && [ $service_count -eq 0 ]; then
-        echo "Delete this namespace: $namespace"
+        echo -e "\033[31m namespace: $namespace resource is empty, delete it \033[0m"
     fi
 
     echo "--------------------------------------"
