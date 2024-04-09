@@ -1,6 +1,7 @@
 - [GKE Deployment](#gke-deployment)
 - [resolve method](#resolve-method)
   - [calude](#calude)
+  - [zhipu](#zhipu)
   - [chatgpt4](#chatgpt4)
   - [chatgpt](#chatgpt)
   - [GKE Deployment 使用 Kubernetes 机密](#gke-deployment-使用-kubernetes-机密)
@@ -19,6 +20,13 @@ where kubernetes secrets are used they MUST be exposed as files rather than ever
 1. 安全性：将Secrets作为环境变量存储在Pod的内存中可能会使它们更容易被其他容器或进程访问，这些容器或进程可能在Pod内运行。此外，环境变量可能会在日志或其他日志文件中记录下来，这可能会使敏感信息面临风险。
 2. 管理：与文件相比，管理环境变量可能更加困难，特别是当有许多Secrets需要在多个应用程序或服务之间共享时。在文件中存储Secrets可以使更轻松地管理和控制对这些敏感信息的访问。
 为了解决这些问题并确保Secrets的安全和保密性，建议将Kubernetes Secrets作为文件挂载到Pod中。这样，Secrets可以安全地存储在Pod的文件系统中，并且可以细粒度地控制对这些文件的访问。
+
+In Kubernetes, Secrets are objects containing sensitive information such as passwords, OAuth tokens, and SSH keys, which should not be exposed in plain text. Secrets can be used in Pods in various ways, including being mounted as files or injected as environment variables.
+While injecting Secrets as environment variables into Pods provides a convenient way to access sensitive information, it is generally not recommended for the following reasons:
+1. Security: Storing Secrets as environment variables in the Pod's memory may make them more accessible to other containers or processes running within the Pod. Additionally, environment variables may be logged in logs or other log files, posing a risk to sensitive information.
+2. Management: Compared to files, managing environment variables may be more challenging, especially when many Secrets need to be shared among multiple applications or services. Storing Secrets in files makes it easier to manage and control access to this sensitive information.
+To address these issues and ensure the security and confidentiality of Secrets, it is recommended to mount Kubernetes Secrets as files into Pods. This way, Secrets can be securely stored in the Pod's file system, and access to these files can be finely controlled.
+
 要将Kubernetes Secrets作为文件挂载，可以在Pod规范中使用`volumes`和`volumeMounts`字段。下面是一个示例：
 ```yaml
 apiVersion: v1
