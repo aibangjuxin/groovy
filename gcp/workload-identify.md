@@ -81,3 +81,43 @@ GKE 的工作负载身份 (Workload Identity) 是一种机制,允许 Kubernetes 
 
 因此,工作负载身份不是 Pod 启动和运行的硬性要求,但它为您提供了一种安全、方便的方式来管理 GCP 服务帐户凭据,并向工作负载授予访问 GCP 资源的权限。如果您的应用程序需要访问 GCP 服务,并且希望简化凭据管理和提高安全性,那么配置工作负载身份就是一个很好的选择
 
+
+
+在 GCP 工程中，您可以通过以下两种方式来获取哪些 GCP 服务账户具有 `iam.workloadIdentityUser` 权限：
+
+**方法一：使用 IAM Policy Analyzer**
+
+1. 访问 IAM Policy Analyzer: [https://cloud.google.com/policy-intelligence/docs/policy-analyzer-overview](https://cloud.google.com/policy-intelligence/docs/policy-analyzer-overview)。
+2. 选择您的 GCP 工程。
+3. 在 **Policy** 选项卡中，输入以下政策规则：
+
+```
+roles/iam.workloadIdentityUser
+```
+
+4. 点击 **Analyze** 按钮。
+
+IAM Policy Analyzer 将列出所有具有 `iam.workloadIdentityUser` 权限的 GCP 服务账户。
+
+**方法二：使用 gcloud 命令行工具**
+
+1. 安装并配置 gcloud 命令行工具。
+2. 使用以下命令列出所有具有 `iam.workloadIdentityUser` 权限的 GCP 服务账户：
+
+```
+gcloud projects get-iam-policy project-id --format json | jq '.bindings[].role == "roles/iam.workloadIdentityUser" | .[] | .members[]'
+```
+
+其中，`project-id` 是您的 GCP 工程 ID。
+
+以下是一些额外的提示：
+
+* 您可以使用 `--filter` 标志来缩小搜索范围。例如，要列出具有 `iam.workloadIdentityUser` 权限且名称以 `service-account-` 开头的服务账户，可以使用以下命令：
+
+```
+gcloud projects get-iam-policy project-id --filter 'name~^service-account-' --format json | jq '.bindings[].role == "roles/iam.workloadIdentityUser" | .[] | .members[]'
+```
+
+* 您可以使用 `--only-policies` 标志来仅列出与 IAM 政策相关的结果。
+
+希望这些信息对您有所帮助。
