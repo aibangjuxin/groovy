@@ -8,9 +8,10 @@
 
 
 # GKE Deployment
-我的部分配置如下
-但是有这样一个问题
+我的部分配置如下,但是有这样一个问题
 where kubernetes secrets are used they MUST be exposed as files rather than everything as environment variables. 这个问题
+在使用 kubernetes 秘密时，它们必须以文件形式公开，而不是全部以环境变量形式公开。
+
 那么我如何修复这个问题,或者有什么好的解决办法? 请给出我详细的解决办法? 并给我一个完整的解决了这个问题的yaml配置
 比如我原来的 secretKeyRef这个是放在secret的data里面
 在使用 kubernetes 秘密时，它们必须以文件形式公开，而不是全部以环境变量形式公开。
@@ -68,6 +69,16 @@ container:
       value: "your-account-name"
     - name: APPDYNAMICS_AGENT_ACCOUNT_ACCESS_KEY
       value: passwd
+
+  volumeMounts:
+  - name: secret-volume
+    mountPath: /etc/secrets
+    readOnly: true
+
+volumes:
+  - name: secret-volume
+    secret:
+      secretName: petclinic-secret      
 ```    
 - get secret
 ```
@@ -85,6 +96,16 @@ metadata:
   creationTimestamp: "2022-03-14T13:20:05Z"
 ```
 # resolve method
+
+
+类似这样配置
+          env:
+            - name: API_CATEGORY
+              value: spring-petclinic
+            - name: KEY_STORE_PASSWORD
+              value: /etc/secrets/keystore.password  
+那么其实是不对的 can't unmarshal number into Go struct field EnvVar.spec.template.spec.containers.env.value of type string
+
 
 ## calude 
 
