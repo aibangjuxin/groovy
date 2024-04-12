@@ -175,3 +175,33 @@ gcloud projects list-iam-bindings project-id \
 * You can use the `--only-policies` flag to only list results that are related to IAM policies.
 
 I hope this helps!
+
+
+有几种方法可以获取哪些Google Cloud服务帐户具有`iam.workloadIdentityUser`权限:
+
+1. **使用gcloud命令行工具**
+
+您可以使用`gcloud`命令列出项目中所有服务帐户及其权限。以下命令将列出项目ID为`your-project-id`的项目中所有服务帐户及其权限:
+
+```
+gcloud projects get-iam-policy your-project-id \
+  --flatten="bindings[].members" \
+  --format='table(bindings.role)' \
+  --filter="bindings.members:serviceAccount"
+```
+
+在输出结果中,查找具有`roles/iam.workloadIdentityUser`角色的服务帐户。
+
+2. **通过GCP控制台**
+
+在GCP控制台中,进入IAM & Admin -> IAM页面,您可以查看项目级别和特定资源级别的权限绑定情况。在成员列中,过滤"服务账号"类型即可看到所有服务帐户,并查看其权限。
+
+3. **使用Google Cloud APIs**
+
+您可以使用Cloud Resource Manager API的`projects.getIamPolicy`方法来检索项目的IAM策略,包括绑定的服务帐户及其权限。具体做法可以参考官方文档。
+
+4. **使用第三方工具**
+
+一些第三方开源工具如forseti-security也能够扫描GCP项目并生成包含服务帐户权限的报告。
+
+需要注意的是,`iam.workloadIdentityUser`权限是运行工作负载时使用工作负载身份识别所需的最低权限。拥有此权限的服务帐户数量应尽量控制在必要的范围内,以降低安全风险。
