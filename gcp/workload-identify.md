@@ -188,6 +188,12 @@ gcloud projects get-iam-policy your-project-id \
   --flatten="bindings[].members" \
   --format='table(bindings.role)' \
   --filter="bindings.members:serviceAccount"
+
+gcloud projects get-iam-policy your-project-id \
+  --flatten="bindings[].members" \
+  --format='table(bindings.role,bindings.members)' \
+  --filter="bindings.members:serviceAccount"
+
 ```
 
 在输出结果中,查找具有`roles/iam.workloadIdentityUser`角色的服务帐户。
