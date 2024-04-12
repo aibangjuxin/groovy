@@ -120,4 +120,58 @@ gcloud projects get-iam-policy project-id --filter 'name~^service-account-' --fo
 
 * 您可以使用 `--only-policies` 标志来仅列出与 IAM 政策相关的结果。
 
-希望这些信息对您有所帮助。
+
+You are correct that the `iam.workloadIdentityUser` role is not a predefined IAM role, and therefore it cannot be queried using the methods described in my previous response. The `iam.workloadIdentityUser` role is a custom role that is specifically designed for use with Workload Identity.
+
+To query for service accounts that have the `iam.workloadIdentityUser` role, you can use the following method:
+
+**Method 1: Use the gcloud SDK**
+
+1. Install and configure the gcloud SDK.
+2. Use the following command to list all service accounts in your project that have the `iam.workloadIdentityUser` role:
+
+```bash
+gcloud projects list-iam-bindings project-id \
+  --role="roles/iam.workloadIdentityUser" \
+  --format="json" | jq '.bindings[].members[]'
+```
+
+This command will print a JSON array of service account names.
+
+**Method 2: Use the IAM API**
+
+1. Make an authenticated request to the IAM API using the following method:
+
+```
+GET https://iam.googleapis.com/v1/projects/{project-id}/policies
+```
+
+Replace `{project-id}` with your project ID.
+
+2. Parse the JSON response and look for bindings that have the following structure:
+
+```json
+{
+  "role": "roles/iam.workloadIdentityUser",
+  "members": [
+    "serviceAccount:{project-id}.svc.id.goog[{namespace}/{service-account-name}]"
+  ]
+}
+```
+
+The `{namespace}/{service-account-name}` value is the name of the Kubernetes service account that is bound to the service account.
+
+**Additional notes:**
+
+* You can use the `--filter` flag to narrow down the search results. For example, to list service accounts that have the `iam.workloadIdentityUser` role and are located in the `default` namespace, you can use the following command:
+
+```bash
+gcloud projects list-iam-bindings project-id \
+  --role="roles/iam.workloadIdentityUser" \
+  --filter="resource=projects/project-id/namespaces/default" \
+  --format="json" | jq '.bindings[].members[]'
+```
+
+* You can use the `--only-policies` flag to only list results that are related to IAM policies.
+
+I hope this helps!
