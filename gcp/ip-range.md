@@ -457,3 +457,15 @@ gcloud compute networks describe network-name \
 ```
 
 总之,通过适当组合 `get` 函数和 `map`、`filter` 等操作,您可以从输出中精确提取所需的字段值。
+
+
+```bash
+gcloud compute networks subnets describe cinternal-vpc2-europe-west2-gke-core2-abcoe --project=myproject -region=europe-west2 --format= 'value(ipCidrRange)*
+192.168.96.1/23
+
+
+gcloud compute networks subnets describe cinternal-vpc2-europe-west2-gke-core2-abcoe --project-myproject --region=europe-west2 --format='get(ipCidrRange)'
+192.168.96.1/23
+gcloud compute networks subnets describe cinternal-vpc2-europe-west2-gke-core2-abcoe --project=myproject --region=europe-west2 --format='get(secondary|pRangesipCidrRange)'| grep -o '192.168.**
+192.168.224.32/28
+```
