@@ -364,3 +364,38 @@ gcloud compute networks describe network-name --project=myproject --region=asia-
 ```
 
 如果您需要以特定格式打印输出(例如将值括在方括号中),可以使用常规的 go 模板语法来格式化输出。
+```json
+{
+  "ipCidrRange": "192.168.0.1/22",
+  "secondaryIpRanges": [
+    {
+      "ipCidrRange": "192.168.0.2/22",
+      "rangename": "lex1"
+    },
+    {
+      "ipCidrRange": "192.168.0.3/22",
+      "rangename": "lex2"
+    },
+    {
+      "ipCidrRange": "192.168.0.4/22",
+      "rangename": "lex4"
+    }
+  ]
+}
+```
+你可以使用以下 `jq` 命令来获取你想要的值：
+
+```bash
+jq -r '.ipCidrRange, .secondaryIpRanges[] | select(.rangename == "lex4") | .ipCidrRange' file.json
+```
+
+这个命令会首先打印 `ipCidrRange` 的值，然后查找 `secondaryIpRanges` 数组中 `rangename` 为 `lex4` 的对象，并打印其对应的 `ipCidrRange` 的值。
+
+假设你的 JSON 文件名为 `file.json`，并且 `ipCidrRange` 的值是 `192.168.0.1/22`，而 `rangename` 为 `lex4` 的 `ipCidrRange` 的值是 `192.168.0.4/22`，那么以上命令的输出会是：
+
+```
+192.168.0.1/22
+192.168.0.4/22
+```
+
+这样就能得到你想要的结果。
