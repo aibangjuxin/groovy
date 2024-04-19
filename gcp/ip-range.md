@@ -314,4 +314,53 @@ Node和Master IP范围：您为Node和Master设定的范围似乎是连续的且
 当然，您也可以根据自己的实际需求进行调整。例如，如果您需要更大的 pod 容量，可以将 pod 范围调整为 /19 或 /18。如果您需要更大的 service 容量，可以将 service 范围调整为 /23 或 /22。
 
 
+# how to get node ip and master ip 
+要获取您需要的特定信息,您可以使用 gcloud 命令的 --format 标志并使用 go 语言的模板语法来格式化输出。以下命令应该可以获取您需要的信息:
 
+```
+gcloud compute networks describe network-name \
+  --project=myproject \
+  --region=asia-east2 \
+  --format='get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item())'
+```
+
+这个命令做了以下工作:
+
+1. `get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item())` 这个模板表达式获取了两个值:
+   - `ipCidrRange` - 这是主 IP CIDR 范围
+   - `secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item()` - 这个表达式从 `secondaryIpRanges` 列表中获取 `ipCidrRange` 值为 `192.168.0.4/22` 的元素。
+
+2. 这两个值被空格分隔并打印在同一行。
+
+如果您只需要打印主 IP CIDR 范围,可以使用:
+
+```
+gcloud compute networks describe network-name --project=myproject --region=asia-east2 --format='value(ipCidrRange)'
+```
+
+如果您需要以特定格式打印输出(例如将值括在方括号中),可以使用常规的 go 模板语法来格式化输出。
+
+要获取您需要的特定信息,您可以使用 gcloud 命令的 --format 标志并使用 go 语言的模板语法来格式化输出。以下命令应该可以获取您需要的信息:
+
+```
+gcloud compute networks describe network-name \
+  --project=myproject \
+  --region=asia-east2 \
+  --format='get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item())'
+```
+
+这个命令做了以下工作:
+
+1. `get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item())` 这个模板表达式获取了两个值:
+   - `ipCidrRange` - 这是主 IP CIDR 范围
+   - `secondaryIpRanges.map().ipCidrRange.?(@==192.168.0.4/22).item()` - 这个表达式从 `secondaryIpRanges` 列表中获取 `ipCidrRange` 值为 `192.168.0.4/22` 的元素。
+
+2. 这两个值被空格分隔并打印在同一行。
+
+如果您只需要打印主 IP CIDR 范围,可以使用:
+
+```
+gcloud compute networks describe network-name --project=myproject --region=asia-east2 --format='value(ipCidrRange)'
+```
+
+如果您需要以特定格式打印输出(例如将值括在方括号中),可以使用常规的 go 模板语法来格式化输出。
