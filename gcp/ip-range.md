@@ -399,3 +399,22 @@ jq -r '.ipCidrRange, .secondaryIpRanges[] | select(.rangename == "lex4") | .ipCi
 ```
 
 这样就能得到你想要的结果。
+
+对不起，我之前的回答有误。JSON 文件中的对象是不能直接像数组那样索引的。我们需要用 `select` 来筛选符合条件的对象，然后再获取其属性的值。
+
+以下是修正后的 `jq` 命令：
+
+```bash
+jq -r '.ipCidrRange, (.secondaryIpRanges[] | select(.rangename == "lex4").ipCidrRange)' file.json
+```
+
+这个命令将首先打印 `ipCidrRange` 的值，然后从 `secondaryIpRanges` 数组中筛选出 `rangename` 为 `lex4` 的对象，并打印其对应的 `ipCidrRange` 的值。
+
+假设 JSON 文件名为 `file.json`，且 `ipCidrRange` 的值为 `192.168.0.1/22`，而 `rangename` 为 `lex4` 的 `ipCidrRange` 的值为 `192.168.0.4/22`，那么以上命令的输出会是：
+
+```
+192.168.0.1/22
+192.168.0.4/22
+```
+
+这样就能得到你想要的结果。
