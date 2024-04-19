@@ -418,3 +418,42 @@ jq -r '.ipCidrRange, (.secondaryIpRanges[] | select(.rangename == "lex4").ipCidr
 ```
 
 这样就能得到你想要的结果。
+
+
+
+好的,如果您想同时获取 `ipCidrRange` 和 `secondaryIpRanges` 列表中 `rangeName` 为 `lex4` 的元素的 `ipCidrRange` 值,可以使用以下命令:
+
+```
+gcloud compute networks describe network-name \
+  --project=myproject \
+  --region=asia-east2 \
+  --format='get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@.rangeName==lex4).item())'
+```
+
+这个命令将以空格分隔的形式在同一行输出两个值:
+
+```
+192.168.0.0/16 192.168.0.4/22
+```
+
+解释:
+
+1. `get(ipCidrRange,secondaryIpRanges.map().ipCidrRange.?(@.rangeName==lex4).item())` 这个模板表达式获取了两个值:
+   - `ipCidrRange` - 这是主 IP CIDR 范围
+   - `secondaryIpRanges.map().ipCidrRange.?(@.rangeName==lex4).item()` - 这个表达式从 `secondaryIpRanges` 列表中获取 `rangeName` 为 `lex4` 的元素的 `ipCidrRange` 值。
+
+2. 这两个值被空格分隔并打印在同一行。
+
+如果您想以其他格式打印输出,可以相应地修改模板表达式。例如,要在方括号中打印这两个值,可以使用:
+
+```
+--format='get("[", ipCidrRange, "]", "[", secondaryIpRanges.map().ipCidrRange.?(@.rangeName==lex4).item(), "]")'
+```
+
+该命令将打印:
+
+```
+[192.168.0.0/16] [192.168.0.4/22]
+```
+
+总之,通过适当组合 `get` 函数和 `map`、`filter` 等操作,您可以从输出中精确提取所需的字段值。
