@@ -210,3 +210,55 @@ location / {
 - http proxy tunnel通常用于转发WebSocket或其他非HTTP协议
 
 所以,如果你配置了`proxy_pass`访问一个服务,但是实际交互使用的协议是WebSocket,这时就需要使用`http proxy tunnel`了。
+
+**curl: A Powerful Command-Line Tool for Transferring Data**
+
+`curl` is a versatile command-line tool in Linux for transferring data to and from a web server using various protocols, including HTTP, HTTPS, SCP, SFTP, TFTP, and more. In this overview, we'll delve into the `curl` command, focusing on HTTP headers.
+
+**Basic Syntax**
+
+The basic syntax for the `curl` command is as follows:
+```bash
+curl [options] URL
+```
+Where `URL` is the target URL and `[options]` are the optional parameters that control the behavior of the command.
+
+**HTTP Headers**
+
+`curl` allows you to specify HTTP headers using the `-H` or `--header` option. You can specify multiple headers by separating them with commas.
+
+Example:
+```bash
+curl -H "Accept: application/json" -H "Authorization: Bearer YOUR_TOKEN" https://example.com/api/data
+```
+In this example, we're setting two HTTP headers:
+
+1. `Accept: application/json`: specifies the expected response format as JSON.
+2. `Authorization: Bearer YOUR_TOKEN`: sets the authentication token for the request.
+
+**Other Options**
+
+Here are some additional options you can use with `curl`:
+
+* `-X` or `--request`: specifies the HTTP request method (e.g., GET, POST, PUT, DELETE).
+* `-d` or `--data`: specifies the request body.
+* `-o` or `--output`: specifies the output file.
+* `-b` or `--cookie`: specifies the cookie to send with the request.
+
+Example:
+```bash
+curl -X POST -d '{"name":"John","age":30}' -o output.txt https://example.com/api/users
+```
+In this example, we're sending a POST request with a JSON payload to the `/api/users` endpoint. The response will be saved to a file named `output.txt`.
+
+**Conclusion**
+
+`curl` is a powerful tool for transferring data to and from a web server using various protocols. By understanding the basic syntax and available options, you can customize your requests to suit your needs. In this overview, we focused on HTTP headers, but `curl` offers many more features and options to explore.
+
+**References**
+
+* `curl` manual: <https://curl.haxx.se/docs/manpage.html>
+* `curl` examples: <https://curl.se/docs/http-cookies.html>
+
+I hope this helps! Let me know if you have any questions or need further clarification.
+
