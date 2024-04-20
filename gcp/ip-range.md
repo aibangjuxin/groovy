@@ -468,4 +468,37 @@ gcloud compute networks subnets describe cinternal-vpc2-europe-west2-gke-core2-a
 192.168.96.1/23
 gcloud compute networks subnets describe cinternal-vpc2-europe-west2-gke-core2-abcoe --project=myproject --region=europe-west2 --format='get(secondary|pRangesipCidrRange)'| grep -o '192.168.**
 192.168.224.32/28
+
+
+>>> using gcloud compute networks subnets describe  filter the my need key ?
+A great question!
+
+When using `gcloud compute networks subnets describe` to list subnets, you can filter the output based on specific keys or criteria. Here are some examples:
+
+1. **Filter by subnet ID**: Use the `--filter` option with the `id` keyword to show only the subnet with a specific ID.
+```
+gcloud compute networks subnets describe --filter="id=my-subnet-123"
+```
+2. **Filter by region**: Use the `--filter` option with the `region` keyword to show only the subnets in a specific region.
+```
+gcloud compute networks subnets describe --filter="region=us-central1"
+```
+3. **Filter by network**: Use the `--filter` option with the `network` keyword to show only the subnets associated with a specific network.
+```
+gcloud compute networks subnets describe --filter="network=my-network-123"
+```
+4. **Filter by IP range**: Use the `--filter` option with the `ipRange` keyword to show only the subnets with a specific IP address range.
+```
+gcloud compute networks subnets describe --filter="ipRange=10.0.0.0/16"
+```
+5. **Filter by subnet name**: Use the `--filter` option with the `name` keyword to show only the subnets with a specific name.
+```
+gcloud compute networks subnets describe --filter="name=my-subnet-name-123"
+```
+These are just a few examples of how you can filter the output using the `--filter` option. You can combine multiple filters using the `AND` or `OR` operators to further refine your search.
+
+For example, to show only the subnets with a specific ID and IP address range:
+```
+gcloud compute networks subnets describe --filter="id=my-subnet-123 AND ipRange=10.0.0.0/16"
+```
 ```
