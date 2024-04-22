@@ -68,3 +68,36 @@ done < <(jq -r '.[].rule[].name, .[].rule[].match.name, .[].rule[].action[].type
 
 你还需要根据你的需求来替换创建规则的命令。示例命令中的 `echo` 语句只是为了演示，你需要根据实际情况来调用适当的命令来创建规则。
 
+您可以使用 `jq` 命令行 JSON 处理器来从 JSON 文件中过滤和提取所需的信息,然后使用这些信息创建 DNS 响应策略规则。以下是一个示例:
+
+```bash
+# 导入 DNS 响应策略规则 JSON 文件
+jq -c '.[]' dns_response_policy_rules.json | while read -r rule; do
+  # 从 JSON 对象中提取关键信息
+  rule_name=$(jq -r '.name' <<< "$rule")
+  rule_description=$(jq -r '.description' <<< "$rule")
+  rule_behavior=$(jq -r '.behavior' <<< "$rule")
+  rule_dns_name=$(jq -r '.dnsName' <<< "$rule")
+  rule_networks=$(jq -r '.networks | join(",")' <<< "$rule")
+
+  # 创建 DNS 响应策略规则
+  gcloud dns-response-policies rules create "$rule_name" \
+    --description="$rule_description" \
+    --behavior="$rule_behavior" \
+    --dns-name="$rule_dns_name" \
+    --networks="$rule_networks"
+
+  echo "Created rule: $rule_name"
+done
+```
+
+在上面的示例中,我们首先使用 `jq -c '.[]'` 将 JSON 文件中的每个对象作为单独的行输出。然后,我们使用一个 `while` 循环来遍历这些对象。
+
+对于每个对象,我们使用 `jq` 提取所需的字段值,例如 `.name`、`.description`、`.behavior`、`.dnsName` 和 `.networks`。
+
+提取了所需信息后,我们使用 `gcloud` 命令创建相应的 DNS 响应策略规则。
+
+使用 `jq`的一个优点是,您可以使用其强大的过滤和转换功能来处理复杂的 JSON 结构。例如,如果 `networks` 字段是一个数组,您可以使用 `join(",")` 将其转换为逗号分隔的字符串。
+
+注意,上面的示例假设您已经安装并配置了 `jq` 和 `gcloud` 工具。您可能还需要进行身份验证和其他设置,以便成功执行 `gcloud` 命令。
+
