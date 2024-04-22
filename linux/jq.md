@@ -469,3 +469,267 @@ This will output:
 ```
 These are just a few examples of the many powerful things you can do with `jq`. I hope this helps!
 
+
+Here are some examples of more advanced usage of `jq`:
+
+### **Recursive Descent**
+
+Suppose you have a JSON file `data.json` containing a nested object:
+```json
+{
+  "name": "John",
+  "address": {
+    "street": "123 Main St",
+    "city": "Anytown",
+    "state": "CA",
+    "zip": "12345"
+  },
+  "friends": [
+    {
+      "name": "Jane",
+      "age": 25
+    },
+    {
+      "name": "Bob",
+      "age": 30
+    }
+  ]
+}
+```
+You can use `jq` to recursively traverse the object and extract specific values:
+```bash
+jq '.. | .name?' data.json
+```
+This will output:
+```
+"John"
+"Jane"
+"Bob"
+```
+The `..` syntax tells `jq` to recursively traverse the object, and the `.name?` syntax extracts the value of the `name` property if it exists.
+
+### **Aggregating Data**
+
+Suppose you have a JSON file `data.json` containing an array of objects:
+```json
+[
+  {
+    "name": "John",
+    "age": 30
+  },
+  {
+    "name": "Jane",
+    "age": 25
+  },
+  {
+    "name": "Bob",
+    "age": 40
+  }
+]
+```
+You can use `jq` to calculate the average age:
+```bash
+jq 'add | . / length' data.json
+```
+This will output:
+```
+31.666666666666668
+```
+The `add` function sums up the values, and the `length` function returns the length of the array. The `/` operator performs division.
+
+### **Grouping and Sorting**
+
+Suppose you have a JSON file `data.json` containing an array of objects:
+```json
+[
+  {
+    "name": "John",
+    "department": "Sales",
+    "salary": 50000
+  },
+  {
+    "name": "Jane",
+    "department": "Marketing",
+    "salary": 60000
+  },
+  {
+    "name": "Bob",
+    "department": "Sales",
+    "salary": 70000
+  }
+]
+```
+You can use `jq` to group the data by department and calculate the total salary for each department:
+```bash
+jq 'group_by(.department) | .[] | { department: .[0].department, total_salary: (map(.salary) | add) }' data.json
+```
+This will output:
+```json
+[
+  {
+    "department": "Marketing",
+    "total_salary": 60000
+  },
+  {
+    "department": "Sales",
+    "total_salary": 120000
+  }
+]
+```
+The `group_by` function groups the data by department, and the `map` function extracts the salaries for each group. The `add` function sums up the salaries.
+
+### **Merging Data**
+
+Suppose you have two JSON files, `data1.json` and `data2.json`, containing arrays of objects:
+```json
+// data1.json
+[
+  {
+    "name": "John",
+    "age": 30
+  },
+  {
+    "name": "Jane",
+    "age": 25
+  }
+]
+
+// data2.json
+[
+  {
+    "name": "John",
+    " occupation": "Developer"
+  },
+  {
+    "name": "Jane",
+    " occupation": "Designer"
+  }
+]
+```
+You can use `jq` to merge the two files based on the `name` property:
+```bash
+jq -s 'map({name, age, occupation}) | group_by(.name) | .[] | { name: .[0].name, age: .[0].age, occupation: .[1].occupation }' data1.json data2.json
+```
+This will output:
+```json
+[
+  {
+    "name": "John",
+    "age": 30,
+    "occupation": "Developer"
+  },
+  {
+    "name": "Jane",
+    "age": 25,
+    "occupation": "Designer"
+  }
+]
+```
+The `-s` option tells `jq` to read the input files sequentially, and the `group_by` function merges the data based on the `name` property.
+
+These are just a few examples of the many advanced things you can do with `jq`. I hope this helps!
+
+
+`jq` 是一个轻量级且强大的命令行JSON处理器，它允许你通过编写类似于域名的查询语法来处理JSON数据。以下是一些使用 `jq` 进行高级过滤的示例：
+
+1. **选择特定字段**：
+   ```bash
+   jq '.fieldName'
+   ```
+
+2. **选择所有字段**：
+   ```bash
+   jq '.'
+   ```
+
+3. **选择多个特定字段**：
+   ```bash
+   jq '.fieldName1, .fieldName2'
+   ```
+
+4. **过滤数组中的对象**：
+   ```bash
+   jq '.arrayField[] | select(.fieldName == "value")'
+   ```
+
+5. **使用正则表达式过滤字段值**：
+   ```bash
+   jq --arg regex '.*your_regex.*' '.arrayField[] | select(.fieldName | test($regex))'
+   ```
+
+6. **获取数组中第一个元素**：
+   ```bash
+   jq '.arrayField[0]'
+   ```
+
+7. **获取数组中最后一个元素**：
+   ```bash
+   jq '.arrayField[-1]'
+   ```
+
+8. **计算数组中元素的数量**：
+   ```bash
+   jq '.arrayField | length'
+   ```
+
+9. **计算数组中满足条件的元素数量**：
+   ```bash
+   jq '.arrayField | length | select(. > 0)'
+   ```
+
+10. **对数组中的元素进行排序**：
+    ```bash
+    jq '.arrayField | sort_by(.fieldName)'
+    ```
+
+11. **对数组中的元素进行逆序**：
+    ```bash
+    jq '.arrayField | reverse'
+    ```
+
+12. **从嵌套的JSON结构中提取信息**：
+    ```bash
+    jq '.parentField[].childField'
+    ```
+
+13. **使用条件表达式**：
+    ```bash
+    jq '.arrayField[] | if .fieldName == "value" then . else empty end'
+    ```
+
+14. **创建新的JSON结构**：
+    ```bash
+    jq '[ .arrayField[] | {newField: .fieldName} ]'
+    ```
+
+15. **合并多个JSON文件**：
+    ```bash
+    jq -s '.[]' file1.json file2.json > merged.json
+    ```
+
+16. **递归查询所有匹配的字段**：
+    ```bash
+    jq 'recurse(.[]; .fieldName?)'
+    ```
+
+17. **使用变量**：
+    ```bash
+    jq --arg name "value" '. | select(.fieldName == $name)'
+    ```
+
+18. **格式化JSON输出**：
+    ```bash
+    jq '.'
+    ```
+
+19. **计算字段的总和**：
+    ```bash
+    jq '.arrayField | add'
+    ```
+
+20. **将JSON对象转换为键值对数组**：
+    ```bash
+    jq 'to_entries | .[] | .key as $k | .value as $v | "\($k): \($v)"'
+    ```
+
+这些示例展示了 `jq` 的一些强大功能，但 `jq` 的能力远不止这些。根据你的具体需求，你可以编写更复杂的查询来处理JSON数据。记得在使用 `jq` 之前，你需要安装它。在大多数Linux发行版中，你可以使用包管理器来安装。

@@ -1,9 +1,12 @@
-# format the output of gcloud dns response-policies rules list command
+- [export json](#export-json)
+- [lex](#lex)
 
-- gcloud dns response-policies rules list --format=json | jq '.[] | {dnsName: .dnsName, kind: "dns#responsePolicyRule", localData: {localDatas: [{kind: "dns#resourceRecordSet", name: .dnsName, rrdatas: [.rrdatas[0]], ttl: 300, type: "A"}]}, ruleName: .ruleName}'
-- gcloud dns response-policies rules create $ruleName --response-policy=$your_response_policy_name --dns-name=$dnsName --local-data=name="$dnsName",type="A",ttl=300,rrdatas="$rrdatas" --project $project_id
+# export json 
+- format the output of gcloud dns response-policies rules list command
+- `gcloud dns response-policies rules list --format=json | jq '.[] | {dnsName: .dnsName, kind: "dns#responsePolicyRule", localData: {localDatas: [{kind: "dns#resourceRecordSet", name: .dnsName, rrdatas: [.rrdatas[0]], ttl: 300, type: "A"}]}, ruleName: .ruleName}'`
+- `gcloud dns response-policies rules create $ruleName --response-policy=$your_response_policy_name --dns-name=$dnsName --local-data=name="$dnsName",type="A",ttl=300,rrdatas="$rrdatas" --project $project_id`
 
-理解了，你想要获取 `gcloud dns response-policies rules list` 命令的 JSON 输出，并将其格式化成你提供的格式。
+想要获取 `gcloud dns response-policies rules list` 命令的 JSON 输出，并将其格式化成你提供的格式。
 
 你可以通过以下方式实现：
 
@@ -18,16 +21,16 @@ gcloud dns response-policies rules list --format=json | jq '.[] | {dnsName: .dns
 
 
 
-# I will verify the DNS record in response policy.
+I will verify the DNS record in response policy.
 
-
+```bash
 #!/bin/bash
 project_id=your_project_id
 response-policy=your_response_policy_name
 
 # I will create a DNS record in response policy.
 # I will create a json file to define the DNS response policy rules.
-```json
+# my json file will contain multiple DNS records
 cat << EOF > dns-responsePolicyRule.json 
 
 [
@@ -70,14 +73,16 @@ cat << EOF > dns-responsePolicyRule.json
 ]
 EOF
 ```
-```bash
-cat dns-responsePolicyRule.json | jq -r '.[] | .dnsName + " " + .ruleName + " " + .localData.localDatas[0].rrdatas[0]'
 
+- or 
+  - `cat dns-responsePolicyRule.json | jq -r '.[] | .dnsName + " " + .ruleName + " " + .localData.localDatas[0].rrdatas[0]'`
+
+```bash
 the result:
 auths.env-region.baidu.com. auths 100.68.76.42
 auths.env-region.baidu.com. lex 100.68.76.43
-
-
+```
+- explain what the code is doing
 所提供的代码是一个使用 cat 和 jq 这两个实用程序的 shell 命令。cat 是一个标准的 Unix 实用程序，
 它按顺序读取文件并将其写入标准输出。在本例中，它被用来读取 dns-responsePolicyRule.json 文件的内容。
 cat 命令的输出随后被管道 (|) 送入 jq，这是一个轻量级、灵活的命令行 JSON 处理器。如果没有这个选项，jq 的输出将用引号括起来，
@@ -87,13 +92,16 @@ cat 命令的输出随后被管道 (|) 送入 jq，这是一个轻量级、灵�
 它从每个 JSON 对象的 localData 字段中获取 dnsName、ruleName 和第一个 localDatas 中的第一个 rrdatas，然后用空格将它们连接起来。
 
 
+- or
+- `cat add-responsepolicy.md | jq -r '.[] | "\(.dnsName) \(.ruleName) \(.localData.localDatas[].rrdatas[0])"'`
 
-cat add-responsepolicy.md | jq -r '.[] | "\(.dnsName) \(.ruleName) \(.localData.localDatas[].rrdatas[0])"'
+```bash
 auths.env-region.baidu.com. auths 100.68.76.42
 auths.env-region.baidu.com. lex 100.68.76.43
+```
 然后就可以用这些数据去创建dns response policies了。
 
-
+- explian what the code is doing:
 主要用到了jq的以下特性:
 
 .[] 遍历数组中的每个元素
@@ -103,7 +111,6 @@ auths.env-region.baidu.com. lex 100.68.76.43
 .localData.localDatas[].rrdatas[0] 访问每个localData中的第一个localDatas的第一个rrdatas
 这样可以方便的获取需要的数据进行后续处理。
 
-```
 - 上面的逻辑处理
 ```bash
 #!/bin/bash
@@ -116,11 +123,12 @@ cat dns-responsePolicyRule.json | jq -r '.[] | .dnsName + " " + .ruleName + " " 
 done
 ```
 
-# I will filter the json file to get the dnsName and ruleName and rrdatas.
+ I will filter the json file to get the dnsName and ruleName and rrdatas.
 
-# The output will be:
+ The output will be:
 cat dns-responsePolicyRule.json |jq '.[] | {ruleName, dnsName, rrdatas: .localData.localDatas[].rrdatas[]}'
-# the output will be:
+ the output will be:
+```json
 {
   "ruleName": "auths",
   "dnsName": "auths.env-region.baidu.com.",
@@ -131,16 +139,16 @@ cat dns-responsePolicyRule.json |jq '.[] | {ruleName, dnsName, rrdatas: .localDa
   "dnsName": "auths.env-region.baidu.com.",
   "rrdatas": "100.68.76.43"
 }
+```
+ I will use the above output to create a DNS record in response policy.
+ `gcloud dns response-policies create my-response-policy --description "my response policy"`
 
-# I will use the above output to create a DNS record in response policy.
-# gcloud dns response-policies create my-response-policy --description "my response policy"
+`gcloud dns response-policies rules create $ruleName --response-policy=$your_response_policy_name --dns-name=$dnsName --local-data=name="$dnsName",type="A",ttl=300,rrdatas="$rrdatas" --project $project_id`
 
-gcloud dns response-policies rules create $ruleName --response-policy=$your_response_policy_name --dns-name=$dnsName --local-data=name="$dnsName",type="A",ttl=300,rrdatas="$rrdatas" --project $project_id
+ I will verify the DNS record in response policy.
+`gcloud dns response-policies rules list --response-policy=$your_response_policy_name --project $project_id`
 
-# I will verify the DNS record in response policy.
-gcloud dns response-policies rules list --response-policy=$your_response_policy_name --project $project_id
-
-
+```bash
 #!/bin/bash
 your_response_policy_name=lex-policy-name
 project_id=my-project
@@ -154,9 +162,9 @@ cat dns-responsePolicyRule.json | jq -r '.[] | "gcloud dns response-policies rul
   echo "Executing command: $cmd"
   #eval "$cmd"
 done
-
-the shell script running 
 ```
+- the shell script running result
+```bash
 lex-policy-name
 my-project
 Executing command: gcloud dns response-policies rules create auths --response-policy=lex-policy-name --dns-name=auths.env-region.baidu.com. --local-data=name="auths.env-region.baidu.com.",type="A",ttl=300,rrdatas="100.68.76.42" --project my-project
