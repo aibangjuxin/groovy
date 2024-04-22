@@ -311,3 +311,161 @@ https://hf.co/chat/r/xTZajsN
 
 总结来说，`jq -r '.[]'` 直接操作 JSON 根数组，而 `jq -r '.items[]'` 则是操作 JSON 对象中名为 `items` 的数组。选择使用哪一个取决于你的 JSON 数据的结构和你需要遍历的数据部分。
 
+Here are some examples of more advanced usage of `jq`:
+
+**Filtering and Transforming Data**
+
+Suppose you have a JSON file `data.json` containing a list of users:
+```json
+[
+  {
+    "name": "John",
+    "age": 30,
+    " occupation": "Developer"
+  },
+  {
+    "name": "Jane",
+    "age": 25,
+    "occupation": "Designer"
+  },
+  {
+    "name": "Bob",
+    "age": 40,
+    "occupation": "Manager"
+  }
+]
+```
+You can use `jq` to filter the data to only include users above a certain age:
+```bash
+jq '.[] | select(.age > 30)' data.json
+```
+This will output:
+```json
+[
+  {
+    "name": "Bob",
+    "age": 40,
+    "occupation": "Manager"
+  }
+]
+```
+You can also transform the data by using the `map` function:
+```bash
+jq '.[] | { name, age: .age + 1 }' data.json
+```
+This will output:
+```json
+[
+  {
+    "name": "John",
+    "age": 31
+  },
+  {
+    "name": "Jane",
+    "age": 26
+  },
+  {
+    "name": "Bob",
+    "age": 41
+  }
+]
+```
+**Merging and Updating Data**
+
+Suppose you have two JSON files, `data1.json` and `data2.json`, containing user data:
+```json
+// data1.json
+[
+  {
+    "name": "John",
+    "age": 30
+  }
+]
+
+// data2.json
+[
+  {
+    "name": "Jane",
+    "age": 25
+  }
+]
+```
+You can use `jq` to merge the two files:
+```bash
+jq -s '.[]' data1.json data2.json
+```
+This will output:
+```json
+[
+  {
+    "name": "John",
+    "age": 30
+  },
+  {
+    "name": "Jane",
+    "age": 25
+  }
+]
+```
+You can also update the data by using the `map` function:
+```bash
+jq '.[] | { name, age: (.age + 1) }' data1.json
+```
+This will output:
+```json
+[
+  {
+    "name": "John",
+    "age": 31
+  }
+]
+```
+**Working with Arrays and Objects**
+
+Suppose you have a JSON file `data.json` containing an array of objects:
+```json
+[
+  {
+    "name": "John",
+    "skills": ["javascript", "html", "css"]
+  },
+  {
+    "name": "Jane",
+    "skills": ["python", "java", "c++"]
+  }
+]
+```
+You can use `jq` to extract the skills from each object:
+```bash
+jq '.[] | .skills[]' data.json
+```
+This will output:
+```json
+[
+  "javascript",
+  "html",
+  "css",
+  "python",
+  "java",
+  "c++"
+]
+```
+You can also use `jq` to create a new object with a new property:
+```bash
+jq '.[] | { name, newProperty: "new value" }' data.json
+```
+This will output:
+```json
+[
+  {
+    "name": "John",
+    "newProperty": "new value"
+  },
+  {
+    "name": "Jane",
+    "newProperty": "new value"
+  }
+]
+```
+These are just a few examples of the many powerful things you can do with `jq`. I hope this helps!
+
