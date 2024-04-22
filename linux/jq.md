@@ -256,3 +256,58 @@ This will output:
 I hope these examples help you get started with using jq to filter and manipulate JSON data!
 
 https://hf.co/chat/r/xTZajsN
+
+`jq` 是一个用于解析和转换 JSON 数据的命令行工具。在 `jq` 的表达式中，`.` 表示当前 JSON 对象，而方括号 `[]` 表示对数组中的每个元素进行迭代。不同的表达式会根据它们所包含的路径和迭代器产生不同的结果。
+
+让我们对比一下 `jq -r '.[]'` 和 `jq -r '.items[]'` 的区别：
+
+1. **`jq -r '.[]'**`:
+   - 这个表达式用于遍历 JSON 对象的根数组中的所有元素。
+   - 如果 JSON 对象是一个数组，那么 `jq` 将输出数组中的每个元素。
+   - 输出格式是原始字符串，没有引号。
+
+   假设我们有一个如下的 JSON 文件 `data.json`:
+
+   ```json
+   [
+     {"name": "Alice", "age": 25},
+     {"name": "Bob", "age": 30}
+   ]
+   ```
+
+   运行 `jq -r '.[]' data.json` 将输出：
+
+   ```json
+   {"name": "Alice", "age": 25}
+   {"name": "Bob", "age": 30}
+   ```
+
+   每个对象都是原始的 JSON 字符串格式。
+
+2. **`jq -r '.items[]'**`:
+   - 这个表达式用于遍历 JSON 对象中 `items` 键对应的数组中的所有元素。
+   - 它假定 JSON 对象有一个键名为 `items` 的数组，并且你想要遍历这个数组。
+   - 输出格式同样是原始字符串。
+
+   假设我们有如下的 JSON 文件 `data.json`:
+
+   ```json
+   {
+     "items": [
+       {"name": "Alice", "age": 25},
+       {"name": "Bob", "age": 30}
+     ]
+   }
+   ```
+
+   运行 `jq -r '.items[]' data.json` 将输出：
+
+   ```json
+   {"name": "Alice", "age": 25}
+   {"name": "Bob", "age": 30}
+   ```
+
+   这与 `jq -r '.[]'` 的输出相同，但前提是 JSON 对象的结构必须有一个 `items` 键，且这个键对应一个数组。
+
+总结来说，`jq -r '.[]'` 直接操作 JSON 根数组，而 `jq -r '.items[]'` 则是操作 JSON 对象中名为 `items` 的数组。选择使用哪一个取决于你的 JSON 数据的结构和你需要遍历的数据部分。
+
