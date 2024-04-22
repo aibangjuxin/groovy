@@ -101,3 +101,60 @@ done
 
 注意,上面的示例假设您已经安装并配置了 `jq` 和 `gcloud` 工具。您可能还需要进行身份验证和其他设置,以便成功执行 `gcloud` 命令。
 
+
+好的,以下是一个示例 JSON 文件,模拟了从 GCP 导出 DNS 响应策略规则时的格式:
+
+```json
+[
+  {
+    "name": "example-rule-1",
+    "description": "Block malicious domains",
+    "behavior": "bypass",
+    "dnsName": "*.example.com",
+    "networks": [
+      "10.0.0.0/8"
+    ]
+  },
+  {
+    "name": "example-rule-2",
+    "description": "Override DNS for internal domains",
+    "behavior": "override",
+    "dnsName": "internal.example.com",
+    "networks": [
+      "192.168.0.0/16",
+      "172.16.0.0/12"
+    ]
+  },
+  {
+    "name": "example-rule-3",
+    "description": "Redirect queries to alternate DNS server",
+    "behavior": "redirect",
+    "dnsName": "mydomain.com",
+    "networks": [
+      "0.0.0.0/0"
+    ],
+    "redirectTo": {
+      "targetIP": "1.2.3.4",
+      "targetPort": 53
+    }
+  }
+]
+```
+
+在这个示例中,我们有三个 DNS 响应策略规则:
+
+1. `example-rule-1` 绕过对 `*.example.com` 域名的 DNS 查询,适用于 `10.0.0.0/8` 网络范围。
+2. `example-rule-2` 覆盖对 `internal.example.com` 域名的 DNS 查询,适用于 `192.168.0.0/16` 和 `172.16.0.0/12` 网络范围。
+3. `example-rule-3` 将对 `mydomain.com` 域名的 DNS 查询重定向到 IP 地址 `1.2.3.4` 和端口 `53`。这个规则适用于所有网络 (`0.0.0.0/0`)。
+
+每个规则对象包含以下字段:
+
+- `name`: 规则的名称。
+- `description`: 规则的描述。
+- `behavior`: 规则的行为,可以是 `bypass`、`override` 或 `redirect`。
+- `dnsName`: 应用该规则的 DNS 域名或域名模式。
+- `networks`: 一个字符串数组,指定应用该规则的网络范围。
+- `redirectTo` (可选): 如果行为是 `redirect`,则包含重定向的目标 IP 地址和端口。
+
+您可以根据需要修改此示例文件,以匹配您从 GCP 导出的实际 DNS 响应策略规则数据。
+
