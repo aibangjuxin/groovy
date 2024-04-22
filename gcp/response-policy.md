@@ -86,6 +86,23 @@ cat 命令的输出随后被管道 (|) 送入 jq，这是一个轻量级、灵�
 - .[]从输入中获取一个 JSON 对象数组，并依次输出每个对象。- .dnsName + " " + .ruleName + " " + .localData.localDatas[0].rrdatas[0] 为每个 JSON 对象构建一个字符串。
 它从每个 JSON 对象的 localData 字段中获取 dnsName、ruleName 和第一个 localDatas 中的第一个 rrdatas，然后用空格将它们连接起来。
 
+
+
+cat add-responsepolicy.md | jq -r '.[] | "\(.dnsName) \(.ruleName) \(.localData.localDatas[].rrdatas[0])"'
+auths.env-region.baidu.com. auths 100.68.76.42
+auths.env-region.baidu.com. lex 100.68.76.43
+然后就可以用这些数据去创建dns response policies了。
+
+
+主要用到了jq的以下特性:
+
+.[] 遍历数组中的每个元素
+\() 引用和转义输出的值
+.dnsName 访问每个元素的dnsName字段
+.ruleName 访问每个元素的ruleName字段
+.localData.localDatas[].rrdatas[0] 访问每个localData中的第一个localDatas的第一个rrdatas
+这样可以方便的获取需要的数据进行后续处理。
+
 ```
 - 上面的逻辑处理
 ```bash
@@ -173,3 +190,8 @@ Executing command: gcloud dns response-policies rules create lex --response-poli
 9. `echo "Executing command: $cmd"`：这个命令会输出当前要执行的命令，用于显示执行过程。
 
 10. `#eval "$cmd"`：这行是一个注释，被 `#` 符号注释掉了。在原来的脚本中，这行代码被注释掉了，所以并不会执行 jq 输出的命令。
+
+
+
+
+# lex
