@@ -200,6 +200,35 @@ Executing command: gcloud dns response-policies rules create lex --response-poli
 10. `#eval "$cmd"`：这行是一个注释，被 `#` 符号注释掉了。在原来的脚本中，这行代码被注释掉了，所以并不会执行 jq 输出的命令。
 
 
+This line of code is using jq to parse and extract specific fields from the dns-responsePolicyRule.json file to generate gcloud commands to create DNS response policy rules.
+
+Let's break it down:
+
+cat dns-responsePolicyRule.json: This pipes the json file into jq for parsing
+
+jq -r '.[]': This iterates over each object in the array in the json file
+
+\(.ruleName) : This extracts the ruleName field of each object
+
+\(.dnsName) : This extracts the dnsName field of each object
+
+\(.localData.localDatas[].rrdatas[]) : This extracts the first rrdatas IP address from the nested localDatas array
+
+The extracted values are then interpolated into a gcloud dns command using string interpolation:
+
+"gcloud dns response-policies rules create \(.ruleName) --response-policy='$your_response_policy_name' --dns-name=\(.dnsName) --local-data=name=\"\(.dnsName)\",type=\"A\",ttl=300,rrdatas=\"\(.localData.localDatas[].rrdatas[])\" --project '$project_id'"
+
+
+
+This generates a gcloud command for each object, using the extracted fields as parameters.
+
+The | while read -r cmd; do then loops through each generated command and executes it.
+
+So in summary, it's using jq to parse the json and extract the necessary fields to generate gcloud commands dynamically for
+
+
+
+
 
 
 # lex
