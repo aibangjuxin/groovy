@@ -1,8 +1,17 @@
+# what is json file 
+A JSON file is a file that contains JavaScript Object Notation (JSON
+
+JavaScript 对象表示法来表示数据。
+在 JSON 中,数据以键值对的形式存储,由以下几个部分构成
+
+
+
 `jq` is a powerful command-line JSON processor that allows you to parse, filter, and manipulate JSON data. Here are some examples to get you started:
 
 **Example 1: Filtering JSON data**
 
 Suppose we have a JSON file `data.json` with the following content:
+对象(Object) 对象用一对大括号{}括起来,里面包含一个或多个键值对。键和值之间用冒号:分隔,每个键值对之间用逗号,分隔。例如:
 ```json
 [
   {
@@ -21,6 +30,11 @@ Suppose we have a JSON file `data.json` with the following content:
     "city": "Paris"
   }
 ]
+```
+数组(Array)
+数组用一对方括号[]括起来,里面包含一个或多个值,值之间用逗号,分隔。例如
+```json
+["apple", "banana", "orange"]
 ```
 We can use `jq` to filter out only the objects with `age` greater than 30:
 ```bash
