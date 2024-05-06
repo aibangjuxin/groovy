@@ -232,7 +232,7 @@ Reading package lists... Done
 - how to fix the vulnerabilities
 
 
-## gogole 
+## google 
 
 You're right, the `ubuntu:20.04` image might contain vulnerabilities. Here's how to address them:
 
