@@ -355,3 +355,27 @@ subnetwork: subnet
 zone: asia-east1
 ```
 export https_proxy=http://127.0.0.1:59772 http_proxy=http://127.0.0.1:59772 all_proxy=socks5://127.0.0.1:59772
+
+# ingress
+```yaml 
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: internal-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce-internal"
+    kubernetes.io/ingress.regional-static-ip-name: gce-ingress
+  namespace: default
+spec:
+  rules:
+  - host: nginx.internal.com
+    http:
+      paths:
+      - backend:
+          service:
+            name: nginx
+            port:
+              number: 8080
+        path: /
+        pathType: Prefix
+``` 
