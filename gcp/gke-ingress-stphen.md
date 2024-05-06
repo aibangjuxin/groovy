@@ -1,4 +1,6 @@
 
+# about proxy-only-subnet
+```
 在 Google Cloud Platform (GCP) 中，proxy-only-subnet 是用于 Google Cloud Load Balancer 的一种特殊的子网设置。当您在 GCP 中使用 Google Cloud Load Balancer（特别是 HTTP(S) Load Balancer）时，此类子网被用来承载负载均衡器的前端配置。
 
 proxy-only-subnet 的作用
@@ -14,26 +16,27 @@ proxy-only-subnet 通常是由 Google 自动管理的。当您创建一个全局
 
 结论
 proxy-only-subnet 在 GCP 的负载均衡策略中扮演着关键角色，主要用于管理和优化全球的入站互联网流量。这种设置简化了用户的负载均衡配置过程，因为它抽象出了一些底层的网络配置细节，使用户可以更专注于应用级别的负载均衡需求。
+```
+- dns
+`gcloud dns managed-zones list --format='table(dnsName, creationTime:sort=1, name, privateVisibilityConfig.networks.networkUrl.basename(), visibility)'`
 
-
-gcloud dns managed-zones list --format='table(dnsName, creationTime:sort=1, name, privateVisibilityConfig.networks.networkUrl.basename(), visibility)'
-
-
-
-gcloud container clusters list
+- jiqun list
+```
+gcloud container jiquns list
 NAME             LOCATION    MASTER_VERSION      MASTER_IP   MACHINE_TYPE   NODE_VERSION        NUM_NODES  STATUS
-private-cluster  asia-east1  1.28.7-gke.1026000  172.16.0.2  n1-standard-1  1.28.7-gke.1026000  3          RUNNING
+private-jiqun  asia-east1  1.28.7-gke.1026000  172.16.0.2  n1-standard-1  1.28.7-gke.1026000  3          RUNNING
+```
 
+- get-credentials
 
-
-
-gcloud container clusters get-credentials private-cluster --region asia-east1 --project aibang-hour-115803
-
+`gcloud container jiquns get-credentials private-jiqun --region asia-east1 --project aibang-hour-115803`
+- step
+```
  lex@Lexs-MacBook-Pro  ~/shell 
  ✔  6944  18:38:14
-gcloud container clusters get-credentials private-cluster --region asia-east1 --project aibang-hour-115803
-Fetching cluster endpoint and auth data.
-kubeconfig entry generated for private-cluster.
+gcloud container jiquns get-credentials private-jiqun --region asia-east1 --project aibang-hour-115803
+Fetching jiqun endpoint and auth data.
+kubeconfig entry generated for private-jiqun.
  lex@Lexs-MacBook-Pro  ~/shell 
  ✔  6945  18:38:17
 export https_proxy=http://34.80.135.183:3128
@@ -48,10 +51,10 @@ gmp-system           Active   7h29m
 kube-node-lease      Active   7h30m
 kube-public          Active   7h30m
 kube-system          Active   7h30m
+```
 
-
-
-
+- get dep,svc,ingress,pod
+```
 kubectl get deployment,svc,ingress,pod
 NAME                                         CLASS          HOSTS                ADDRESS        PORTS   AGE
 ingress.networking.k8s.io/internal-ingress   gce-internal   nginx.internal.com   192.168.64.9   80      7h6m
@@ -85,8 +88,9 @@ Events:
   Type    Reason  Age                    From                     Message
   ----    ------  ----                   ----                     -------
   Normal  Sync    9m4s (x50 over 7h12m)  loadbalancer-controller  Scheduled for sync
-
-  gcloud compute networks subnets list
+```
+-  `gcloud compute networks subnets list`
+```
 NAME               REGION                   NETWORK      RANGE            STACK_TYPE  IPV6_ACCESS_TYPE  INTERNAL_IPV6_PREFIX  EXTERNAL_IPV6_PREFIX
 default            us-central1              default      10.128.0.0/20    IPV4_ONLY
 default            europe-west1             default      10.132.0.0/20    IPV4_ONLY
@@ -142,16 +146,17 @@ purpose: PRIVATE
 region: https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/regions/asia-east1
 secondaryIpRanges:
 - ipCidrRange: 10.165.224.0/20
-  rangeName: gke-private-cluster-services-9c085749
-  reservedInternalRange: https://networkconnectivity.googleapis.com/v1/projects/aibang-hour-115803/locations/global/internalRanges/gke-private-cluster-services-9c085749
+  rangeName: gke-private-jiqun-services-9c085749
+  reservedInternalRange: https://networkconnectivity.googleapis.com/v1/projects/aibang-hour-115803/locations/global/internalRanges/gke-private-jiqun-services-9c085749
 - ipCidrRange: 10.236.0.0/14
-  rangeName: gke-private-cluster-pods-9c085749
-  reservedInternalRange: https://networkconnectivity.googleapis.com/v1/projects/aibang-hour-115803/locations/global/internalRanges/gke-private-cluster-pods-9c085749
+  rangeName: gke-private-jiqun-pods-9c085749
+  reservedInternalRange: https://networkconnectivity.googleapis.com/v1/projects/aibang-hour-115803/locations/global/internalRanges/gke-private-jiqun-pods-9c085749
 selfLink: https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/regions/asia-east1/subnetworks/subnet
 stackType: IPV4_ONLY
 
-
-kubectl describe svc nginx
+```
+- `kubectl describe svc nginx`
+```
 kubectl get svc
 NAME         TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 kubernetes   ClusterIP   10.165.224.1     <none>        443/TCP    7h56m
@@ -176,15 +181,16 @@ TargetPort:        80/TCP
 Endpoints:         10.236.0.4:80,10.236.1.4:80,10.236.2.17:80
 Session Affinity:  None
 Events:            <none>
-
-gcloud container clusters list
+```
+- `gcloud container jiquns list`
+```
 NAME             LOCATION    MASTER_VERSION      MASTER_IP   MACHINE_TYPE   NODE_VERSION        NUM_NODES  STATUS
-private-cluster  asia-east1  1.28.7-gke.1026000  172.16.0.2  n1-standard-1  1.28.7-gke.1026000  3          RUNNING
+private-jiqun  asia-east1  1.28.7-gke.1026000  172.16.0.2  n1-standard-1  1.28.7-gke.1026000  3          RUNNING
+```
 
-
-
-
-gcloud container clusters describe private-cluster --region asia-east1 --project aibang-hour-115803
+- describe
+```
+gcloud container jiquns describe private-jiqun --region asia-east1 --project aibang-hour-115803
 addonsConfig:
   gcePersistentDiskCsiDriverConfig:
     enabled: true
@@ -196,7 +202,7 @@ autopilot: {}
 autoscaling:
   autoscalingProfile: BALANCED
 binaryAuthorization: {}
-clusterIpv4Cidr: 10.236.0.0/14
+jiqunIpv4Cidr: 10.236.0.0/14
 createTime: '2024-05-03T03:02:39+00:00'
 currentMasterVersion: 1.28.7-gke.1026000
 currentNodeCount: 3
@@ -207,24 +213,24 @@ defaultMaxPodsConstraint:
   maxPodsPerNode: '110'
 endpoint: 172.16.0.2
 enterpriseConfig:
-  clusterTier: STANDARD
+  jiqunTier: STANDARD
 etag: a7b45cf3-843e-4715-be81-2637c2436e76
 id: 9c0857494e604b3ba2efd45e9d430434006f5963f2a44580a7e2b138677e0cf6
 initialClusterVersion: 1.28.7-gke.1026000
 initialNodeCount: 1
 instanceGroupUrls:
-- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-c/instanceGroupManagers/gke-private-cluster-private-cluster-n-9e185159-grp
-- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-a/instanceGroupManagers/gke-private-cluster-private-cluster-n-609dd1e3-grp
-- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-b/instanceGroupManagers/gke-private-cluster-private-cluster-n-98adc73f-grp
+- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-c/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-9e185159-grp
+- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-a/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-609dd1e3-grp
+- https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-b/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-98adc73f-grp
 ipAllocationPolicy:
-  clusterIpv4Cidr: 10.236.0.0/14
-  clusterIpv4CidrBlock: 10.236.0.0/14
-  clusterSecondaryRangeName: gke-private-cluster-pods-9c085749
+  jiqunIpv4Cidr: 10.236.0.0/14
+  jiqunIpv4CidrBlock: 10.236.0.0/14
+  jiqunSecondaryRangeName: gke-private-jiqun-pods-9c085749
   defaultPodIpv4RangeUtilization: 0.0029
   podCidrOverprovisionConfig: {}
   servicesIpv4Cidr: 10.165.224.0/20
   servicesIpv4CidrBlock: 10.165.224.0/20
-  servicesSecondaryRangeName: gke-private-cluster-services-9c085749
+  servicesSecondaryRangeName: gke-private-jiqun-services-9c085749
   stackType: IPV4
   useIpAliases: true
 labelFingerprint: a9dc16a7
@@ -243,7 +249,7 @@ loggingService: logging.googleapis.com/kubernetes
 maintenancePolicy:
   resourceVersion: e3b0c442
 masterAuth:
-  clusterCaCertificate: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVMRENDQXBTZ0F3SUJBZ0lRUGtxTGVhVmRjZHUrUlljeE92RTIxREFOQmdrcWhraUc5dzBCQVFzRkFEQXYKTVMwd0t3WURWUVFERXlRM1pqUTJOemcxTmkwME5tTXpMVFE0WXpRdE9UZ3hZaTAzTXpoaVptTTFPVEk1TVRBdwpJQmNOTWpRd05UQXpNREl3TWpNNVdoZ1BNakExTkRBME1qWXdNekF5TXpsYU1DOHhMVEFyQmdOVkJBTVRKRGRtCk5EWTNPRFUyTFRRMll6TXRORGhqTkMwNU9ERmlMVGN6T0dKbVl6VTVNamt4TURDQ0FhSXdEUVlKS29aSWh2Y04KQVFFQkJRQURnZ0dQQURDQ0FZb0NnZ0dCQUw2emZOOHE0d29jT21XK0dGQUtmZGg5QkEzV3FvYlI3aGh4Q2JDZApKNUlRZVhUczNpVC9jK2FnSjl1dzUwYi9la1pudk4wcW5RVGNvZ1grMXFyYjFSeVM4ZGV3aXRNRHNPOTRjb1V0CkFqS2NaWjkwbTJMbVpTcmlYOG1pRHc5bjRqNHNZNnlwN1pRQkNZN1hkUVQ2b0JnZ2Z2TTM3RVhSb3dETGVzZmwKZHJ3UWk0L1h2ZFdsbUF5cFNZZjFUMnFJWDZ4VnZocWprdHBvY3l1YTRpRzJhL0VpODdGREplMCtEejhGTmNveQpmbi9Ka3M4VTJuOSt5NUF6V2tTRHJWYk9mdG0wVHNyck84bTYyT3U3cDRhbFZEU04wSmcwRjFYQnhPS0haQ2l5Cjh0RFRFM2trcjQ4aytSM1dsY2M4a1lQWDFoV1NIRkFWVmVyT040Qy94Ynp4dUJ1ZUQ3Zm10enl5SnYzZW1VbC8KbG9mVWNiNkQzbmNkaEFjd1BscSs3cW9qUmtyOHhHeEFqYWlCbHc0M0VuNS9SdElVcGNnUzhrUHJ2THRSYllPQgpGSTBYRC9MZUpkWmVqV1Vvdit1SHBUZFNlWDRtRzU3MzdzKzFmcElaOENqM21oSzRWWjN3djVaQmFUQUpyZ00wCnZwbDdobjdoU25iNkZpQzVPK1ZFUXNncnN3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQWdRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVhUm1GWS8rV09HZzMzV203YVJIcHh3RWxoWU13RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dHQkFBaXFyZDEzTnlDbE1ENXB5NHlzMFhyN2JLeW85VFlSTFZmRElCSlpCelZ1ClRkeG1Ya2hrcTI2OWV6M25MOWpmZkx6UG53SHdhWE5NWGgxTlJwbUFHSmJoRjBabi9ZZ3FKWnZocHVYRE5QRFoKNHFCVjRMVFFtV1pXak5Zb3lGYTFRWVpvNUhaa1BqZEFTclVhQk1tcmgwOFBpS1FDbUN0eXJLeE9VSjFmdC93VgpuaXhCR0ZSYmNxRmFqVjc0UXppekZJVzUyWnUweVczUmpTQVhtcHI1d3k0MmFkNm1jV0szTzM2Y2d4Q01VN1dECjR4M0QxeDNrN0VpOFJDSzNlcE10aDgrUmRKQnp2RXlMQlhIdG9icEpWS2JxMm5YMXgyNjVJNUJEVSttSnNzdzgKSzFQTEFpQlVTc1dremhGbld5ZU8zN3ZTQUJBcTJYSTUwaTUrWm9sUzBVY3BaVGJrcTRwRmliTU5TWUF0T1FERQplRy94MWh1d2x5dDUyZENtZWJvN21lTHhMYU1UbkdjKzQ1aVVaNThYa2VTQnZGelZ6RDNDd2JVaUFTWTBkVkVqCmxaMnJ4UEp0SWc1NXgwM3lsb1Vzb2FXdWxNZTF3WFRwZ3Q1U1lNN3pBMFBIVFpjSEZIYzBwMWtvZnFRRi9xNnYKKzQydEFVcVdNbHhOY2xlRmVvNUxOdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  jiqunCaCertificate: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVMRENDQXBTZ0F3SUJBZ0lRUGtxTGVhVmRjZHUrUlljeE92RTIxREFOQmdrcWhraUc5dzBCQVFzRkFEQXYKTVMwd0t3WURWUVFERXlRM1pqUTJOemcxTmkwME5tTXpMVFE0WXpRdE9UZ3hZaTAzTXpoaVptTTFPVEk1TVRBdwpJQmNOTWpRd05UQXpNREl3TWpNNVdoZ1BNakExTkRBME1qWXdNekF5TXpsYU1DOHhMVEFyQmdOVkJBTVRKRGRtCk5EWTNPRFUyTFRRMll6TXRORGhqTkMwNU9ERmlMVGN6T0dKbVl6VTVNamt4TURDQ0FhSXdEUVlKS29aSWh2Y04KQVFFQkJRQURnZ0dQQURDQ0FZb0NnZ0dCQUw2emZOOHE0d29jT21XK0dGQUtmZGg5QkEzV3FvYlI3aGh4Q2JDZApKNUlRZVhUczNpVC9jK2FnSjl1dzUwYi9la1pudk4wcW5RVGNvZ1grMXFyYjFSeVM4ZGV3aXRNRHNPOTRjb1V0CkFqS2NaWjkwbTJMbVpTcmlYOG1pRHc5bjRqNHNZNnlwN1pRQkNZN1hkUVQ2b0JnZ2Z2TTM3RVhSb3dETGVzZmwKZHJ3UWk0L1h2ZFdsbUF5cFNZZjFUMnFJWDZ4VnZocWprdHBvY3l1YTRpRzJhL0VpODdGREplMCtEejhGTmNveQpmbi9Ka3M4VTJuOSt5NUF6V2tTRHJWYk9mdG0wVHNyck84bTYyT3U3cDRhbFZEU04wSmcwRjFYQnhPS0haQ2l5Cjh0RFRFM2trcjQ4aytSM1dsY2M4a1lQWDFoV1NIRkFWVmVyT040Qy94Ynp4dUJ1ZUQ3Zm10enl5SnYzZW1VbC8KbG9mVWNiNkQzbmNkaEFjd1BscSs3cW9qUmtyOHhHeEFqYWlCbHc0M0VuNS9SdElVcGNnUzhrUHJ2THRSYllPQgpGSTBYRC9MZUpkWmVqV1Vvdit1SHBUZFNlWDRtRzU3MzdzKzFmcElaOENqM21oSzRWWjN3djVaQmFUQUpyZ00wCnZwbDdobjdoU25iNkZpQzVPK1ZFUXNncnN3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQWdRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVhUm1GWS8rV09HZzMzV203YVJIcHh3RWxoWU13RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dHQkFBaXFyZDEzTnlDbE1ENXB5NHlzMFhyN2JLeW85VFlSTFZmRElCSlpCelZ1ClRkeG1Ya2hrcTI2OWV6M25MOWpmZkx6UG53SHdhWE5NWGgxTlJwbUFHSmJoRjBabi9ZZ3FKWnZocHVYRE5QRFoKNHFCVjRMVFFtV1pXak5Zb3lGYTFRWVpvNUhaa1BqZEFTclVhQk1tcmgwOFBpS1FDbUN0eXJLeE9VSjFmdC93VgpuaXhCR0ZSYmNxRmFqVjc0UXppekZJVzUyWnUweVczUmpTQVhtcHI1d3k0MmFkNm1jV0szTzM2Y2d4Q01VN1dECjR4M0QxeDNrN0VpOFJDSzNlcE10aDgrUmRKQnp2RXlMQlhIdG9icEpWS2JxMm5YMXgyNjVJNUJEVSttSnNzdzgKSzFQTEFpQlVTc1dremhGbld5ZU8zN3ZTQUJBcTJYSTUwaTUrWm9sUzBVY3BaVGJrcTRwRmliTU5TWUF0T1FERQplRy94MWh1d2x5dDUyZENtZWJvN21lTHhMYU1UbkdjKzQ1aVVaNThYa2VTQnZGelZ6RDNDd2JVaUFTWTBkVkVqCmxaMnJ4UEp0SWc1NXgwM3lsb1Vzb2FXdWxNZTF3WFRwZ3Q1U1lNN3pBMFBIVFpjSEZIYzBwMWtvZnFRRi9xNnYKKzQydEFVcVdNbHhOY2xlRmVvNUxOdz09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
 masterAuthorizedNetworksConfig:
   cidrBlocks:
   - cidrBlock: 10.0.0.0/16
@@ -257,7 +263,7 @@ monitoringConfig:
   managedPrometheusConfig:
     enabled: true
 monitoringService: monitoring.googleapis.com/kubernetes
-name: private-cluster
+name: private-jiqun
 network: gke-network
 networkConfig:
   defaultSnatStatus: {}
@@ -303,9 +309,9 @@ nodePools:
   etag: 6f4a72db-c79b-44b3-a485-3c27ced7bbc7
   initialNodeCount: 1
   instanceGroupUrls:
-  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-c/instanceGroupManagers/gke-private-cluster-private-cluster-n-9e185159-grp
-  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-a/instanceGroupManagers/gke-private-cluster-private-cluster-n-609dd1e3-grp
-  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-b/instanceGroupManagers/gke-private-cluster-private-cluster-n-98adc73f-grp
+  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-c/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-9e185159-grp
+  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-a/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-609dd1e3-grp
+  - https://www.googleapis.com/compute/v1/projects/aibang-hour-115803/zones/asia-east1-b/instanceGroupManagers/gke-private-jiqun-private-jiqun-n-98adc73f-grp
   locations:
   - asia-east1-c
   - asia-east1-a
@@ -315,13 +321,13 @@ nodePools:
     autoUpgrade: true
   maxPodsConstraint:
     maxPodsPerNode: '110'
-  name: private-cluster-node-pool
+  name: private-jiqun-node-pool
   networkConfig:
     podIpv4CidrBlock: 10.236.0.0/14
     podIpv4RangeUtilization: 0.0029
-    podRange: gke-private-cluster-pods-9c085749
+    podRange: gke-private-jiqun-pods-9c085749
   podIpv4CidrSize: 24
-  selfLink: https://container.googleapis.com/v1/projects/aibang-hour-115803/locations/asia-east1/clusters/private-cluster/nodePools/private-cluster-node-pool
+  selfLink: https://container.googleapis.com/v1/projects/aibang-hour-115803/locations/asia-east1/jiquns/private-jiqun/nodePools/private-jiqun-node-pool
   status: RUNNING
   upgradeSettings:
     maxSurge: 1
@@ -341,11 +347,11 @@ releaseChannel:
 securityPostureConfig:
   mode: BASIC
   vulnerabilityMode: VULNERABILITY_MODE_UNSPECIFIED
-selfLink: https://container.googleapis.com/v1/projects/aibang-hour-115803/locations/asia-east1/clusters/private-cluster
+selfLink: https://container.googleapis.com/v1/projects/aibang-hour-115803/locations/asia-east1/jiquns/private-jiqun
 servicesIpv4Cidr: 10.165.224.0/20
 shieldedNodes: {}
 status: RUNNING
 subnetwork: subnet
 zone: asia-east1
-
+```
 export https_proxy=http://127.0.0.1:59772 http_proxy=http://127.0.0.1:59772 all_proxy=socks5://127.0.0.1:59772
