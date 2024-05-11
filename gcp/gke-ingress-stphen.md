@@ -1,5 +1,35 @@
 
+# mermaid
+```mermaid
+graph LR
+A[Component-L4] --> |different port| B[GKE-ingress]
+B --> |load balancer IP| C[Kong DP]
+C --> |jiqun IP| D[Kong RT]
+```
+Nginx-L4、GKE-ingress、Kong DP Service、ingress-service、Kong DP Deployments 和 Kong RT Deployments 之间的关系和数据流向。其中:
+
+Nginx-L4 通过代理端口和 Ingress IP 将流量转发到 GKE-ingress
+GKE-ingress 再将流量转发到 ingress-service
+ingress-service 将流量分发到 Kong DP Deployments
+Kong DP Deployments 与 Kong RT Deployments 相连
+
+另外,Nginx-L4 还直接通过代理端口和负载均衡 IP 将部分流量转发到 Kong DP Service,然后 Kong DP Service 将流量分发到 Kong DP Deployments。
+
+
+```mermaid
+graph LR
+A[Nginx-L4]
+B[GKE-ingress]
+C[Kong DP Service]
+D[ingress-service]
+F[Kong DP Deployments]
+G[Kong RT Deployments]
+A-->|proxy_pass port ingress ip|B-->D-->F-->G
+A-->|proxy_pass port Using loadbalancer IP|C-->F
+```
+
 # about proxy-only-subnet
+
 ```
 在 Google Cloud Platform (GCP) 中，proxy-only-subnet 是用于 Google Cloud Load Balancer 的一种特殊的子网设置。当您在 GCP 中使用 Google Cloud Load Balancer（特别是 HTTP(S) Load Balancer）时，此类子网被用来承载负载均衡器的前端配置。
 
