@@ -318,3 +318,59 @@ Here's how the script works:
 6. It checks if the SVC IPs are in the response policy records. If they are, it outputs them to `preserved_ips.txt`. If not, it outputs them to `deleted_ips.txt`.
 
 Note that you'll need to replace `<ZONE_NAME>` and `<RESPONSE_POLICY_NAME>` with the actual values for your Cloud DNS zone and response policy.
+
+
+Here is a shell script that should accomplish the tasks you outlined:
+```bash
+#!/bin/bash
+
+# Step 1: Export DNS zone records to a file
+gcloud dns record-sets list --zone "your-dns-zone" --format "get(recordSetName)" > dns_zone_records.txt
+
+# Step 2: Get all namespace and service information for LoadBalancer type services
+for namespace in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'); do
+  for svc in $(kubectl get svc -n $namespace -l "type=LoadBalancer" -o jsonpath='{.items[*].metadata.name}'); do
+    svc_ip=$(kubectl get svc $svc -n $namespace -o jsonpath='{.spec.jiqunIP}')
+    echo "$namespace $svc $svc_ip" >> load_balancer_services.txt
+  done
+done
+
+# Step 3: Get all namespace and service information for ClusterIP type services
+for namespace in $(kubectl get namespaces -o jsonpath='{.items[*].metadata.name}'); do
+  for svc in $(kubectl get svc -n $namespace -l "type=ClusterIP" -o jsonpath='{.items[*].metadata.name}'); do
+    svc_ip=$(kubectl get svc $svc -n $namespace -o jsonpath='{.spec.jiqunIP}')
+    echo "$namespace $svc $svc_ip" >> jiqun_ip_services.txt
+  done
+done
+
+# Step 4: Find common IPs between DNS zone records and service IPs
+common_ips=()
+for svc_ip in $(cat load_balancer_services.txt jiqun_ip_services.txt | cut -f3); do
+  if grep -q "$svc_ip" dns_zone_records.txt; then
+    common_ips+=("$svc_ip")
+  fi
+done
+
+# Step 5: Output results to files
+> common_ips.txt
+for svc_ip in "${common_ips[@]}"; do
+  echo "$svc_ip" >> common_ips.txt
+done
+
+> uncommon_ips.txt
+for svc_ip in $(cat load_balancer_services.txt jiqun_ip_services.txt | cut -f3); do
+  if ! [[ " ${common_ips[@]} " =~ " $svc_ip " ]]; then
+    svc_namespace=$(cat load_balancer_services.txt jiqun_ip_services.txt | grep "$svc_ip" | cut -f1)
+    svc_name=$(cat load_balancer_services.txt jiqun_ip_services.txt | grep "$svc_ip" | cut -f2)
+    echo "$svc_namespace $svc_name $svc_ip" >> uncommon_ips.txt
+  fi
+done
+
+# Step 6: Find matching response policies
+> response_policies.txt
+policies=$(kubectl get configmaps -l name=policies -o jsonpath='{.items[*].data.policies}')
+echo "$policies" >> response_policies.txt
+```
+Please replace `your-dns-zone` with the name of your DNS zone.
+
+Note that this script assumes that you have kubectl and gcloud CLI installed and configured to communicate with your Kubernetes jiqun and Cloud DNS.
