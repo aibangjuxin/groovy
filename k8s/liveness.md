@@ -213,6 +213,201 @@ readinessProbe:
 
 通过上述分析，你可以根据实际的应用需求选择合适的探针配置，以达到最佳的稳定性和性能。
 
+In Kubernetes, configuring a readiness probe is crucial for ensuring that a container in a Pod is ready to serve requests. Below is a detailed explanation and analysis of your readiness probe configuration and its usage:
+
+### Basic Concept of Readiness Probe
+
+**Readiness Probe**: Used to check if the container is ready to accept traffic. If one or more containers in a Pod fail the readiness probe, Kubernetes will remove that Pod from the service's load balancer until the probe passes.
+
+### 1. Understanding Default Values
+
+If a readiness probe is not configured in the Deployment, Kubernetes will assume the Pod is always ready, meaning the Pod will be considered ready immediately.
+
+### 2. Example Configuration and Default Values
+
+Here is your provided configuration:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: "/.well_health"
+    port: 8443
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
+
+This configuration is incomplete as it lacks `timeoutSeconds`, `successThreshold`, and `failureThreshold`. According to the official documentation, the default values are:
+
+- `timeoutSeconds`: 1 second
+- `successThreshold`: 1
+- `failureThreshold`: 3
+
+Therefore, your actual configuration would be interpreted as:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: "/.well_health"
+    port: 8443
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 1
+  successThreshold: 1
+  failureThreshold: 3
+```
+
+### 3. Impact of Configuring `timeoutSeconds`
+
+Changing `timeoutSeconds` from the default 1 second to 3 seconds:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: "/.well_health"
+    port: 8443
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+```
+
+#### Potential Impact:
+
+1. **Increased Probe Request Wait Time**: Each HTTP GET request for the probe will wait up to 3 seconds for a response. If no response within 3 seconds, the probe is considered failed.
+2. **Higher Tolerance**: More tolerant to brief network delays or server load spikes, as the probe allows more time for a response.
+3. **Probe Response Delay**: If your application needs more time to be ready, increasing `timeoutSeconds` can prevent unnecessary restarts or the Pod being removed from the service. However, if the probe response should be quick and it exceeds the expected 3 seconds, it may indicate performance issues or bottlenecks in the application.
+4. **Increased Probe Request Overhead**: The longer the probe request and response, the more resources are used, potentially increasing load on the container, especially with frequent probe executions.
+
+### Complete Configuration Example
+
+Here’s a complete example including all default values:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: "/.well_health"
+    port: 8443
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 3
+  successThreshold: 1
+  failureThreshold: 3
+```
+
+### Conclusion
+
+Configuring and understanding the parameters of Kubernetes readiness probes helps ensure your application is ready before receiving traffic and can handle network delays or longer startup times. Properly setting these parameters contributes to the reliability and stability of your service.
+
+### Comparative Analysis
+
+Based on your provided `Deployment` configuration:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: example-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: example
+  template:
+    metadata:
+      labels:
+        app: example
+    spec:
+      containers:
+      - name: example-container
+        image: example-image
+        readinessProbe:
+          httpGet:
+            path: "/.well_health"
+            port: 8443
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+          successThreshold: 1
+```
+
+### Configuration Behavior Analysis
+
+#### Configuration with `timeoutSeconds: 3`
+
+1. **First Probe Check**:
+   - 5 seconds after container start, the first probe check is performed.
+   - The probe waits 3 seconds for a response. If no response within 3 seconds, the probe fails.
+
+2. **Failure Handling**:
+   - The probe runs every 5 seconds. If each probe times out at 3 seconds, each probe fails.
+
+3. **Consecutive Failures**:
+   - If the probe fails 3 times consecutively, the container is marked as not ready.
+   - This means it needs 3 failures, each waiting 3 seconds, plus 5 seconds between each probe.
+
+4. **Time Calculation**:
+   - First failure: Initial delay 5 seconds + first probe timeout 3 seconds = 8 seconds.
+   - Second failure: Wait 5 seconds + second probe timeout 3 seconds = 16 seconds.
+   - Third failure: Wait 5 seconds + third probe timeout 3 seconds = 24 seconds.
+
+**Longest time**: 24 seconds (initial delay 5 seconds + 3 probe failure times).
+
+#### Configuration with `timeoutSeconds: 1`
+
+If `timeoutSeconds` is set to 1 second:
+
+```yaml
+readinessProbe:
+  httpGet:
+    path: "/.well_health"
+    port: 8443
+  initialDelaySeconds: 5
+  periodSeconds: 5
+  timeoutSeconds: 1
+  failureThreshold: 3
+  successThreshold: 1
+```
+
+1. **First Probe Check**:
+   - 5 seconds after container start, the first probe check is performed.
+   - The probe waits 1 second for a response. If no response within 1 second, the probe fails.
+
+2. **Failure Handling**:
+   - The probe runs every 5 seconds. If each probe times out at 1 second, each probe fails.
+
+3. **Consecutive Failures**:
+   - If the probe fails 3 times consecutively, the container is marked as not ready.
+   - This means it needs 3 failures, each waiting 1 second, plus 5 seconds between each probe.
+
+4. **Time Calculation**:
+   - First failure: Initial delay 5 seconds + first probe timeout 1 second = 6 seconds.
+   - Second failure: Wait 5 seconds + second probe timeout 1 second = 12 seconds.
+   - Third failure: Wait 5 seconds + third probe timeout 1 second = 18 seconds.
+
+**Longest time**: 18 seconds (initial delay 5 seconds + 3 probe failure times).
+
+### Comparative Results
+
+- **`timeoutSeconds: 3`**:
+  - Each probe times out in 3 seconds. The longest time for 3 consecutive probe failures is 24 seconds.
+
+- **`timeoutSeconds: 1`**:
+  - Each probe times out in 1 second. The longest time for 3 consecutive probe failures is 18 seconds.
+
+### Impact Analysis
+
+- **Response Time**:
+  - `timeoutSeconds: 3` results in a longer total probe wait time (24 seconds), which is more tolerant to network delays or longer server startup times.
+  - `timeoutSeconds: 1` results in a shorter total probe wait time (18 seconds), which is more efficient under good network conditions but less tolerant to short delays.
+
+- **Resource Usage**:
+  - A longer `timeoutSeconds` increases probe request wait time, potentially increasing system load.
+  - A shorter `timeoutSeconds` quickly detects if the container is not ready, aiding in fast recovery but possibly causing unnecessary restarts.
+
+By analyzing and understanding these parameters, you can choose the appropriate probe configuration to achieve optimal stability and performance based on your application needs.
+
+
+
 ### 回答你提出的问题
 
 1. **默认值的理解**：
