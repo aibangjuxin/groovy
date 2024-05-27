@@ -77,6 +77,19 @@ abj-aibang-is-onboarding-na-accouts-2-0-0-deployment
 3. **找到旧版本**：通过标签选择器找到旧版本（类似`app=abj-aibang-is-onboarding-na-accouts`和特定版本号）。
 4. **删除旧版本**：在新版本健康运行后，删除旧版本及其对应的Service和DNS记录。
 
+编写一个自定义的Kubernetes Operator来管理API版本的部署和删除。
+
+定义CRD（Custom Resource Definition）：
+
+定义一个CRD来描述API版本和对应的删除策略。
+实现Controller：
+
+编写一个Controller来监听新的API版本部署。
+在新的API版本部署成功后，查找并删除旧版本。
+部署Operator：
+
+将Operator部署到Kubernetes集群中，自动处理API版本的管理。
+
 ## 方案三：使用Helm生命周期钩子
 
 如果你使用Helm来管理部署，可以利用Helm的pre-install和post-install钩子。
@@ -707,3 +720,202 @@ pipeline {
 - **日志和提示信息**：在用户确认阶段详细打印出即将被删除的版本信息。
 - **安装权限控制**：你可以在Jenkins中配置权限，确保只有授权用户能够执行这部分Pipeline。
 
+
+
+# hugging
+You have a GKE environment with multiple namespaces, and you want to deploy a new version of an application using a pipeline. You want to retain only two major versions of the application, and automatically delete the older versions.
+
+Here are a few solutions to consider:
+
+**1. Use a deployment strategy with rolling updates**
+
+You can use a deployment strategy like `RollingUpdate` or `BlueGreen` in your pipeline. This will allow you to deploy a new version of the application while keeping the previous version running. Once the new version is confirmed to be working correctly, the old version can be automatically deleted.
+
+For example, you can use `kubectl rollout` to manage the deployment of your application. When you deploy a new version, you can use `kubectl rollout status` to verify that the new version is running correctly, and then use `kubectl rollout undo` to delete the old version.
+
+**2. Use a pipeline with automated cleanup**
+
+You can modify your pipeline to include a step that automatically deletes older versions of the application after a new version has been deployed successfully. This can be done using `kubectl delete` commands to remove the older deployments and their associated services.
+
+For example, you can use a pipeline like this:
+```
+steps:
+  - deploy-new-version:
+      run: kubectl apply -f deployment.yaml -n $NAMESPACE
+  - verify-new-version:
+      run: kubectl rollout status deployment $DEPLOYMENT_NAME -n $NAMESPACE
+  - cleanup-old-versions:
+      run: kubectl delete deployment $OLD_DEPLOYMENT_NAME -n $NAMESPACE
+      run: kubectl delete svc $OLD_SVC_NAME -n $NAMESPACE
+```
+**3. Use a custom script to manage deployments**
+
+You can write a custom script that manages deployments and automatically deletes older versions. This script can be triggered by your pipeline after a new version has been deployed successfully.
+
+For example, you can write a script that uses `kubectl` commands to list all deployments in a namespace, filters out the older versions, and deletes them. You can also use this script to update the DNS records in Cloud DNS.
+
+**4. Use a Kubernetes operator**
+
+You can use a Kubernetes operator like `kustomize` or `helm` to manage deployments and automatically delete older versions. These operators provide a way to define and manage deployments using a declarative configuration file.
+
+For example, you can use `kustomize` to define a deployment configuration file that includes a `cleanup` section that deletes older versions of the application.
+
+**5. Use a CI/CD tool with built-in deployment management**
+
+You can use a CI/CD tool like `Jenkins` or `GitLab CI/CD` that has built-in deployment management features. These tools provide a way to define deployment pipelines that automatically manage deployments and delete older versions.
+
+I hope these solutions help you achieve your goal of automating the deletion of older versions of your application in your GKE environment!
+
+
+
+# perplexity
+在GKE环境中管理API的部署和删除旧版本是一个常见的需求，特别是为了节省资源和保持环境的整洁。以下是几种解决方案，可以帮助你在确保新版本部署成功后删除旧版本：
+
+## 方案一：使用Pipeline自动化
+
+### 步骤：
+1. **部署新版本**：在Pipeline中，首先部署新版本的API。
+2. **验证新版本**：使用健康检查或其他验证机制确保新版本部署成功并且运行正常。
+3. **删除旧版本**：在确认新版本运行正常后，使用`kubectl delete`命令删除旧版本的Deployment和对应的Service。
+
+### 示例Pipeline脚本：
+```yaml
+stages:
+  - name: Deploy New Version
+    script:
+      - kubectl apply -f new-version-deployment.yaml
+      - kubectl rollout status deployment/new-version-deployment
+
+  - name: Verify New Version
+    script:
+      - kubectl get pods -l app=new-version -o jsonpath='{.items[*].status.conditions[?(@.type=="Ready")].status}' | grep True
+
+  - name: Delete Old Version
+    script:
+      - kubectl delete deployment old-version-deployment
+      - kubectl delete svc old-version-service
+```
+
+## 方案二：使用Kubernetes Jobs
+
+### 步骤：
+1. **创建Job**：创建一个Kubernetes Job来执行删除旧版本的任务。
+2. **部署新版本**：在Pipeline中部署新版本。
+3. **触发Job**：在新版本部署成功后，触发Job来删除旧版本。
+
+### 示例Job配置：
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: delete-old-version-job
+spec:
+  template:
+    spec:
+      containers:
+      - name: delete-old-version
+        image: bitnami/kubectl:latest
+        command: ["kubectl", "delete", "deployment", "old-version-deployment"]
+      restartPolicy: Never
+  backoffLimit: 4
+```
+
+## 方案三：使用Kubernetes Operator
+
+### 步骤：
+1. **编写Operator**：编写一个Kubernetes Operator来监控Deployment的状态，并在新版本部署成功后自动删除旧版本。
+2. **部署Operator**：将Operator部署到你的GKE集群中。
+3. **自动管理**：Operator会自动管理Deployment的生命周期，确保旧版本在新版本成功部署后被删除。
+
+### 示例Operator逻辑：
+```python
+from kubernetes import client, config, watch
+
+def delete_old_deployment(api_instance, old_deployment_name, namespace):
+    api_instance.delete_namespaced_deployment(
+        name=old_deployment_name,
+        namespace=namespace,
+        body=client.V1DeleteOptions()
+    )
+
+def main():
+    config.load_kube_config()
+    api_instance = client.AppsV1Api()
+    namespace = 'default'
+    new_deployment_name = 'new-version-deployment'
+    old_deployment_name = 'old-version-deployment'
+
+    w = watch.Watch()
+    for event in w.stream(api_instance.list_namespaced_deployment, namespace=namespace):
+        if event['type'] == 'ADDED' and event['object'].metadata.name == new_deployment_name:
+            delete_old_deployment(api_instance, old_deployment_name, namespace)
+            break
+
+if __name__ == '__main__':
+    main()
+```
+
+## 方案四：手动管理
+
+### 步骤：
+1. **部署新版本**：手动或通过Pipeline部署新版本。
+2. **验证新版本**：手动验证新版本是否运行正常。
+3. **删除旧版本**：手动使用`kubectl delete`命令删除旧版本的Deployment和Service。
+
+### 示例命令：
+```bash
+kubectl apply -f new-version-deployment.yaml
+kubectl rollout status deployment/new-version-deployment
+kubectl delete deployment old-version-deployment
+kubectl delete svc old-version-service
+```
+
+## 方案五：使用Helm
+
+### 步骤：
+1. **使用Helm Chart**：将你的Deployment和Service定义在Helm Chart中。
+2. **升级版本**：使用`helm upgrade`命令升级到新版本。
+3. **清理旧版本**：在Helm Chart的`post-upgrade`钩子中添加清理旧版本的逻辑。
+
+### 示例Helm Chart钩子：
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cleanup-old-version
+  annotations:
+    "helm.sh/hook": post-upgrade
+spec:
+  template:
+    spec:
+      containers:
+      - name: cleanup
+        image: bitnami/kubectl:latest
+        command: ["kubectl", "delete", "deployment", "old-version-deployment"]
+      restartPolicy: Never
+  backoffLimit: 4
+```
+
+通过以上几种方案，你可以根据实际需求选择最适合的方式来确保新版本部署成功后删除旧版本，从而节省资源并保持环境的整洁。
+
+Citations:
+[1] https://zeet.co/blog/kubernetes-deployment-strategy-types
+[2] https://www.baeldung.com/ops/deployment-rollout-kubernetes
+[3] https://spacelift.io/blog/kubernetes-deployment-strategies
+[4] https://spot.io/resources/kubernetes-autoscaling/5-kubernetes-deployment-strategies-roll-out-like-the-pros/
+[5] https://zeet.co/blog/kubernetes-delete-deployment
+[6] https://codefresh.io/learn/kubernetes-deployment/top-6-kubernetes-deployment-strategies-and-how-to-choose/
+[7] https://nicwortel.nl/blog/2020/simple-kubernetes-deployment-versioning
+[8] https://stackoverflow.com/questions/71132679/automating-kubernetes-deployment-using-script
+[9] https://komodor.com/blog/automating-kubernetes-deployments-with-github-actions/
+[10] https://linuxhandbook.com/kubectl-delete-deployment/
+[11] https://earthly.dev/blog/automate-micsvcs-in-k8s/
+[12] https://learn.microsoft.com/en-us/azure/aks/automated-deployments
+[13] https://www.adaptavist.com/blog/kubernetes--automation-and-configuration-explained
+[14] https://kubernetes.io/docs/tutorials/kubernetes-basics/update/update-intro/
+[15] https://wangwei1237.github.io/Kubernetes-in-Action-Second-Edition/docs/Understanding_DNS_records_for_Service_objects.html
+[16] https://stackoverflow.com/questions/47534093/how-to-deploy-new-app-versions-in-kubernetes
+[17] https://spacelift.io/blog/kubectl-delete-deployment
+[18] https://www.digitalocean.com/community/tutorials/an-introduction-to-the-kubernetes-dns-service
+[19] https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+[20] https://kodekloud.com/blog/kubectl-delete-deployment/
