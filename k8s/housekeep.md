@@ -533,3 +533,177 @@ pipeline {
 - **Delete Old Versions**：在用户确认后，删除旧的版本及其相关资源。
 
 这种方式确保你可以在每次新版本部署后，通过人工确认来删除旧版本，防止误删或者因为误操作导致生产环境出现问题。用户确认后删除旧版本可以提高操作的安全性。
+
+
+在CI/CD Pipeline运行过程中确保在用户确认前不会意外删除重要版本的最佳实践包括以下几项：
+
+### 1. **多次确认机制**：增加用户交互，确保有足够的机会确认即将删除的版本。
+
+### 2. **日志和输出清晰**：用清晰的日志和输出格式展示即将删除的版本信息，让用户能够一眼识别保留和删除的版本。
+
+### 3. **明确提示**：在用户确认界面上提供明确的警告和提示信息，确保用户了解操作的影响。
+
+### 4. **备份和恢复策略**：在删除之前做好备份计划，确保可以恢复重要的版本。
+
+### 5. **权限控制**：限制删除操作的权限，仅允许有经验的运维人员或管理员执行删除操作。
+
+下面是改进的Jenkins Pipeline脚本，增强了安全性和用户确认机制：
+
+#### Jenkins Pipeline 示例：
+
+```groovy
+pipeline {
+    agent any
+
+    environment {
+        NAMESPACE = "<your-namespace>"
+        KUBECONFIG = credentials('your-kubeconfig-credential')
+        APP_PREFIX = "abj-aibang-is-onboarding-na-accouts"
+    }
+
+    stages {
+        stage('Deploy New Version') {
+            steps {
+                script {
+                    // 部署新的版本
+                    sh 'kubectl apply -f path/to/your/new/deployment.yaml'
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    // 确认新的 Deployment 已成功部署
+                    sh 'kubectl rollout status deployment/$APP_PREFIX-<new-version>-deployment -n $NAMESPACE'
+                }
+            }
+        }
+
+        stage('Show Running Versions') {
+            steps {
+                script {
+                    // 执行 Bash 脚本来获取和解析现有版本
+                    def output = sh(script: '''#!/bin/bash
+                    deployments=$(kubectl get deployments -n $NAMESPACE -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "$APP_PREFIX")
+
+                    versions=()
+                    for dep in $deployments; do
+                      version=$(echo $dep | sed -e "s/$APP_PREFIX-//" -e 's/-deployment//')
+                      versions+=($version)
+                    done
+
+                    sorted_versions=$(printf "%s\n" "${versions[@]}" | sort -t'-' -k1,1nr -k2,2nr -k3,3nr)
+
+                    declare -A latest_versions
+                    for ver in $sorted_versions; do
+                      major_version=$(echo $ver | cut -d'-' -f1)
+                      if [ ${#latest_versions[@]} -eq 0 ]; then
+                        latest_versions[$major_version]=$ver
+                      elif [[ ! ${latest_versions[$major_version]} ]]; then
+                        if [ ${#latest_versions[@]} -eq 1 ]; then
+                          latest_versions[$major_version]=$ver
+                        else
+                          break
+                        fi
+                      fi
+                    done
+
+                    versions_to_keep=()
+                    for key in "${!latest_versions[@]}"; do
+                      versions_to_keep+=("${latest_versions[$key]}")
+                    done
+
+                    echo "Running versions: ${sorted_versions[@]}"
+                    echo "Versions to keep: ${versions_to_keep[@]}"
+
+                    to_delete=()
+                    for ver in $sorted_versions; do
+                      if [[ " ${versions_to_keep[@]} " =~ " ${ver} " ]]; then
+                        continue
+                      fi
+                      dep_name="$APP_PREFIX-$ver-deployment"
+                      to_delete+=($dep_name)
+                    done
+
+                    echo "You are about to delete the following versions:"
+                    printf "%s\n" "${to_delete[@]}"
+                    ''', returnStdout: true).trim()
+                    // 打印输出
+                    echo output
+                }
+            }
+        }
+
+        stage('User Confirmation') {
+            steps {
+                script {
+                    def confirmation = input message: "确认删除上面列出的旧版本?", ok: "继续", parameters: [booleanParam(defaultValue: false, description: '请确认是否继续', name: 'confirm')]
+                    if (!confirmation) {
+                        error "用户取消了删除操作。"
+                    }
+                }
+            }
+        }
+
+        stage('Delete Old Versions') {
+            steps {
+                script {
+                    sh '''#!/bin/bash
+                    deployments=$(kubectl get deployments -n $NAMESPACE -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' | grep "$APP_PREFIX")
+
+                    versions=()
+                    for dep in $deployments; do
+                      version=$(echo $dep | sed -e "s/$APP_PREFIX-//" -e 's/-deployment//')
+                      versions+=($version)
+                    done
+
+                    sorted_versions=$(printf "%s\n" "${versions[@]}" | sort -t'-' -k1,1nr -k2,2nr -k3,3nr)
+
+                    declare -A latest_versions
+                    for ver in $sorted_versions; do
+                      major_version=$(echo $ver | cut -d'-' -f1)
+                      if [ ${#latest_versions[@]} -eq 0 ]; then
+                        latest_versions[$major_version]=$ver
+                      elif [[ ! ${latest_versions[$major_version]} ]]; then
+                        if [ ${#latest_versions[@]} -eq 1]; then
+                          latest_versions[$major_version]=$ver
+                        else
+                          break
+                        fi
+                      fi
+                    done
+
+                    versions_to_keep=()
+                    for key in "${!latest_versions[@]}"; do
+                      versions_to_keep+=("${latest_versions[$key]}")
+                    done
+
+                    for ver in $sorted_versions; do
+                      if [[ " ${versions_to_keep[@]} " =~ " ${ver} " ]]; then
+                        continue
+                      fi
+
+                      dep_name="$APP_PREFIX-$ver-deployment"
+                      svc_name="$APP_PREFIX-$ver-svc"
+                      dns_name="$APP_PREFIX-$ver-internal.aliyun.aibang.cn.local"
+
+                      kubectl delete deployment $dep_name -n $NAMESPACE
+                      kubectl delete service $svc_name -n $NAMESPACE
+                      gcloud dns record-sets delete $dns_name --type A --zone=<zone>
+                    done
+                    '''
+                }
+            }
+        }
+    }
+}
+```
+
+### 解释
+
+- **明确输出信息**：通过脚本明确列出所有正在运行的版本和即将删除的版本。
+- **二次确认**：在用户确认步骤，使用`input`设有明确描述，用户必须手动确认是否继续。
+- **日志和提示信息**：在用户确认阶段详细打印出即将被删除的版本信息。
+- **安装权限控制**：你可以在Jenkins中配置权限，确保只有授权用户能够执行这部分Pipeline。
+
