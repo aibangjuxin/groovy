@@ -1,6 +1,7 @@
 # summary 
 我的GKE环境中部署对应的应用在不同的Namespace。比如我的部署是通过pipeline来部署一个新的版本
 我想要保留的版本信息大概如下保留2个major_version 下的一个版本就可以了
+```bash
 比如一个新的API的Deployment名字如下
 abj-aibang-is-onboarding-na-accouts-1-0-11-deployment
 abj-aibang-is-onboarding-na-accouts-2-0-1-deployment
@@ -8,31 +9,29 @@ abj-aibang-is-onboarding-na-accouts-2-0-1-deployment
 abj-aibang-is-onboarding-na-accouts-1-0-10-deployment
 abj-aibang-is-onboarding-na-accouts-2-0-0-deployment
 那么其实这个abj-aibang-is-onboarding-na-accouts-1-0-10-deployment和abj-aibang-is-onboarding-na-accouts-2-0-0-deployment都是要被删除的
-
+```
 还有一个问题需要注意我的每个Deployment都有其对应的svc 只是可能包含有loadBalancer 类型可能是 LoadBalancer IP 或者ClusterIP 
 且这些IP我都会在对应的cloud DNS里面去创建对应的DNS记录
 
 比如我的记录可能如下
+```bash
 abj-aibang-is-onboarding-na-accouts-1-0-10-internal.aliyun.aibang.cn.local 172.18.0.46
 abj-aibang-is-onboarding-na-accouts-1-0-11-internal.aliyun.aibang.cn.local 172.18.0.47
 abj-aibang-is-onboarding-na-accouts-2-0-0-internal.aliyun.aibang.cn.local 172.18.0.45
 abj-aibang-is-onboarding-na-accouts-2-0-1-internal.aliyun.aibang.cn.local 172.18.0.48
-
+```
 我的需求就是如何确保我新的API部署之后按照对应的逻辑来删除我旧的API？
 方法不局限，我需要多个解决方案来平衡
 比如我部署新的API的时候直接提供旧的API的名字，那么我在确保新的API部署成功之后
 再删除这个旧的API
 比如我这次部署的是 abj-aibang-is-onboarding-na-accouts-1-0-11-deployment这个版本，那么我需要删除abj-aibang-is-onboarding-na-accouts-1-0-10-deployment这个版本就可以了
 这次部署成功之后，环境里对应的版本是
+```bash
 abj-aibang-is-onboarding-na-accouts-1-0-11-deployment 和
 abj-aibang-is-onboarding-na-accouts-2-0-0-deployment
-
+```
 综合上面描述。我需要考虑如何确保新版本部署成功之后删除旧版本
 因为我的实际情况是，应用Team部署了新的版本，完全不会去删除旧的版本，这样会占用我们很多资源
-
-
-
-
 
 
 你描述的情况涉及在GKE上自动化管理Deployment和对应的Service，以及相关的DNS记录。以下是几种解决方案，每种都能够在新的API部署成功后删除旧的API和相关资源：
