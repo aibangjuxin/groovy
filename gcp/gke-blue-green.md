@@ -190,3 +190,262 @@ gcloud container clusters create my-cluster \
 4. 验证绿色环境，成功后切换流量。
 5. 监控新版本运行情况，如有问题快速回滚。
 
+
+在GKE上实现从蓝色环境到绿色环境的流量切换有多种方法。最常见的方法之一是利用Kubernetes Ingress或Service来管理流量。在这个示例中，我将展示如何使用Kubernetes Ingress进行流量切换。
+
+### 简要步骤
+
+1. **创建蓝色（当前版本）和绿色（新版本）的Deployments和Services**。
+2. **为蓝色和绿色环境配置Ingress**。
+3. **切换Ingress配置，使其将流量从蓝色环境切换到绿色环境**。
+
+### 详细实现步骤
+
+#### 1. 部署蓝色环境
+
+首先创建蓝色环境的Deployment和Service。
+
+```yaml
+# blue-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-blue
+  labels:
+    app: my-app
+    version: blue
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: blue
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: blue
+    spec:
+      containers:
+      - name: my-app
+        image: gcr.io/my-project/my-app:v1
+        ports:
+        - containerPort: 80
+
+---
+# blue-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-blue
+  labels:
+    app: my-app
+    version: blue
+spec:
+  selector:
+    app: my-app
+    version: blue
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+```
+
+应用这些YAML文件：
+
+```sh
+kubectl apply -f blue-deployment.yaml
+kubectl apply -f blue-service.yaml
+```
+
+#### 2. 部署绿色环境
+
+接下来创建绿色环境的Deployment和Service。
+
+```yaml
+# green-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-green
+  labels:
+    app: my-app
+    version: green
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+      version: green
+  template:
+    metadata:
+      labels:
+        app: my-app
+        version: green
+    spec:
+      containers:
+      - name: my-app
+        image: gcr.io/my-project/my-app:v2
+        ports:
+        - containerPort: 80
+
+---
+# green-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-green
+  labels:
+    app: my-app
+    version: green
+spec:
+  selector:
+    app: my-app
+    version: green
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+    name: http
+```
+
+应用这些YAML文件：
+
+```sh
+kubectl apply -f green-deployment.yaml
+kubectl apply -f green-service.yaml
+```
+
+#### 3. 使用Ingress进行流量管理
+
+创建初始的Ingress配置，指向蓝色环境。
+
+```yaml
+# ingress.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: my-app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-blue
+            port:
+              number: 80
+```
+
+应用Ingress：
+
+```sh
+kubectl apply -f ingress.yaml
+```
+
+此时，流量将会被定向到蓝色环境。
+
+#### 4. 验证绿色环境
+
+在流量切换之前，验证绿色环境的稳定性和性能，确保其能够正常运行。
+
+```sh
+kubectl get services
+kubectl get pods
+```
+
+#### 5. 切换流量到绿色环境
+
+修改Ingress配置，将流量切换到绿色环境。
+
+```yaml
+# ingress-update.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: my-app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-green
+            port:
+              number: 80
+```
+
+应用更新后的Ingress配置：
+
+```sh
+kubectl apply -f ingress-update.yaml
+```
+
+此时，流量将会被定向到绿色环境。
+
+#### 6. 监控和确认
+
+在切换流量之后，进行监控，确保切换顺利进行，服务运行正常。
+
+```sh
+kubectl get ingress
+```
+
+使用GCP的Cloud Monitoring（Stackdriver）来监控服务的状态和性能指标。
+
+### 回滚操作
+
+如果在切换过程中发现问题，可以快速回滚到蓝色环境。
+
+只需将Ingress的配置改回指向蓝色环境：
+
+```yaml
+# 如果有问题重新编辑Ingress配置
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-app-ingress
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: my-app.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: my-app-blue
+            port:
+              number: 80
+```
+
+应用回滚后的Ingress配置：
+
+```sh
+kubectl apply -f ingress.yaml
+```
+
+### 总结
+
+在GKE上通过Kubernetes Ingress实现蓝绿部署的几个关键步骤包括：
+
+1. 创建蓝色环境的Deployment和Service。
+2. 创建绿色环境的Deployment和Service。
+3. 使用Ingress配置初始的流量指向蓝色环境。
+4. 验证绿色环境的稳定性和性能。
+5. 修改Ingress配置，将流量切换到绿色环境。
+6. 监控服务运行情况，确保新版本正常运行。
+
