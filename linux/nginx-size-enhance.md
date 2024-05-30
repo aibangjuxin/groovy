@@ -191,3 +191,149 @@ if __name__ == '__main__':
 - **后端应用层面控制**：灵活但需要开发和维护代码。
 
 根据你的需求和环境，选择合适的方案来实现对上传文件和请求体大小的精细控制。
+
+### 方案三：使用 Nginx 的 `limit_except` 指令
+
+`limit_except` 指令允许你针对特定的 HTTP 请求方法（如 POST 和 PUT）应用不同的配置，包括限制请求体的大小。这种方法适用于需要对不同的请求方法施加不同限制的场景。
+
+#### 详细解释
+
+- **`client_max_body_size`**：此指令设置客户端请求体的最大允许大小。超过此限制的请求将返回 413 Request Entity Too Large 错误。
+- **`limit_except`**：此指令允许你为除了指定方法以外的所有方法设置特定的配置。在 `limit_except` 块内，你可以设置 `client_max_body_size` 等指令来控制请求体大小。
+
+#### 示例配置
+
+以下示例展示了如何使用 `limit_except` 指令在不同路径和请求方法下应用不同的请求体大小限制。
+
+```nginx
+http {
+    server {
+        listen 80;
+
+        # 对所有路径的默认配置，限制请求体大小为 10M
+        location / {
+            client_max_body_size 10M;
+        }
+
+        # 对 /upload 路径，限制POST 和 PUT 请求体大小为 50M
+        location /upload {
+            limit_except GET {
+                client_max_body_size 50M;
+            }
+        }
+
+        # 对 /api 路径，限制POST 和 PUT 请求体大小为 20M
+        location /api {
+            limit_except GET {
+                client_max_body_size 20M;
+            }
+        }
+
+        # 对其他路径的默认处理
+        location / {
+            client_max_body_size 10M;
+        }
+    }
+}
+```
+
+### 详细示例
+
+为了更详细地解释和展示这一方案，这里将给出一个更完整的配置文件，并详细解释各个部分的作用。
+
+```nginx
+http {
+    server {
+        listen 80;
+        server_name example.com;
+
+        # 对所有路径的默认配置，限制请求体大小为 10M
+        location / {
+            client_max_body_size 10M;
+        }
+
+        # 对 /upload 路径，限制POST 和 PUT 请求体大小为 50M
+        location /upload {
+            limit_except GET {
+                client_max_body_size 50M;
+            }
+        }
+
+        # 对 /api 路径，限制POST 和 PUT 请求体大小为 20M
+        location /api {
+            limit_except GET {
+                client_max_body_size 20M;
+            }
+        }
+
+        # 默认处理其他路径
+        location / {
+            client_max_body_size 10M;
+        }
+    }
+}
+```
+
+#### 解释
+
+1. **全局默认配置**：
+   ```nginx
+   location / {
+       client_max_body_size 10M;
+   }
+   ```
+   这个配置应用于所有路径，将默认的请求体大小限制设置为 10M。任何请求体大小超过 10M 的请求将返回 413 错误。
+
+2. **`/upload` 路径配置**：
+   ```nginx
+   location /upload {
+       limit_except GET {
+           client_max_body_size 50M;
+       }
+   }
+   ```
+   这个配置应用于 `/upload` 路径。在 `limit_except GET` 块中，限制了除了 GET 方法以外的所有请求（例如 POST 和 PUT）的请求体大小为 50M。GET 请求不受这个限制。
+
+3. **`/api` 路径配置**：
+   ```nginx
+   location /api {
+       limit_except GET {
+           client_max_body_size 20M;
+       }
+   }
+   ```
+   这个配置应用于 `/api` 路径。在 `limit_except GET` 块中，限制了除了 GET 方法以外的所有请求的请求体大小为 20M。GET 请求不受这个限制。
+
+4. **默认处理其他路径**：
+   ```nginx
+   location / {
+       client_max_body_size 10M;
+   }
+   ```
+   这个部分与全局默认配置一致，确保其他未明确配置的路径也遵循请求体大小限制为 10M。
+
+### 测试配置
+
+为了确保配置正确，可以使用以下方法测试不同路径和请求方法的请求体大小限制。
+
+#### 使用 `curl` 测试
+
+1. **测试全局默认限制**：
+   ```bash
+   curl -X POST -F "file=@large_file" http://example.com/
+   ```
+   该请求应该返回 413 错误，如果 `large_file` 大于 10M。
+
+2. **测试 `/upload` 路径限制**：
+   ```bash
+   curl -X POST -F "file=@large_file" http://example.com/upload
+   ```
+   该请求应该返回 413 错误，如果 `large_file` 大于 50M。
+
+3. **测试 `/api` 路径限制**：
+   ```bash
+   curl -X POST -d "data=$(head -c 25M </dev/urandom | base64)" http://example.com/api
+   ```
+   该请求应该返回 413 错误，因为请求体大小超过了 20M。
+
+通过这种配置方式，可以实现对不同路径和请求方法的精细控制，满足你对上传文件和请求体大小限制的需求。如果需要更复杂的逻辑，可以结合其他方案，如 Lua 模块或 API 网关。
