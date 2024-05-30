@@ -375,4 +375,94 @@ curl -i -X POST http://localhost:8001/services/my_upload_service/plugins \
 
 通过使用 Kong 的 `request-size-limiting` 和 `rate-limiting` 插件，你可以精细控制文件上传的大小和请求体的大小，以及请求频率。这些插件提供了灵活的配置选项，可以应用于服务、路由或全局，从而满足不同场景下的需求。合理的组合使用这些插件，可以帮助你更有效地管理 API 网关的流量和资源，确保系统的稳定性和安全性。
 
+# content length
+在 HTTP 协议中，`Content-Length` 是一个重要的请求头字段，它指示了请求或响应消息体的大小，以字节为单位。
 
+### `Content-Length` 的详细说明
+
+#### 1. **请求中的 `Content-Length`**
+
+当客户端发送一个包含消息体的 HTTP 请求（如 POST 或 PUT 请求）时，`Content-Length` 请求头字段指定了消息体的大小。例如，在文件上传过程中，`Content-Length` 用于指示上传的文件大小。
+
+#### 2. **响应中的 `Content-Length`**
+
+当服务器发送包含消息体的 HTTP 响应时，`Content-Length` 响应头字段指定了响应消息体的大小。例如，在下载文件时，`Content-Length` 用于指示文件的大小。
+
+### `Content-Length` 示例
+
+#### POST 请求中的 `Content-Length`
+
+```http
+POST /upload HTTP/1.1
+Host: example.com
+Content-Type: multipart/form-data; boundary=---------------------------974767299852498929531610575
+Content-Length: 138
+
+-----------------------------974767299852498929531610575
+Content-Disposition: form-data; name="file"; filename="example.txt"
+Content-Type: text/plain
+
+...文件内容...
+-----------------------------974767299852498929531610575--
+```
+
+在这个示例中，`Content-Length: 138` 表示请求体的大小是 138 字节。
+
+#### 响应中的 `Content-Length`
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 47
+
+{
+  "success": true,
+  "message": "File uploaded"
+}
+```
+
+在这个示例中，`Content-Length: 47` 表示响应体的大小是 47 字节。
+
+### `Content-Length` 的作用
+
+1. **确定消息体的结束**：在 HTTP/1.1 中，持久连接（keep-alive）是默认的。`Content-Length` 头字段用于告诉接收方消息体的长度，以便它能正确地读取消息体的结束位置。
+2. **优化传输**：客户端或服务器可以根据 `Content-Length` 来预分配缓冲区空间，从而优化数据传输的处理。
+3. **部分内容请求**：在支持范围请求的情况下（通过 `Range` 头字段），`Content-Length` 用于指示部分内容的大小。
+
+### `Content-Length` 和文件上传
+
+在文件上传过程中，`Content-Length` 尤其重要。客户端需要在发送文件时指定文件的大小，服务器则需要在接收时验证该大小是否在允许范围内。结合前面提到的 Kong 插件，可以通过限制 `Content-Length` 来控制上传文件的大小。
+
+### `Content-Length` 的限制和检查
+
+在 API 网关或服务器中，可以设置最大允许的 `Content-Length` 来防止过大的请求或响应。以下是如何在 Kong 中使用 `request-size-limiting` 插件来限制 `Content-Length`。
+
+#### 配置 `request-size-limiting` 插件
+
+1. **为服务配置插件**
+
+```sh
+curl -i -X POST http://localhost:8001/services/{service}/plugins \
+    --data "name=request-size-limiting" \
+    --data "config.allowed_payload_size=50"  # 单位是MB
+```
+
+2. **为路由配置插件**
+
+```sh
+curl -i -X POST http://localhost:8001/routes/{route_id}/plugins \
+    --data "name=request-size-limiting" \
+    --data "config.allowed_payload_size=50"  # 单位是MB
+```
+
+3. **为全局配置插件**
+
+```sh
+curl -i -X POST http://localhost:8001/plugins \
+    --data "name=request-size-limiting" \
+    --data "config.allowed_payload_size=50"  # 单位是MB
+```
+
+### 总结
+
+`Content-Length` 是 HTTP 协议中一个关键的头字段，用于指示请求或响应消息体的大小。它在文件上传和下载过程中尤为重要，因为它帮助确定消息体的结束位置和预分配资源。通过在 API 网关（如 Kong）中配置适当的插件，可以有效地管理和限制请求和响应的大小，确保系统的安全性和资源利用率。
