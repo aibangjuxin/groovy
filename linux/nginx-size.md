@@ -49,6 +49,127 @@
 How to differentiate nginx file upload and large body size ?
 如何区分nginx文件上传和large body size？也就是说文件上传大小的限制和大请求体限制?
 
+
+在这个配置中，/upload路径下的POST和PUT请求的请求体大小被限制为50MB，而其他HTTP方法（包括GET和HEAD）的请求体大小被限制为100MB。
+请注意，if指令在这里用于检查请求方法是否为POST或PUT。这种配置方式是正确的，并且应该不会有语法错误。请确保在你的实际配置中测试这些设置，以确保它们按预期工作。
+这个可能是一个解决办法？我直接通过方法再去限制
+```bash
+http {
+         ...     server {
+                 ...
+                 location /upload {
+                         if ($request_method ~* ^(POST|PUT)$ ) {
+                                 client_max_body_size 50M; # 限制POST和PUT方法的请求体大小为50MB            
+                }        
+                }        
+                location / {            
+                client_max_body_size 100M; # 其他方法的请求体大小限制为100MB
+                         }       
+                ...     }   
+                ... }
+```
+```nginx
+if ($request_method ~* ^(POST|PUT)$ ) {
+    client_max_body_size 50M; # 限制POST和PUT方法的请求体大小为50MB
+}
+```
+
+这是一个带有条件判断的Nginx配置片段，旨在限制POST和PUT方法的请求体大小为50MB。不过，值得注意的是，Nginx配置中的`if`指令对很多指令无法直接起作用，例如`client_max_body_size`。这样配可能会导致不可靠的行为或配置无效。
+
+正确的方法是将这种限制直接放在`location`块中，而不是`if`条件语句中。同样值得检查 Kong 中的插件是否支持这种功能，也可以在Kong的Nginx模板中调整配置。
+
+### 建议的方法
+
+#### 1. 在Kong中配置Nginx模板
+
+如果你基于Kong，你可能需要自定义Nginx模板，以便在适当的位置添加配置。Kong允许用户自定义Nginx配置模板。
+
+#### 2. 修改配置为无条件应用限制
+
+你可以在相应的`location`块中添加`client_max_body_size`来限制请求体的大小如下：
+
+```nginx
+location / {
+    if ($request_method ~* ^(POST|PUT)$ ) {
+        set $limit_body_size 50M;
+    }
+    client_max_body_size $limit_body_size;
+}
+```
+
+但更可靠的方法如下：
+
+```nginx
+http {
+    include       mime.types;
+    default_type  application/octet-stream;
+
+    # Your other configurations..
+
+    server {
+        listen       80;
+        server_name  localhost;
+
+        location / {
+            client_max_body_size 1M;  # default limit
+
+            if ($request_method ~* ^(POST|PUT)$ ) {
+                set $limit_body_size 50M;
+            }
+
+            proxy_pass http://upstream;
+        }
+    }
+}
+```
+
+不过Kong不建议直接修改Nginx配置文件。相反，可以使用Kong Proxy Plugins来管理请求体大小。
+
+#### 3. 使用Kong的插件来限制请求体大小
+
+Kong提供了许多插件，可以帮助管理传入请求的属性。你可以使用`request-size-limiting`插件来限制请求体的大小。
+
+安装和配置插件的示例：
+
+```sh
+# 安装插件
+http POST http://<kong-admin-url>:8001/services/my-service/plugins \
+    name=request-size-limiting \
+    config.allowed_payload_size=50
+```
+
+### Kong插件配置示例
+
+```yaml
+# kong-plugin.yaml
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: body-size-limiter
+  namespace: kong
+plugin: request-size-limiting
+config:
+  allowed_payload_size: 50
+```
+
+应用这段配置：
+
+```sh
+kubectl apply -f kong-plugin.yaml
+```
+
+然后，将插件应用到相关的Service或Route：
+
+```yaml
+metadata:
+  name: your-service
+  annotations:
+    konghq.com/plugins: body-size-limiter
+```
+
+### 总结
+
+虽然直接在Nginx配置中使用`if`语句来限制POST和PUT方法的体积大小理论上可以实现，但更安全和可控的方法是通过Kong的插件来实现请求体大小限制。Kong的插件具备配置灵活的优点，适合生产环境中的使用。如果有进一步问题，或者需要更多的帮助，请随时告诉我！
 在Nginx中，处理文件上传和管理大请求体的大小是确保Web应用程序平稳运行的重要方面。这两个方面是通过不同的配置指令来控制的。以下是如何区分和配置它们的方法：
 ### 文件上传处理
 
