@@ -1,6 +1,6 @@
 for my mac 
-C-h
-C-l
+Ctrl-h 可以切换回左侧导航栏目
+Ctrl-l 可以切换到工作区
 My Leader key is 空格 Space 
 " 将领导键设置为空格键
 let mapleader = " "
