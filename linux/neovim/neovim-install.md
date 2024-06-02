@@ -96,3 +96,5 @@ vim.api.nvim_set_keymap('n', '<C-n>', ':NvimTreeToggle<CR>', { noremap = true, s
 ### 总结
 
 通过上述步骤，你可以在 Neovim 中安装并配置 `nvim-tree` 插件，并使用它来浏览文件系统。你可以根据需要进一步定制 `nvim-tree` 的配置和快捷键，以提高工作效率。
+
+Lex add a new line and split windows
