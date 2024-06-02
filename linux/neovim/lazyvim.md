@@ -41,3 +41,4 @@ require("lazy").setup({
 testing a shell 
 #!/bin/bash
 
+Using space trigger 
