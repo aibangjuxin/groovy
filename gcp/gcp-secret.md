@@ -550,3 +550,18 @@ IAM条件是条件性情况下有效的部分策略。本地环境和策略编�
    确认当前环境变量或服务账号确实具备测试的权限，如果是通过服务账号访问测试，请确保该服务账号包含在组的成员里。
 
 如果仍然遇到问题，请提供更加详细的信息，有助于我为你提供进一步的帮助。
+
+
+The question is asking whether it's possible to use conditions to achieve fine-grained access control when granting permissions to a group of users in Google Cloud Secret Manager, rather than controlling access based on individual users.
+
+The answer is yes, you can use conditions to achieve this. The `gcloud secrets add-iam-policy-binding` command allows you to specify a condition using the `--condition` flag or `--condition-from-file` flag.
+
+For example, you can create a condition that grants access to users with a specific email domain or suffix. Here's an example:
+```
+gcloud secrets add-iam-policy-binding my-secret --member='group:my-group@example.com' --role='roles/secretmanager.secretAccessor' --condition='resource.name == "my-secret" && requester.email.endsWith("@example.com")'
+```
+This command grants the `secretAccessor` role to the `my-group@example.com` group, but only for users within that group who have an email address ending with `@example.com`.
+
+You can also use more complex conditions using the `--condition-from-file` flag, which allows you to specify a YAML file containing the condition.
+
+By using conditions, you can achieve fine-grained access control and avoid granting unnecessary permissions to users within a group.
