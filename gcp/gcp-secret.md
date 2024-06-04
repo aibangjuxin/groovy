@@ -604,3 +604,45 @@ gcloud secrets add-iam-policy-binding \
 * 您可以使用 `gcloud secrets get-iam-policy` 命令来查看 Secret 的当前 IAM 策略。
 
 **通过使用条件，您可以实现更精细的权限控制，并根据组成员的属性分配不同的权限，从而更好地管理 Secret 的访问权限。**
+
+# groq
+You're looking for a way to manage permissions for a group of users without having to manage individual user permissions. You want to use groups to simplify the process, but you're concerned about the limitations of traditional group-based access control.
+
+You're correct that traditional group-based access control can be inflexible, as all members of the group would have the same permissions and could potentially modify each other's passwords.
+
+To address this issue, you can use Cloud Identity and Access Management (IAM) conditions to create more fine-grained access control. Conditions allow you to define custom policies that evaluate to true or false based on specific conditions.
+
+In your case, you can create a condition that checks the email address of the user and grants access to the secret only if the email address matches a specific pattern. For example, you can create a condition that checks if the user's email address ends with a specific domain (e.g., "@example.com").
+
+Here's an example of how you can create a condition:
+```json
+{
+  "Condition": {
+    "Title": "Email domain condition",
+    "Description": "Allow access only for users with email addresses ending with @example.com",
+    "Expression": "request.email.endsWith('@example.com')"
+  }
+}
+```
+You can then use this condition in your IAM policy to grant access to the secret only if the condition evaluates to true.
+
+Here's an example of how you can create an IAM policy with a condition:
+```json
+{
+  "Version": "3",
+  "Binding": [
+    {
+      "Role": "roles/secretmanager.secretAccessor",
+      "Members": ["group:example-group"],
+      "Condition": {
+        "Title": "Email domain condition",
+        "Description": "Allow access only for users with email addresses ending with @example.com",
+        "Expression": "request.email.endsWith('@example.com')"
+      }
+    }
+  ]
+}
+```
+In this example, the policy grants the `secretAccessor` role to the `example-group` group, but only if the user's email address ends with `@example.com`.
+
+By using conditions, you can create more fine-grained access control policies that take into account the specific needs of your organization.
