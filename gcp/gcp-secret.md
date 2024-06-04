@@ -702,4 +702,45 @@ Sources
 [18] In GCP, How do I give a role the permission to access a secret? https://stackoverflow.com/questions/72967199/in-gcp-how-do-i-give-a-role-the-permission-to-access-a-secret
 [19] IAM Actions defined by Secret Manager - Google Cloud https://gcp.permissions.cloud/iam/secretmanager
 [20] hashicorp/google - IAM policy for Service Account - Terraform Registry https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_service_account_iam
+# gemini
+是的，通过 `gcloud secrets add-iam-policy-binding` 命令结合条件 (`--condition`) 可以实现基于组的细粒度权限控制，并根据邮箱结尾来进一步限制访问权限。
+
+**方案概述：**
+
+1. **创建组：** 首先，为每个权限级别创建相应的组，例如 `secret-readers@project.iam.gserviceaccount.com` 和 `secret-editors@project.iam.gserviceaccount.com`。
+2. **添加组成员：** 将用户添加到相应的组中，例如将拥有读取权限的用户添加到 `secret-readers` 组，将拥有编辑权限的用户添加到 `secret-editors` 组。
+3. **使用条件：** 在 `gcloud secrets add-iam-policy-binding` 命令中使用条件来限制访问权限。条件可以根据用户邮箱结尾进行过滤。
+
+**示例：**
+
+```bash
+# 授予 `secret-readers` 组读取权限，并限制访问权限仅限邮箱结尾为 `@example.com` 的用户：
+
+gcloud secrets add-iam-policy-binding my-secret \
+  --member=group:secret-readers@project.iam.gserviceaccount.com \
+  --role=roles/secretmanager.secretAccessor \
+  --condition="resource.labels.email_suffix == '@example.com'"
+```
+
+**解释：**
+
+* `my-secret`：要授予权限的 Secret 名称。
+* `group:secret-readers@project.iam.gserviceaccount.com`：要授予权限的组。
+* `roles/secretmanager.secretAccessor`：要授予的权限角色。
+* `resource.labels.email_suffix == '@example.com'`：条件表达式，用于限制访问权限仅限邮箱结尾为 `@example.com` 的用户。
+
+**注意事项：**
+
+* 条件表达式使用 [CEL](https://cloud.google.com/trace/docs/setup/php) 语法。有关更多信息，请参阅 [CEL 文档](https://cloud.google.com/trace/docs/setup/php)。
+* 只能使用与 Secret 相关的信息作为条件表达式中的资源标签。有关可用标签的列表，请参阅 Secret 标签文档 [移除了无效网址]。
+* 条件表达式中的值必须与 Secret 标签的值相匹配。
+
+**通过使用条件，您可以实现更细粒度的权限控制，并确保只有拥有适当权限的用户才能访问 Secret。**
+
+**建议：**
+
+* 对于敏感 Secret，建议使用更严格的条件表达式，例如要求用户进行多因素身份验证。
+* 定期审核 Secret 的 IAM 政策，以确保其符合您的安全要求。
+
+希望以上信息对您有所帮助。
 
