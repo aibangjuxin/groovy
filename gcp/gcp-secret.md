@@ -460,3 +460,93 @@ gcloud secrets add-iam-policy-binding SECRET_NAME --member='group:secret-admin@e
 您还可以使用其他条件,例如基于IP地址范围、时间范围等。具体的条件表达式语法可以参考[Google Cloud条件表达式文档](https://cloud.google.com/iam/docs/conditions-and-conditions-expressions)。
 
 通过这种方式,您可以实现基于组的精细化访问控制权限,并避免组内成员共享相同的权限。需要注意的是,条件约束会增加一些复杂性,您需要根据实际情况权衡利弊。
+
+
+
+
+理解了你的需求和问题。假如语法没有问题，但对应的权限不对，需要确保IAM角色和条件策略是正确的配置。我们来详细检查角色的设置，并确保条件策略确实能够准确限制到特定的域名用户。以下是优化与检查步骤：
+
+### 确保IAM角色与权限正确
+
+#### 确认你正在添加的角色
+`roles/secretmanager.secretAccessor`角色应该用于读取Secret的权限。如果你需要其他权限，例如管理Secret，可以使用`roles/secretmanager.admin`或其他适当的角色。
+
+### 确认IAM条件策略是否正确应用
+
+#### 检查策略应用的具体步骤
+1. **获取当前的IAM政策**：
+   首先获取当前Secret的IAM策略，以便查看已有的绑定和条件：
+
+   ```bash
+   gcloud secrets get-iam-policy my-secret --format=json
+   ```
+
+2. **添加新的IAM条件策略**：
+   确认策略添加是否成功（注意条件表达式的正确性）：
+   
+   ```bash
+   gcloud secrets add-iam-policy-binding my-secret \
+     --member="group:developers@example.com" \
+     --role="roles/secretmanager.secretAccessor" \
+     --condition=expression="request.auth.claims.email.endsWith('@engineer.example.com')",title="EngineerAccess",description="Allow only @engineer.example.com domain"
+   ```
+
+### 样例策略全面覆盖
+确保你的策略全面且适当：
+
+#### 完整的策略样例
+
+```yaml
+bindings:
+- members:
+  - group:developers@example.com
+  role: roles/secretmanager.secretAccessor
+  condition:
+    title: "EngineerAccess"
+    description: "Allow only @engineer.example.com domain"
+    expression: "request.auth.claims.email.endsWith('@engineer.example.com')"
+- members:
+  - group:developers@example.com
+  role: roles/secretmanager.admin
+  condition:
+    title: "AdminAccess"
+    description: "Allow only @admin.example.com domain"
+    expression: "request.auth.claims.email.endsWith('@admin.example.com')"
+```
+
+### 验证条件策略的效果
+确保在应用策略后进行验证：
+
+1. **通过一个具备该条件的用户账号（如`user@engineer.example.com`）测试读取权限**。
+
+   ```bash
+   gcloud secrets versions access latest --secret=my-secret --account=user@engineer.example.com
+   ```
+
+2. **确保不符合条件的用户无法访问**。使用一个不符合条件的用户账号（如`user@anotherdomain.com`）进行测试，验证用户无法访问该Secret。
+
+   ```bash
+   gcloud secrets versions access latest --secret=my-secret --account=user@anotherdomain.com
+   ```
+
+### 确保Cloud IAM条件完全支持
+IAM条件是条件性情况下有效的部分策略。本地环境和策略编辑较为复杂时，可以使用IAM条件编辑器（条件生成器）来帮助生成条件。
+
+### 使用IAM条件编辑器
+在Google Cloud Console中：
+
+1. **转到IAM & 管理 > IAM > 添加成员**。
+2. **添加角色和条件**。在添加条件时，使用条件编辑器生成表达式内容。
+
+### 条件表达式调试
+使用条件生成器和IAM条件编辑器有助于避免语法错误和逻辑问题。在表达式中，确保`request.auth.claims.email`真正匹配。
+
+最终，如果IAM条件策略和角色都正确，策略的落地和验证就会顺畅。如果上述方法未能解决具体问题，还可以尝试以下步骤：
+
+1. **重新验证邮箱域是否正确**:
+   确保邮箱后缀`@engineer.example.com`的格式和内容完全符合公司邮件系统和IAM条件策略的一致性。
+  
+2. **检验环境变量**:
+   确认当前环境变量或服务账号确实具备测试的权限，如果是通过服务账号访问测试，请确保该服务账号包含在组的成员里。
+
+如果仍然遇到问题，请提供更加详细的信息，有助于我为你提供进一步的帮助。
