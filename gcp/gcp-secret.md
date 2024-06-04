@@ -565,3 +565,42 @@ This command grants the `secretAccessor` role to the `my-group@example.com` grou
 You can also use more complex conditions using the `--condition-from-file` flag, which allows you to specify a YAML file containing the condition.
 
 By using conditions, you can achieve fine-grained access control and avoid granting unnecessary permissions to users within a group.
+
+
+您遇到的问题是使用 Google Cloud Secret Manager 的分组管理权限时，如何实现更精细的控制，特别是针对组内成员的权限差异。您希望能够根据成员的邮箱地址后缀来分配不同的权限，而不是所有组员都拥有相同的权限。
+
+**答案是：是的，您可以使用条件（Condition）来实现更精细的权限控制。**
+
+**具体步骤如下：**
+
+1. **创建 Secret：** 首先，您需要在 Google Cloud Secret Manager 中创建一个 Secret。
+2. **创建 IAM 角色：**  创建两个 IAM 角色，分别代表您想要分配的两种权限级别：
+    * **`secret-reader`:**  只能读取 Secret 的角色。
+    * **`secret-writer`:**  可以读取和修改 Secret 的角色。
+3. **创建 IAM 组：** 创建一个 IAM 组，例如 `secret-access-group`。
+4. **创建 IAM 绑定：**  使用 `gcloud secrets add-iam-policy-binding` 命令将 IAM 组绑定到 Secret，并使用条件来限制权限。
+
+**示例命令：**
+
+```bash
+# 为组成员的邮箱后缀为 @example.com 的用户分配读取权限
+gcloud secrets add-iam-policy-binding \
+  secrets/your-project-id/your-secret-name \
+  --member="group:secret-access-group" \
+  --role="roles/secretmanager.secretAccessor" \
+  --condition="expression='resource.name.endsWith(\"@example.com\")'"
+```
+
+**解释：**
+
+* `--member="group:secret-access-group"`：将 IAM 绑定到 `secret-access-group` 组。
+* `--role="roles/secretmanager.secretAccessor"`：为组成员分配 `secret-reader` 角色，即读取权限。
+* `--condition="expression='resource.name.endsWith(\"@example.com\")'"`：使用条件表达式来限制权限，只有邮箱地址后缀为 `@example.com` 的组成员才能获得读取权限。
+
+**其他注意事项：**
+
+* 条件表达式可以使用任何有效的 Cloud IAM 表达式语法。
+* 您需要为不同的权限级别创建不同的 IAM 角色，并使用不同的条件表达式来限制权限。
+* 您可以使用 `gcloud secrets get-iam-policy` 命令来查看 Secret 的当前 IAM 策略。
+
+**通过使用条件，您可以实现更精细的权限控制，并根据组成员的属性分配不同的权限，从而更好地管理 Secret 的访问权限。**
