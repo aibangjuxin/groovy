@@ -557,3 +557,85 @@ graph TD
 ### 总结
 
 通过将 Docker 的数据目录从 `/var/lib/docker` 移动到一个独立的存储位置，可以有效减轻根目录的磁盘压力。这种方法特别适用于根分区空间有限但有其他大容量磁盘或分区的情况。执行上述步骤时请务必小心，以免数据丢失，并确保在移动数据之前备份重要数据。
+
+
+
+在 Docker 环境中，构建缓存（build cache）可能会占用大量的磁盘空间。使用 `docker system df` 命令可以查看构建缓存的使用情况。为了有效和安全地清理这部分缓存，可以采用以下方法和建议。
+
+### 方法 1: 使用 `docker builder prune` 命令
+
+`docker builder prune` 命令可以清理构建缓存。这个命令会删除所有未被使用的构建缓存，从而释放磁盘空间。
+
+```bash
+# 查看当前构建缓存的占用情况
+docker system df
+
+# 清理构建缓存
+docker builder prune -f
+```
+
+`-f` 标志表示强制执行清理操作，不需要用户确认。如果你想在清理前查看会删除哪些内容，可以不使用 `-f` 标志，这样 Docker 会提示你确认。
+
+### 方法 2: 定期清理构建缓存
+
+为了避免构建缓存占用大量磁盘空间，可以设置定时任务（cron job）定期清理未使用的构建缓存。
+
+```bash
+# 编辑 crontab 文件
+crontab -e
+
+# 添加以下行以每天午夜清理构建缓存
+0 0 * * * /usr/bin/docker builder prune -f
+```
+
+### 方法 3: 在 CI/CD 管道中清理
+
+在 CI/CD 管道中运行清理命令可以确保在每次构建之后清理未使用的缓存，从而节省磁盘空间。
+
+```bash
+#!/bin/bash
+
+# 在构建任务完成后清理构建缓存
+docker builder prune -f
+```
+
+将上述脚本添加到 CI/CD 管道中，确保每次构建完成后都会清理构建缓存。
+
+### 方法 4: 监控和报警
+
+使用监控工具（如 Prometheus 和 Grafana）监控 Docker 主机的磁盘使用情况，并设置报警通知，当磁盘使用率超过一定阈值时发送通知。
+
+```yaml
+# Prometheus alerting rule example
+groups:
+- name: docker_alerts
+  rules:
+  - alert: DockerBuildCacheHigh
+    expr: (node_filesystem_avail_bytes{mountpoint="/var/lib/docker"} / node_filesystem_size_bytes{mountpoint="/var/lib/docker"}) < 0.2
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Docker build cache usage on {{ $labels.instance }}"
+      description: "Docker build cache usage is above 80% on instance {{ $labels.instance }}."
+```
+
+### Mermaid 流程图
+
+以下是描述上述步骤的 Mermaid 流程图：
+
+```mermaid
+graph TD
+    A[查看构建缓存使用情况] --> B[手动清理构建缓存]
+    A --> C[设置定期清理任务]
+    A --> D[在 CI/CD 管道中清理]
+    A --> E[监控和报警]
+    B --> F[执行 docker builder prune]
+    C --> G[编辑 crontab 文件]
+    D --> H[添加清理脚本到管道]
+    E --> I[配置 Prometheus 报警规则]
+```
+
+### 总结
+
+结合你的需求，可以使用 `docker builder prune` 命令手动或自动地清理构建缓存。为了确保清理操作的自动化和及时性，可以设置定期任务或在 CI/CD 管道中添加清理步骤。此外，使用监控和报警工具可以帮助你提前预警磁盘使用情况，防止磁盘空间耗尽。这样可以有效地管理 Docker 构建缓存并保持系统的健康状态。
