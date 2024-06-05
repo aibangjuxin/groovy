@@ -639,3 +639,78 @@ graph TD
 ### 总结
 
 结合你的需求，可以使用 `docker builder prune` 命令手动或自动地清理构建缓存。为了确保清理操作的自动化和及时性，可以设置定期任务或在 CI/CD 管道中添加清理步骤。此外，使用监控和报警工具可以帮助你提前预警磁盘使用情况，防止磁盘空间耗尽。这样可以有效地管理 Docker 构建缓存并保持系统的健康状态。
+
+
+# usage
+
+基于构建缓存（build cache）的使用次数来清理缓存，可以通过 `docker builder prune` 命令结合使用次数（`--filter` 参数）来实现。以下是详细的建议和方案：
+
+### 使用 `docker builder prune` 结合 `--filter` 参数
+
+Docker 提供了 `--filter` 参数，可以根据缓存的使用次数来清理缓存。具体来说，可以使用 `until` 过滤器来删除超过指定使用次数的构建缓存。
+
+#### 步骤 1: 查看当前构建缓存的使用情况
+
+首先，使用 `docker system df` 命令查看当前构建缓存的使用情况：
+
+```bash
+docker system df
+```
+
+#### 步骤 2: 清理未被使用的构建缓存
+
+使用 `docker builder prune` 命令并结合 `--filter` 参数清理构建缓存。例如，删除未被使用的构建缓存（使用次数为 0）：
+
+```bash
+docker builder prune --filter usage=0
+```
+
+你可以根据具体需求调整 `usage` 的值，以删除使用次数低于指定次数的缓存。
+
+#### 自动化清理
+
+可以将清理命令添加到定时任务（cron job）或 CI/CD 管道中，实现定期自动清理。
+
+##### 使用 cron job 定期清理
+
+编辑 crontab 文件，设置定期清理任务。例如，每天凌晨清理未被使用的构建缓存：
+
+```bash
+# 编辑 crontab 文件
+crontab -e
+
+# 添加以下行以每天午夜清理使用次数为0的构建缓存
+0 0 * * * /usr/bin/docker builder prune --filter usage=0 -f
+```
+
+##### 在 CI/CD 管道中清理
+
+在 CI/CD 管道中添加清理步骤，确保每次构建完成后清理未被使用的缓存：
+
+```bash
+#!/bin/bash
+
+# 在构建任务完成后清理使用次数为0的构建缓存
+docker builder prune --filter usage=0 -f
+```
+
+将上述脚本添加到 CI/CD 管道中，确保每次构建完成后都会清理使用次数为0的构建缓存。
+
+### Mermaid 流程图
+
+以下是描述上述步骤的 Mermaid 流程图：
+
+```mermaid
+graph TD
+    A[查看构建缓存使用情况] --> B[手动清理使用次数为0的构建缓存]
+    A --> C[设置定期清理任务]
+    A --> D[在 CI/CD 管道中清理]
+    B --> E[执行 docker builder prune --filter usage=0]
+    C --> F[编辑 crontab 文件]
+    D --> G[添加清理脚本到管道]
+    E --> H[清理未被使用的缓存]
+```
+
+### 总结
+
+通过使用 `docker builder prune` 命令结合 `--filter` 参数，你可以基于构建缓存的使用次数来清理缓存。这种方法不仅有效，而且可以通过定时任务和 CI/CD 管道实现自动化清理，确保构建缓存不会占用过多磁盘空间。此外，定期查看和清理构建缓存可以帮助你保持系统的健康状态，防止磁盘空间耗尽。
