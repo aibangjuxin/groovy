@@ -110,3 +110,24 @@ nnoremap <C-n> :NvimTreeToggle<CR>
   - packer 
   - vim-plug
   - lazy
+
+
+如果你想从本地安装或加载 Neovim 插件，可以在 `init.vim` 文件中使用本地路径。以下是一个示例配置，假设插件位于 `~/my_plugins` 目录下：
+
+```vim
+call plug#begin('~/.config/nvim/plugged')
+
+" 使用绝对路径加载本地插件
+Plug '~/my_plugins/my_plugin'
+
+call plug#end()
+```
+
+下面是更详细的说明：
+
+1. `call plug#begin('~/.config/nvim/plugged')` 指定插件安装目录。
+2. `Plug '~/my_plugins/my_plugin'` 使用 `Plug` 命令加载位于 `~/my_plugins` 目录下的 `my_plugin` 插件。这里使用的是本地的绝对路径。
+3. `call plug#end()` 结束插件管理块。
+
+确保 `~/.config/nvim/init.vim` 中包含这些配置后，运行 `:PlugInstall` 命令来安装插件。Neovim 会从指定的本地路径加载插件。
+
