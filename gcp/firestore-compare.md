@@ -322,3 +322,75 @@ exports.onDocumentChange = functions.firestore.document('users/{userId}').onSnap
 
 记住，无论你选择哪种方法，都要考虑性能影响。频繁的文档更新可能导致大量的比较操作，这可能会影响你的应用性能。因此，要根据你的使用场景选择最合适的方法。​​​​​​​​​​​​​​​​
 
+
+
+Firestore provides a few ways to compare the before and after states of a document, especially when it comes to updates. Here are a few approaches:
+
+**1. Using `onSnapshot` and `diff`**
+
+You can use the `onSnapshot` method to listen to changes to a document, and then use a diffing library to compare the before and after states.
+
+Here's an example:
+```javascript
+const docRef = db.collection('myCollection').doc('myDocument');
+
+let beforeDoc;
+
+docRef.onSnapshot(doc => {
+  const afterDoc = doc.data();
+  if (beforeDoc) {
+    const diff = diffJson(beforeDoc, afterDoc);
+    console.log('Changes:', diff);
+  }
+  beforeDoc = afterDoc;
+}, error => {
+  console.error('Error:', error);
+});
+```
+In this example, we store the previous document state in the `beforeDoc` variable. When the document changes, we calculate the diff between the previous and current states using a diffing library like `diff-json`.
+
+**2. Using `update` with `getOptions`**
+
+When you update a document, you can use the `getOptions` parameter to retrieve the previous document state.
+
+Here's an example:
+```javascript
+const docRef = db.collection('myCollection').doc('myDocument');
+
+docRef.update({
+  field1: 'new value',
+  field2: 'another new value'
+}, {
+  getOptions: {
+    source: 'erver'
+  }
+}).then(result => {
+  const beforeDoc = result._snapshot.before.data();
+  const afterDoc = result._snapshot.after.data();
+  const diff = diffJson(beforeDoc, afterDoc);
+  console.log('Changes:', diff);
+});
+```
+In this example, we pass an options object to the `update` method with `getOptions` set to `{ source: 'erver' }`. This retrieves the previous document state from the server. We then calculate the diff between the previous and current states.
+
+**3. Using `FieldValue` with `arrayUnion` or `arrayRemove`**
+
+If you're updating an array field, you can use `FieldValue` with `arrayUnion` or `arrayRemove` to track the changes.
+
+Here's an example:
+```javascript
+const docRef = db.collection('myCollection').doc('myDocument');
+
+const beforeArray = ['item1', 'item2'];
+const afterArray = ['item1', 'item2', 'item3'];
+
+docRef.update({
+  arrayField: firebase.firestore.FieldValue.arrayUnion('item3')
+}).then(result => {
+  const diff = afterArray.filter(x =>!beforeArray.includes(x));
+  console.log('Changes:', diff);
+});
+```
+In this example, we use `arrayUnion` to add a new item to the array field. We then calculate the diff by filtering the new array to find the items that were added.
+
+These are just a few approaches to comparing the before and after states of a Firestore document. The best method for you will depend on your specific use case and requirements.
