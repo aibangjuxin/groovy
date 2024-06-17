@@ -25,7 +25,10 @@ I queried by reducing the query criteria and didn't see any hit logs
 
 
 
-['We are now focusing on GKE Ingress. The following are the problems we are facing: 1. We use the Backend Service to bind the corresponding rules, and there is an error like this. 2. If we use the updated Backend Service method, we can find that it works normally. However, if we GKE according to the scheduled task key, we will find that the target is lost.'] 
+['We are now focusing on GKE Ingress. The following are the problems we are facing: 
+1. We use the Backend Service to bind the corresponding rules, and there is an error like this. 
+  because this is the solution recommended by Google
+2. If we use the updated Backend Service method, we can find that it works normally. However, if we GKE according to the scheduled task key, we will find that the target is lost.'] 
 
 Your pronunciation is good, but there are a few areas where you can improve:
 - The phrase "GKE Ingress" can be pronounced a little more clearly.
