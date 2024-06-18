@@ -58,3 +58,95 @@ graph TD
 ### 总结
 
 在GKE中，容器和Pod是管理和调度应用程序的基本单元。通过理解和优化这些概念，可以更好地控制和管理资源成本。如果您有关于`intcontainer`的具体定义或更多详细信息，我可以提供更有针对性的建议和解释。
+
+
+当然可以！下面是一个Kubernetes Deployment模板，其中包含一个Pod，Pod内包含多个容器，包括您提到的`intcontainer`和`APPD`容器。
+
+### Deployment YAML 模板
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: multi-container-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: multi-container-app
+  template:
+    metadata:
+      labels:
+        app: multi-container-app
+    spec:
+      containers:
+      - name: intcontainer
+        image: your-intcontainer-image:latest
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "64Mi"
+            cpu: "250m"
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: appd
+        image: your-appd-image:latest
+        ports:
+        - containerPort: 9090
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "500m"
+          limits:
+            memory: "256Mi"
+            cpu: "1"
+      - name: sidecar
+        image: your-sidecar-image:latest
+        ports:
+        - containerPort: 7070
+        resources:
+          requests:
+            memory: "32Mi"
+            cpu: "100m"
+          limits:
+            memory: "64Mi"
+            cpu: "200m"
+```
+
+### 解释
+
+- **apiVersion**: 使用`apps/v1`，适用于Deployment。
+- **kind**: 资源类型为`Deployment`。
+- **metadata**: 定义Deployment的元数据，如名称。
+- **spec**: Deployment的具体规范。
+  - **replicas**: 定义Pod副本的数量，这里设置为3。
+  - **selector**: 用于选择Pod的标签。
+  - **template**: Pod的模板定义。
+    - **metadata**: Pod的元数据标签。
+    - **spec**: Pod的具体定义。
+      - **containers**: 定义Pod内的多个容器。
+        - **name**: 容器名称。
+        - **image**: 容器镜像。
+        - **ports**: 容器暴露的端口。
+        - **resources**: 资源请求和限制。
+
+### Mermaid 流程图
+
+下面是一个示意性的Mermaid流程图，展示Pod内多个容器的结构：
+
+```mermaid
+graph TD
+    subgraph Pod
+        intcontainer[intcontainer]
+        appd[APPD]
+        sidecar[sidecar]
+    end
+```
+
+这个流程图展示了一个Pod内包含的三个容器：`intcontainer`、`APPD`和`sidecar`。每个容器可以独立配置其资源请求和限制，以优化性能和成本。
+
+### 总结
+
+这个模板展示了如何定义一个包含多个容器的Pod，并通过合理的资源请求和限制，确保容器高效运行。如果您有更多具体需求或需要进一步优化资源配置，请提供更多详细信息。
