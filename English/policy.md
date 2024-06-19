@@ -39,3 +39,14 @@ Your pronunciation is good, but there are a few areas where you can improve:
 Overall, your intonation and rhythm are fine. Just keep practicing to make your pronunciation more natural and fluent.
 
 The translation of the sentence is: 我们现在聚焦在 GKE Ingress 上面，下面是我们面临的问题。1. 我们使用后端服务绑定对应的规则，出现了如下报错。2. 如果我们使用更新后端服务的方式，可以发现工作正常。但是如果我们按照计划任务关键 GKE，会发现目标丢失的情况。
+
+Perhaps this is an occasional phenomenon. We found that long-term shutdown will cause the binding to be lost. If it is a daily scheduled shutdown, it does not affect the corresponding binding relationship. 或 Maybe this is an accidental phenomenon. We discovered that a long time of shutdown will lead to the loss of binding. If it is a daily timed shutdown, it does not have an impact on the corresponding binding relationship. 或 Possibly this is a chance occurrence. We detected that a prolonged shutdown will result in the loss of binding. If it is a daily scheduled shutdown, it does not affect the relevant binding connection.
+
+或许这是一个偶发现象。我们发现长期关机会导致绑定丢失。如果是每日计划性关机，它不会影响相应的绑定关系。
+Perhaps this is an occasional phenomenon. We found that a long-term shutdown will cause the binding to be lost. If it is a daily scheduled shutdown, it does not affect the corresponding binding relationship.
+或者这可能是一个偶然现象。我们注意到长时间关机会导致绑定丢失。如果它是每日定时的关机，它不会对相应的绑定关系产生影响。
+Maybe this is an accidental phenomenon. We discovered that a long time of shutdown will lead to the loss of binding. If it is a daily timed shutdown, it does not have an impact on the corresponding binding relationship.
+或者这有可能是一个偶发事件。我们检测到长时间关机将导致绑定丢失。如果是每日计划的关机，它不会影响相关的绑定连接。
+Possibly this is a chance occurrence. We detected that a prolonged shutdown will result in the loss of binding. If it is a daily scheduled shutdown, it does not affect the relevant binding connection.
+
+
