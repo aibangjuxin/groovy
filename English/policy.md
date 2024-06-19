@@ -1,7 +1,8 @@
 Updated our gke ingress case
+
 We are now focusing on GKE Ingress. Here are the problems we face:
-1 We use Backend Service to bind the corresponding rules, and the above error occurs, but this is the solution recommended by Google
-2 If we use the method of updating the backend service, we can find that gke ingress and cloud armor rule works well, but if we shut down the GKE Node regularly according to the scheduled task, we find that the target is missing
+- 1 We use Backend Service to bind the corresponding rules, and the above error occurs, but this is the solution recommended by Google
+- 2 If we use the method of updating the backend service, we can find that gke ingress and cloud armor rule works well, but if we shut down the GKE Node regularly according to the scheduled task, we find that the target is missing
 
 
 
