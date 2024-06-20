@@ -730,4 +730,102 @@ items:
 请注意，这两种方法都要求您了解 Helm chart 的内部结构。 如果您不熟悉 Helm chart，则可以使用更简单的解决方案，例如使用 `kubectl` 手动创建资源。
 
 
+# preplexity 
+使用 Helm 创建资源时，优先安装某个资源可以通过使用 Helm Hooks 实现。Helm Hooks 允许在特定的生命周期事件中执行特定的操作，例如在安装前或安装后。下面是 Helm Hooks 的详细用法和解释：
 
+### 可用的 Hooks
+
+Helm 提供了多种 Hooks，包括：
+
+1. **pre-install**：在模板渲染后，但在创建任何资源之前执行。
+2. **post-install**：在所有资源都被加载到 Kubernetes 之后执行。
+3. **pre-delete**：在删除请求之前执行，但在删除任何资源之前。
+4. **post-delete**：在删除请求之后执行，所有资源都被删除。
+5. **pre-upgrade**：在升级请求之前执行，但在更新任何资源之前。
+6. **post-upgrade**：在升级请求之后执行，所有资源都被更新。
+7. **pre-rollback**：在回滚请求之前执行，但在回滚任何资源之前。
+8. **post-rollback**：在回滚请求之后执行，所有资源都被回滚。
+9. **test**：在执行 Helm 测试子命令时执行。
+
+### 编写 Hook
+
+Hook 是一个 Kubernetes 清单文件，带有特殊的注解在 `metadata` 部分。例如，以下是一个 `post-install` Hook：
+
+```yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{{ .Release.Name }}"
+  labels:
+    app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+    app.kubernetes.io/instance: {{ .Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+  annotations:
+    "helm.sh/hook": post-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": hook-succeeded
+spec:
+  template:
+    metadata:
+      name: "{{ .Release.Name }}"
+      labels:
+        app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
+        app.kubernetes.io/instance: {{ .Release.Name | quote }}
+        helm.sh/chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: post-install-job
+        image: "alpine:3.3"
+        command: ["/bin/sleep","{{ default "10" .Values.sleepyTime }}"]
+```
+
+在上面的示例中，`"helm.sh/hook": post-install` 注解将这个 Job 定义为一个 `post-install` Hook。
+
+### 应用 Hook
+
+在你的情况下，你可以使用 `post-install` Hook 来确保 GKE Ingress 资源在最后安装。例如，你可以创建一个名为 `post-install.yaml` 的文件：
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    "helm.sh/hook": post-install
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: my-products
+            port:
+              number: 60000
+```
+
+在这个示例中，`"helm.sh/hook": post-install` 注解将这个 Ingress 资源定义为一个 `post-install` Hook。这样，Helm 将在所有其他资源都被安装后安装这个 Ingress 资源。
+
+### 依赖关系
+
+如果你的 GKE Ingress 资源依赖于 GKE 的 BackendConfig，你可以使用 `pre-install` Hook 来确保 BackendConfig 在 Ingress 之前安装。例如，你可以创建一个名为 `pre-install.yaml` 的文件：
+
+```yaml
+apiVersion: networking.gke.io/v1beta1
+kind: BackendConfig
+metadata:
+  name: my-backend-config
+  annotations:
+    "helm.sh/hook": pre-install
+spec:
+  # BackendConfig 的配置
+```
+
+在这个示例中，`"helm.sh/hook": pre-install` 注解将这个 BackendConfig 定义为一个 `pre-install` Hook。这样，Helm 将在安装 Ingress 之前安装这个 BackendConfig。
+
+### 总结
+
+使用 Helm Hooks 可以控制资源的安装顺序，确保依赖关系正确地被满足。在你的情况下，你可以使用 `post-install` Hook 来确保 GKE Ingress 资源在最后安装，并使用 `pre-install` Hook 来确保 BackendConfig 在 Ingress 之前安装。
