@@ -109,3 +109,66 @@ where env != "prd" and (team not in ('aibang','aibang1','aibang-in') and team is
 总的来说，`FROM` 子句用于指定要从哪个表中检索数据，而 `LEFT JOIN` 子句用于指定如何连接这些表，并确定返回的结果中是否包含左表中没有匹配的行。
 
 
+
+# 有2个表一个A,比如说A里面有api_name,MID,一个B .api_name,TeamNumber,ORG其中他们都有一个共同的字段比如api_name,我想把2个表中api_name相同的查询出来 其对应的MID
+
+你想从两个表格（A和B）中找出那些api_name相同的数据，并且同时获取到另一个字段MID。这通常意味着你想在A表中查找每个特定的api_name，然后将它与B表中的匹配结果进行关联。
+
+我们用SQL语言来完成这件事，下面是一个简单的方法：
+
+-- SQL代码片段
+
+SELECT A.api_name, B.MID, B.TeamNumber, B.ORG 
+FROM table_A AS A
+JOIN table_B AS B ON A.api_name = B.api_name;
+
+这段代码做了以下事情：
+
+1. SELECT语句选择了我们想要的结果列：A.api_name, B.MID, B.TeamNumber, 和 B.ORG。
+2. FROM table_A AS A和FROM table_B AS B定义了我们需要查询的两个表（A和B），并为它们提供了别名以便于引用。AS关键字用于给这些表起别名，简化查询语句中的引用。
+3. JOIN关键字用来连接这两个表。在这里使用的是ON A.api_name = B.api_name，这是外键连接的条件。它告诉我们SQL系统应该在那些api_name相等的情况下将两个表的数据合并。
+
+结果就是，你将会得到一个新表，其中包含了所有A和B中相同api_name下的所有关联数据，以及额外的MID, TeamNumber和ORG信息。如果某个api_name在B表中有记录而A表中没有，那么只会在A表的查询结果中显示为NULL。
+
+好的,我理解您想将两个表中相同api_name的记录关联起来,并查询对应的MID。我可以帮您优化这个查询。以下是一个优化后的BigQuery SQL查询示例:
+
+```sql
+SELECT 
+  A.api_name,
+  A.MID
+FROM 
+  `your_dataset.TableA` A
+INNER JOIN 
+  `your_dataset.TableB` B
+ON 
+  A.api_name = B.api_name
+```
+
+这个查询做了以下几点优化:
+
+1. 使用INNER JOIN来关联两个表,这比使用WHERE子句更高效。
+
+2. 只选择了您需要的字段(api_name和MID),而不是选择所有字段,这可以减少数据传输量。
+
+3. 使用了表别名(A和B),使查询更简洁易读。
+
+4. 假设您只需要api_name相同的记录,所以使用了INNER JOIN而不是LEFT JOIN或RIGHT JOIN。
+
+如果您还需要B表中的其他字段(如TeamNumber或ORG),您可以在SELECT子句中添加它们,例如:
+
+```sql
+SELECT 
+  A.api_name,
+  A.MID,
+  B.TeamNumber,
+  B.ORG
+FROM 
+  `your_dataset.TableA` A
+INNER JOIN 
+  `your_dataset.TableB` B
+ON 
+  A.api_name = B.api_name
+```
+
+这个查询会返回api_name相同的记录,以及它们对应的MID、TeamNumber和ORG。
+
