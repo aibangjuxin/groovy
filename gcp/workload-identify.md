@@ -1,3 +1,25 @@
+
+GKE (Google Kubernetes Engine) 是 Google 提供的托管 Kubernetes 服务。在 GKE 集群中,有一些默认的服务帐户(Service Accounts,简称 SA)会被创建和使用。
+
+GCP SA (Google Cloud Platform Service Account) 是在 GCP 项目级别创建和管理的服务帐户,通常用于运行 GCP 服务或应用程序,并被授予特定的角色和权限。
+
+GKE SA 则是在 GKE 集群内部创建和使用的服务帐户。它们主要有以下作用:
+
+1. 身份认证和授权
+   Kubernetes 使用 GKE SA 对集群内的工作负载(如 Pod)进行身份认证和授权。每个 Pod 都会关联一个 GKE SA,用于访问 Kubernetes API 或其他集群资源。
+
+2. 集群资源访问控制
+   通过将适当的 Kubernetes RBAC 角色绑定到 GKE SA 上,可以控制工作负载对集群资源的访问权限。
+
+3. 外部服务访问
+   GKE SA 也可以被用于访问 GCP 服务或其他外部服务,比如对象存储、云 SQL 等。可以将 GCP IAM 角色授予 GKE SA,从而获得相应的权限。
+
+4. 机密管理
+   Kubernetes 通过将机密(如密码、API 密钥等)绑定到 GKE SA 上,为集群工作负载提供安全的机密管理。
+
+因此,GKE SA 主要在 Kubernetes 集群内部使用,提供身份认证、授权和访问控制功能。而 GCP SA 通常用于在 GCP 项目级别管理和授权资源访问权限。两者结合使用可实现端到端的安全管理。
+
+
 GCP的Workload Identity的主要作用是提供一种安全且高效的方式来管理Google Cloud Platform（GCP）中应用程序的身份验证和授权。具体来说，它允许在GCP的Kubernetes环境（如GKE集群）中的工作负载，例如Pods，使用Google的IAM（Identity and Access Management）服务帐号进行身份验证，而无需创建和轮换静态的API密钥。
 
 以下是Workload Identity的几个关键作用：
