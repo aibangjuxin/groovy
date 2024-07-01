@@ -752,12 +752,12 @@ data:
 
 1. 将上述内容保存为一个 YAML 文件，例如 `ingress-nginx-configmap.yaml`。
 2. 使用以下命令应用它：
-   ```
+   ```bash
    kubectl apply -f ingress-nginx-configmap.yaml
-
-
-```yal
-apiVersion: v1
+   ```
+   - deployment 
+   ```yaml
+   apiVersion: v1
 kind: ConfigMap
 metadata:
   name: ingress-nginx-controller
@@ -767,6 +767,8 @@ data:
   access-log-path: "/dev/stdout"
   error-log-path: "/dev/stderr"
   log-format-upstream: '{"time": "$time_iso8601", "remote_addr": "$remote_addr", "x-forward-for": "$proxy_add_x_forwarded_for", "request_id": "$req_id", "remote_user": "$remote_user", "bytes_sent": $bytes_sent, "request_time": $request_time, "status": $status, "vhost": "$host", "request_proto": "$server_protocol", "path": "$uri", "request_query": "$args", "request_length": $request_length, "duration": $request_time,"method": "$request_method", "http_referrer": "$http_referer", "http_user_agent": "$http_user_agent" }'
+   ```
+   ```
    ```
 3. 重启 Ingress Nginx 控制器 pod 以确保新的配置生效：
    ```
