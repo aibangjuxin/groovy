@@ -755,6 +755,8 @@ data:
    ```
    kubectl apply -f ingress-nginx-configmap.yaml
 
+
+```yal
 apiVersion: v1
 kind: ConfigMap
 metadata:
