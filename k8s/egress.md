@@ -85,3 +85,74 @@ spec:
 所以，您的判断是正确的：如果没有第一个规则，即使有第二个规则，您也无法访问 192.168.64.98。这是因为第二个规则只针对 Pod 间的通信，而不适用于直接的 IP 地址访问。
 
 这种设置体现了 Kubernetes NetworkPolicy 的精细控制能力，允许您分别管理对特定 IP 和特定类型 Pod 的访问权限。​​​​​​​​​​​​​​​​
+
+
+## 第一个NetworkPolicy
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-to-int-kdp-gke-ingress
+  namespace: aibang
+spec:
+  egress:
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 192.168.64.98/32
+  podSelector: {}
+  policyTypes:
+  - Egress
+```
+
+### 作用
+- **命名空间**：`aibang`
+- **作用对象**：命名空间内的所有Pod
+- **规则类型**：仅限制Egress（出站流量）
+- **出站规则**：允许Pod访问 `192.168.64.98` 端口 `443` 的TCP流量
+
+此规则明确允许命名空间 `aibang` 内的所有Pod向 `192.168.64.98` 的TCP 443端口发起出站流量。
+
+## 第二个NetworkPolicy
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-to-int-kdp-loadbalanceip
+  namespace: aibang
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          nsType: int-kdp
+    podSelector: {}
+    ports:
+    - port: 443
+      protocol: TCP
+```
+
+### 作用
+- **命名空间**：`aibang`
+- **作用对象**：命名空间内的所有Pod
+- **规则类型**：仅限制Egress（出站流量）
+- **出站规则**：允许Pod访问标记为 `nsType: int-kdp` 的命名空间内任意Pod的TCP 443端口
+
+此规则允许 `aibang` 命名空间内的所有Pod向命名空间标签为 `nsType: int-kdp` 内任意Pod的TCP 443端口发起出站流量。
+
+## 解释为什么需要第一个规则才能访问192.168.64.98
+
+虽然第二个规则允许访问命名空间标签为 `nsType: int-kdp` 内任意Pod的TCP 443端口，但 `192.168.64.98` 可能不是这个标签命名空间内的Pod IP。为了明确允许访问特定的IP（如 `192.168.64.98`），需要单独的规则来明确指定这个IP的访问权限。因此，第一个规则直接允许对 `192.168.64.98` 的访问，而不是依赖于命名空间和Pod选择器。
+
+总结：
+- **第一个规则**：直接允许访问特定IP（192.168.64.98）上的特定端口（443）。
+- **第二个规则**：允许访问特定命名空间（带有特定标签）内任意Pod上的特定端口（443），但不包括特定IP（192.168.64.98）除非它在匹配的命名空间内。
+
+通过这两个规则的组合，确保了对 `192.168.64.98` 的明确访问控制。
