@@ -287,3 +287,126 @@ Since 0.05 < 0.1, the scaling action will not be executed, and replicas remain a
 
 If you need any further assistance or examples, feel free to ask!
 
+
+你的计算和总结是正确的。以下是一份关于Horizontal Pod Autoscaler计算和扩缩容决策的文档:
+
+**Horizontal Pod Autoscaler扩缩容计算和决策**
+
+Horizontal Pod Autoscaler根据当前指标值与期望指标值的比率来确定是否需要扩缩容,以及扩缩容的具体数量。这个比率被称为"放大率"(scale ratio)。
+
+计算公式:
+```
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+```
+
+- currentReplicas: 当前副本数量
+- currentMetricValue: 当前指标值,如CPU利用率
+- desiredMetricValue: 期望的指标值
+
+示例:
+- currentReplicas=2, currentMetricValue=90, desiredMetricValue=80
+  - 放大率 = 90/80 = 1.125
+  - desiredReplicas = ceil[2 * 1.125] = ceil[2.25] = 3
+  - 因放大率超出默认0.1容差范围,将从2个副本扩容到3个副本
+
+- currentReplicas=5, currentMetricValue=50, desiredMetricValue=80  
+  - 放大率 = 50/80 = 0.625
+  - desiredReplicas = ceil[5 * 0.625] = ceil[3.125] = 4
+  - 因放大率超出容差范围,将从5个副本缩容到4个副本
+
+扩缩容决策:
+- 如果放大率在默认0.1容差范围内(0.9-1.1),则不执行扩缩容
+- 如果放大率大于1.1,则扩容到desiredReplicas的值
+- 如果放大率小于0.9,则缩容到desiredReplicas的值
+
+可以通过修改`--horizontal-pod-autoscaler-upscale-delay`和`--horizontal-pod-autoscaler-downscale-delay`参数来调整扩缩容的响应时间。
+
+这就是Horizontal Pod Autoscaler根据指标自动扩缩容的基本计算方法和决策逻辑。在实际使用中,可以根据具体的应用场景对相应参数进行微调,以达到最佳的资源利用和应用性能。
+
+Your calculation and summary are correct. Here is a document about Horizontal Pod Autoscaler calculation and scaling decision:
+
+**Horizontal Pod Autoscaler Calculation and Scaling Decision**
+
+The Horizontal Pod Autoscaler determines whether to scale up or down based on the ratio of the current metric value to the desired metric value, known as the "scale ratio".
+
+Calculation formula:
+```
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+```
+
+* `currentReplicas`: current number of replicas
+* `currentMetricValue`: current metric value, such as CPU utilization
+* `desiredMetricValue`: desired metric value
+
+Examples:
+
+* `currentReplicas=2`, `currentMetricValue=90`, `desiredMetricValue=80`
+  - Scale ratio = 90/80 = 1.125
+  - `desiredReplicas` = ceil[2 * 1.125] = ceil[2.25] = 3
+  - Since the scale ratio exceeds the default 0.1 tolerance range, the number of replicas will be scaled up from 2 to 3.
+
+* `currentReplicas=5`, `currentMetricValue=50`, `desiredMetricValue=80`
+  - Scale ratio = 50/80 = 0.625
+  - `desiredReplicas` = ceil[5 * 0.625] = ceil[3.125] = 4
+  - Since the scale ratio exceeds the tolerance range, the number of replicas will be scaled down from 5 to 4.
+
+Scaling decision:
+
+* If the scale ratio is within the default 0.1 tolerance range (0.9-1.1), no scaling action will be taken.
+* If the scale ratio is greater than 1.1, scaling up to the `desiredReplicas` value will occur.
+* If the scale ratio is less than 0.9, scaling down to the `desiredReplicas` value will occur.
+
+You can adjust the scaling response time by modifying the `--horizontal-pod-autoscaler-upscale-delay` and `--horizontal-pod-autoscaler-downscale-delay` parameters.
+
+This is the basic calculation method and decision logic for Horizontal Pod Autoscaler to automatically scale based on metrics. In practical use, you can fine-tune the corresponding parameters according to specific application scenarios to achieve optimal resource utilization and application performance.
+
+Your calculation and summary are correct. Here is a document about Horizontal Pod Autoscaler calculation and scaling decision:
+
+## Horizontal Pod Autoscaler Calculation and Scaling Decision
+
+The Horizontal Pod Autoscaler determines whether to scale up or down based on the ratio of the current metric value to the desired metric value, known as the "scale ratio".
+
+### Calculation Formula
+```plaintext
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+```
+
+- `currentReplicas`: current number of replicas
+- `currentMetricValue`: current metric value, such as CPU utilization
+- `desiredMetricValue`: desired metric value
+
+### Examples
+
+#### Example 1
+- `currentReplicas=2`
+- `currentMetricValue=90`
+- `desiredMetricValue=80`
+
+**Calculation:**
+- Scale ratio = 90 / 80 = 1.125
+- `desiredReplicas` = ceil[2 * 1.125] = ceil[2.25] = 3
+- Since the scale ratio exceeds the default 0.1 tolerance range, the number of replicas will be scaled up from 2 to 3.
+
+#### Example 2
+- `currentReplicas=5`
+- `currentMetricValue=50`
+- `desiredMetricValue=80`
+
+**Calculation:**
+- Scale ratio = 50 / 80 = 0.625
+- `desiredReplicas` = ceil[5 * 0.625] = ceil[3.125] = 4
+- Since the scale ratio exceeds the tolerance range, the number of replicas will be scaled down from 5 to 4.
+
+### Scaling Decision
+
+- If the scale ratio is within the default 0.1 tolerance range (0.9-1.1), no scaling action will be taken.
+- If the scale ratio is greater than 1.1, scaling up to the `desiredReplicas` value will occur.
+- If the scale ratio is less than 0.9, scaling down to the `desiredReplicas` value will occur.
+
+### Adjusting the Scaling Response Time
+
+You can adjust the scaling response time by modifying the `--horizontal-pod-autoscaler-upscale-delay` and `--horizontal-pod-autoscaler-downscale-delay` parameters.
+
+This is the basic calculation method and decision logic for Horizontal Pod Autoscaler to automatically scale based on metrics. In practical use, you can fine-tune the corresponding parameters according to specific application scenarios to achieve optimal resource utilization and application performance.
+
+
