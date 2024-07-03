@@ -83,3 +83,207 @@ ratio = currentMetricValue / desiredMetricValue
 
 - **desiredReplicas**的值是3。
 - 由于比率1.125超出了默认容差范围，控制平面将执行缩放操作，将副本数从2增加到3。
+
+
+### Horizontal Pod Autoscaler Calculation
+
+The Horizontal Pod Autoscaler (HPA) in Kubernetes uses the following formula to determine the desired number of replicas:
+
+```
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+```
+
+Additionally, the control plane will skip any scaling action if the ratio of `currentMetricValue / desiredMetricValue` is sufficiently close to 1.0, within a globally-configurable tolerance (0.1 by default).
+
+### Given Values
+- `currentReplicas = 2`
+- `currentMetricValue = 90`
+- `desiredMetricValue = 80`
+
+### Calculation
+
+1. **Calculate the desired replicas:**
+
+   Using the formula:
+   ```
+   desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+   ```
+   Substituting the given values:
+   ```
+   desiredReplicas = ceil[2 * (90 / 80)]
+                   = ceil[2 * 1.125]
+                   = ceil[2.25]
+                   = 3
+   ```
+
+2. **Check if the ratio is within the tolerance:**
+
+   Calculate the ratio:
+   ```
+   ratio = currentMetricValue / desiredMetricValue
+         = 90 / 80
+         = 1.125
+   ```
+
+   Determine the difference from 1.0:
+   ```
+   difference = |1.125 - 1.0| = 0.125
+   ```
+
+   Compare this difference with the default tolerance of 0.1. Since 0.125 > 0.1, the ratio is not within the tolerance range.
+
+### Conclusion
+- The calculated `desiredReplicas` is 3.
+- Since the ratio (1.125) exceeds the default tolerance (0.1), the control plane will execute the scaling action, increasing the number of replicas from 2 to 3.
+
+### Examples
+Here are a few examples with different values:
+
+1. **Example 1**
+   - `currentReplicas = 4`
+   - `currentMetricValue = 120`
+   - `desiredMetricValue = 100`
+   
+   Calculation:
+   ```
+   desiredReplicas = ceil[4 * (120 / 100)]
+                   = ceil[4 * 1.2]
+                   = ceil[4.8]
+                   = 5
+   ```
+   Ratio:
+   ```
+   ratio = 120 / 100
+         = 1.2
+   ```
+   Difference from 1.0:
+   ```
+   difference = |1.2 - 1.0| = 0.2
+   ```
+   Since 0.2 > 0.1, the scaling action will increase replicas from 4 to 5.
+
+2. **Example 2**
+   - `currentReplicas = 5`
+   - `currentMetricValue = 95`
+   - `desiredMetricValue = 100`
+   
+   Calculation:
+   ```
+   desiredReplicas = ceil[5 * (95 / 100)]
+                   = ceil[5 * 0.95]
+                   = ceil[4.75]
+                   = 5
+   ```
+   Ratio:
+   ```
+   ratio = 95 / 100
+         = 0.95
+   ```
+   Difference from 1.0:
+   ```
+   difference = |0.95 - 1.0| = 0.05
+   ```
+   Since 0.05 < 0.1, the scaling action will not be executed, and replicas remain at 5.
+
+### Summary Document
+
+```markdown
+# Horizontal Pod Autoscaler Calculation
+
+## Formula
+The Horizontal Pod Autoscaler (HPA) uses the following formula:
+```
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+```
+
+## Tolerance
+The control plane skips any scaling action if the ratio `currentMetricValue / desiredMetricValue` is sufficiently close to 1.0, within a globally-configurable tolerance (0.1 by default).
+
+## Example Calculation
+
+### Given Values
+- `currentReplicas = 2`
+- `currentMetricValue = 90`
+- `desiredMetricValue = 80`
+
+### Steps
+1. Calculate the desired replicas:
+   ```
+   desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+   ```
+   Substituting the values:
+   ```
+   desiredReplicas = ceil[2 * (90 / 80)]
+                   = ceil[2 * 1.125]
+                   = ceil[2.25]
+                   = 3
+   ```
+
+2. Check the ratio:
+   ```
+   ratio = currentMetricValue / desiredMetricValue
+         = 90 / 80
+         = 1.125
+   ```
+   Determine the difference from 1.0:
+   ```
+   difference = |1.125 - 1.0| = 0.125
+   ```
+
+   Since 0.125 > 0.1, the ratio is not within the tolerance, and the control plane will execute the scaling action.
+
+### Conclusion
+- The calculated `desiredReplicas` is 3.
+- The control plane will increase the number of replicas from 2 to 3.
+
+## Additional Examples
+
+### Example 1
+- `currentReplicas = 4`
+- `currentMetricValue = 120`
+- `desiredMetricValue = 100`
+
+Calculation:
+```
+desiredReplicas = ceil[4 * (120 / 100)]
+                = ceil[4 * 1.2]
+                = ceil[4.8]
+                = 5
+```
+Ratio:
+```
+ratio = 120 / 100
+      = 1.2
+```
+Difference from 1.0:
+```
+difference = |1.2 - 1.0| = 0.2
+```
+Since 0.2 > 0.1, the scaling action will increase replicas from 4 to 5.
+
+### Example 2
+- `currentReplicas = 5`
+- `currentMetricValue = 95`
+- `desiredMetricValue = 100`
+
+Calculation:
+```
+desiredReplicas = ceil[5 * (95 / 100)]
+                = ceil[5 * 0.95]
+                = ceil[4.75]
+                = 5
+```
+Ratio:
+```
+ratio = 95 / 100
+      = 0.95
+```
+Difference from 1.0:
+```
+difference = |0.95 - 1.0| = 0.05
+```
+Since 0.05 < 0.1, the scaling action will not be executed, and replicas remain at 5.
+```
+
+If you need any further assistance or examples, feel free to ask!
+
