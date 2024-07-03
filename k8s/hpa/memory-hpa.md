@@ -1,4 +1,86 @@
+### 示例 2 分析
 
+#### 给定值
+- `currentReplicas = 4`
+- `currentMetricValue = 60`
+- `desiredMetricValue = 80`
+
+#### 计算
+
+1. **计算所需的副本数:**
+   ```
+   desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+   ```
+   代入给定值:
+   ```
+   desiredReplicas = ceil[4 * (60 / 80)]
+                   = ceil[4 * 0.75]
+                   = ceil[3]
+                   = 3
+   ```
+
+2. **检查比率:**
+   ```
+   ratio = currentMetricValue / desiredMetricValue
+         = 60 / 80
+         = 0.75
+   ```
+
+3. **计算与 1.0 的差值:**
+   ```
+   difference = |0.75 - 1.0| = 0.25
+   ```
+
+由于差值 (0.25) 超过了默认的容差 0.1，控制平面将执行缩放操作。
+
+### 结论
+- 计算得到的 `desiredReplicas` 是 3。
+- 控制平面将把副本数从 4 减少到 3，因为比率 (0.75) 超出了容差范围。
+
+### 总结文档
+
+```markdown
+# 水平Pod自动扩缩计算 - 示例 2
+
+## 给定值
+- `currentReplicas = 4`
+- `currentMetricValue = 60`
+- `desiredMetricValue = 80`
+
+## 计算
+
+1. **计算所需的副本数:**
+   ```
+   desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+   ```
+   代入给定值:
+   ```
+   desiredReplicas = ceil[4 * (60 / 80)]
+                   = ceil[4 * 0.75]
+                   = ceil[3]
+                   = 3
+   ```
+
+2. **检查比率:**
+   ```
+   ratio = currentMetricValue / desiredMetricValue
+         = 60 / 80
+         = 0.75
+   ```
+
+3. **计算与 1.0 的差值:**
+   ```
+   difference = |0.75 - 1.0| = 0.25
+   ```
+
+由于差值 (0.25) 超过了默认的容差 0.1，控制平面将执行缩放操作。
+
+## 结论
+- 计算得到的 `desiredReplicas` 是 3。
+- 控制平面将把副本数从 4 减少到 3，因为比率 (0.75) 超出了容差范围。
+```
+
+该文档总结了分析结果，并表明由于实际指标值与期望指标值的偏差较大，控制平面将执行缩放操作，减少副本数。如果你需要更多帮助或示例，请随时告知！
 
 学习下面这个文章
 https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
