@@ -156,3 +156,61 @@ spec:
 - **第二个规则**：允许访问特定命名空间（带有特定标签）内任意Pod上的特定端口（443），但不包括特定IP（192.168.64.98）除非它在匹配的命名空间内。
 
 通过这两个规则的组合，确保了对 `192.168.64.98` 的明确访问控制。
+
+Let's break down the two NetworkPolicy resources and explain their effects.
+
+**First NetworkPolicy:**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-to-int-kdp-gke-ingress
+  namespace: aibang
+spec:
+  egress:
+  - ports:
+    - port: 443
+      protocol: TCP
+    to:
+    - ipBlock:
+        cidr: 192.168.64.98/32
+  podSelector: {}
+  policyTypes:
+  - Egress
+```
+This NetworkPolicy allows egress traffic from pods in the `aibang` namespace to the IP address `192.168.64.98` on port `443` using the `TCP` protocol. The `podSelector` is empty, which means this policy applies to all pods in the `aibang` namespace.
+
+**Second NetworkPolicy:**
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-rt-egress-to-int-kdp-loadbalanceip
+  namespace: aibang
+spec:
+  podSelector: {}
+  policyTypes:
+  - Egress
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          nsType: int-kdp
+    podSelector: {}
+    ports:
+    - port: 443
+      protocol: TCP
+```
+This NetworkPolicy allows egress traffic from pods in the `aibang` namespace to pods in namespaces that match the label `nsType: int-kdp` on port `443` using the `TCP` protocol. The `podSelector` is empty, which means this policy applies to all pods in the `aibang` namespace.
+
+**Why the first rule is needed to access 192.168.64.98**
+
+The reason why the first rule is needed to access `192.168.64.98` is that the second rule only allows egress traffic to pods in namespaces that match the label `nsType: int-kdp`, but it doesn't specify a specific IP address.
+
+The first rule, on the other hand, explicitly allows egress traffic to the IP address `192.168.64.98` on port `443`. This is necessary because the IP address `192.168.64.98` is not a pod in a namespace that matches the label `nsType: int-kdp`, but rather a specific IP address that needs to be accessed.
+
+In summary, the first rule allows egress traffic to a specific IP address, while the second rule allows egress traffic to pods in specific namespaces. Both rules are necessary to ensure that the desired traffic is allowed.
+
+
+
+
