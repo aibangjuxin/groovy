@@ -409,4 +409,70 @@ You can adjust the scaling response time by modifying the `--horizontal-pod-auto
 
 This is the basic calculation method and decision logic for Horizontal Pod Autoscaler to automatically scale based on metrics. In practical use, you can fine-tune the corresponding parameters according to specific application scenarios to achieve optimal resource utilization and application performance.
 
+确实，您的计算和理解是正确的。根据提供的公式和数值，desiredReplicas的值确实是3，并且由于比率1.125超过了默认的容差范围0.1，所以Kubernetes将执行缩放操作，把Pod的副本数从2增加到3。
 
+接下来，我将基于您的需求提供一个文档，这会帮助您更深入地理解这种计算方法，并且提供一些额外的示例。
+
+## Kubernetes Horizontal Pod Autoscaler (HPA)计算方法文档
+
+Horizontal Pod Autoscaler (HPA)允许自动缩放Kubernetes集群中的Pod数量，以应对不同的负载情况。HPA根据CPU使用量或自定义指标自动增加或减少Pod的副本数。
+
+### 计算公式
+
+HPA使用以下公式来计算Desired Replicas的数量：
+
+```
+desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricValue )]
+```
+
+其中：
+- `desiredReplicas`：Kubernetes将尝试自动调整到的Pod副本数。
+- `currentReplicas`：当前的Pod副本数。
+- `currentMetricValue`：当前的指标值，如CPU使用率。
+- `desiredMetricValue`：目标指标值，即您希望每个Pod保持的指标水平。
+
+### 示例
+
+**示例 1:** 您的应用当前运行2个副本，其CPU使用率为90%，而您的目标CPU使用率是80%。
+
+- `currentReplicas` = 2
+- `currentMetricValue` = 90
+- `desiredMetricValue` = 80
+
+代入公式计算：
+
+```
+desiredReplicas = ceil[2 * (90 / 80)]
+                = ceil[2 * 1.125]
+                = ceil[2.25]
+                = 3
+```
+
+**示例 2:** 假设您有4个Pod的副本，当前的平均CPU使用率为200%，目标CPU使用率是100%。
+
+- `currentReplicas` = 4
+- `currentMetricValue` = 200
+- `desiredMetricValue` = 100
+
+计算得出：
+
+```
+desiredReplicas = ceil[4 * (200 / 100)]
+                = ceil[4 * 2]
+                = ceil[8]
+                = 8
+```
+
+在这种情况下，HPA将尝试把Pod副本数量从4增加到8，以降低每个Pod的平均负载，接近目标负载100%。
+
+### 注意
+
+控制平面会跳过缩放操作，如果计算出的比率接近于1.0（在全局可配置的容差范围内，默认值为0.1）。
+
+这意味着，如果目标和当前指标值非常接近，从而不需要进行大规模的调整，HPA会保持当前副本数不变，以避免频繁的缩放操作可能导致的系统不稳定。
+
+### 结论
+
+通过使用Horizontal Pod Autoscaler，您可以确保应用根据实际负载自动扩展或收缩，从而优化资源使用并维护稳定的响应时间。理解和应用上述计算方法有助于更高效地管理Kubernetes集群。
+
+希望这个文档对您有帮助，如果您有任何其他问题，请随时告诉我！
