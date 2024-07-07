@@ -200,3 +200,85 @@ if __name__ == '__main__':
 4. **数据合并**： 最后将两个CSV文件的数据合并到一个最终的CSV文件中。
 
 通过这种方式，可以实现从不同的GCP工程中获取数据并使用不同的代理，同时保证数据的安全性和独立性。
+
+### explane bq_init_connection
+这段代码的作用是创建一个连接到Google BigQuery的客户端，同时通过指定的代理服务器来进行网络请求。以下是这段代码的详细解释：
+
+```python
+# Function to create a connection with Google BigQuery using a proxy
+def bq_init_connection(service_account_file, proxy):
+    # 使用服务账户文件创建凭据对象
+    credentials = service_account.Credentials.from_service_account_file(service_account_file)
+    
+    # 使用上述凭据创建BigQuery客户端
+    client = bigquery.Client(credentials=credentials)
+    
+    # 配置代理的会话
+    session = requests.Session()
+    session.proxies = {
+        'http': proxy,
+        'https': proxy,
+    }
+    
+    # 配置重试策略
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    session.mount('http://', HTTPAdapter(max_retries=retries))
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+
+    # 将配置好的会话对象赋值给BigQuery客户端的HTTP会话属性
+    client._http = session
+    return client
+```
+
+### 详细解释
+
+1. **创建服务账户凭据对象**:
+    ```python
+    credentials = service_account.Credentials.from_service_account_file(service_account_file)
+    ```
+    这行代码使用服务账户文件（`service_account_file`）来创建一个`Credentials`对象，用于认证和授权与Google BigQuery的交互。
+
+2. **创建BigQuery客户端**:
+    ```python
+    client = bigquery.Client(credentials=credentials)
+    ```
+    使用上述创建的`Credentials`对象创建一个BigQuery客户端，这个客户端用于执行查询和其他BigQuery操作。
+
+3. **设置代理会话**:
+    ```python
+    session = requests.Session()
+    session.proxies = {
+        'http': proxy,
+        'https': proxy,
+    }
+    ```
+    创建一个新的`requests`会话，并为HTTP和HTTPS请求配置代理。`proxy`参数是代理服务器的地址。
+
+4. **配置重试策略**:
+    ```python
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    session.mount('http://', HTTPAdapter(max_retries=retries))
+    session.mount('https://', HTTPAdapter(max_retries=retries))
+    ```
+    配置一个重试策略：
+    - `total=5`：总共重试5次。
+    - `backoff_factor=1`：每次重试的等待时间逐次增加。
+    - `status_forcelist=[502, 503, 504]`：只在特定的HTTP状态码（502、503、504）时进行重试。
+
+    然后，将该重试策略应用到HTTP和HTTPS请求。
+
+5. **将配置好的会话对象赋值给BigQuery客户端的HTTP会话属性**:
+    ```python
+    client._http = session
+    ```
+    将配置好的`requests`会话对象赋值给BigQuery客户端的`_http`属性，使得BigQuery客户端在执行请求时使用这个会话，从而使用配置好的代理和重试策略。
+
+6. **返回配置好的BigQuery客户端**:
+    ```python
+    return client
+    ```
+    最后，返回配置好的BigQuery客户端，用于后续的查询操作。
+
+### 总结
+这段代码主要是为了在通过代理服务器访问Google BigQuery时，确保每个请求都通过指定的代理，并在遇到特定错误状态码时进行重试。这对于跨多个GCP工程进行数据访问时尤为重要，因为每个工程可能需要不同的代理和认证配置。
+
