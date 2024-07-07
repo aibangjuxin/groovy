@@ -603,3 +603,83 @@ flowchart TD
    - 保留原有的颜色编码来区分项目和API的步骤。
 
 您可以将此代码复制到Mermaid在线工具或支持Mermaid的Markdown编辑器中进行预览，来查看优化后的效果。
+
+
+
+根据您的需求,我可以为您提供在GKE中配置Secret Manager来读取Secret的步骤:
+
+1. 创建GKE集群(如果还没有):
+
+```bash
+gcloud container clusters create my-cluster \
+  --workload-pool=${PROJECT_ID}.svc.id.goog \
+  --zone=us-central1-a
+```
+
+2. 在Secret Manager中创建Secret:
+
+```bash
+echo -n "my-secret-value" | \
+gcloud secrets create my-secret \
+  --replication-policy="automatic" \
+  --data-file=-
+```
+
+3. 创建Google Service Account (GSA):
+
+```bash
+gcloud iam service-accounts create gke-secret-sa
+```
+
+4. 为GSA授予Secret访问权限:
+
+```bash
+gcloud secrets add-iam-policy-binding my-secret \
+  --member="serviceAccount:gke-secret-sa@${PROJECT_ID}.iam.gserviceaccount.com" \
+  --role="roles/secretmanager.secretAccessor"
+```
+
+5. 创建Kubernetes Service Account (KSA):
+
+```bash
+kubectl create serviceaccount ksa-name -n my-namespace
+```
+
+6. 配置Workload Identity:
+
+```bash
+gcloud iam service-accounts add-iam-policy-binding gke-secret-sa@${PROJECT_ID}.iam.gserviceaccount.com \
+  --role roles/iam.workloadIdentityUser \
+  --member "serviceAccount:${PROJECT_ID}.svc.id.goog[my-namespace/ksa-name]"
+
+kubectl annotate serviceaccount ksa-name \
+  --namespace my-namespace \
+  iam.gke.io/gcp-service-account=gke-secret-sa@${PROJECT_ID}.iam.gserviceaccount.com
+```
+
+7. 在Pod中使用KSA并访问Secret:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: secret-test-pod
+spec:
+  serviceAccountName: ksa-name
+  containers:
+  - name: secret-test-container
+    image: google/cloud-sdk:slim
+    command: ["/bin/bash"]
+    args: ["-c", "gcloud secrets versions access latest --secret=my-secret"]
+```
+
+这个配置允许Pod使用Workload Identity来访问Secret Manager中的Secret,无需在集群中存储敏感信息。确保替换所有的占位符(如PROJECT_ID、my-namespace等)为您的实际值。
+
+Citations:
+[1] https://github.com/boredabdel/gke-secret-manager
+[2] https://www.reddit.com/r/kubernetes/comments/1agu56x/safe_secret_manager_in_gke_experiences/
+[3] https://breadnet.co.uk/kubernets-secrets-using-google-secret-manager/
+[4] https://zenn.dev/usapyon/articles/ec5b70cff6bbb0
+[5] https://cloud.google.com/kubernetes-engine/docs/tutorials/workload-identity-secrets
+
+
