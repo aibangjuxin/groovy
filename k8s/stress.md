@@ -259,3 +259,69 @@ Choose the method that best suits your needs and environment, and adjust the amo
 
    * 测试HPA，以确保它能够正确地扩展和缩减副本数。
    * 例如，通过增加和减少负载来测试HPA。
+
+
+
+如果你想直接在Pod内部使用shell命令进行内存压力测试，可以使用一个简单的Bash脚本来分配和占用内存。以下是一个示例脚本，以及如何在Pod中使用这个脚本的方法。
+
+1. **创建一个Bash脚本**
+
+你可以在Pod内创建一个Bash脚本，该脚本使用`dd`命令来分配内存，并通过循环保持这些内存的使用。
+
+**memory_hog.sh**
+
+```sh
+#!/bin/bash
+
+# 设置要占用的内存大小（以MB为单位）
+MEMORY_SIZE_MB=500
+
+# 创建一个占用指定内存的文件
+dd if=/dev/zero of=/tmp/memory_hog bs=1M count=$MEMORY_SIZE_MB
+
+# 读取文件以保持内存使用
+cat /tmp/memory_hog | head -c $((MEMORY_SIZE_MB * 1024 * 1024)) >/dev/null &
+
+# 保持脚本运行，以防止Pod终止
+sleep infinity
+```
+
+2. **在Pod内执行脚本**
+
+首先，登录到你的Pod：
+
+```sh
+kubectl exec -it <pod-name> -- /bin/bash
+```
+
+在Pod内创建并运行上述脚本：
+
+```sh
+# 创建脚本文件
+cat << 'EOF' > /memory_hog.sh
+#!/bin/bash
+
+# 设置要占用的内存大小（以MB为单位）
+MEMORY_SIZE_MB=500
+
+# 创建一个占用指定内存的文件
+dd if=/dev/zero of=/tmp/memory_hog bs=1M count=$MEMORY_SIZE_MB
+
+# 读取文件以保持内存使用
+cat /tmp/memory_hog | head -c $((MEMORY_SIZE_MB * 1024 * 1024)) >/dev/null &
+
+# 保持脚本运行，以防止Pod终止
+sleep infinity
+EOF
+
+# 赋予执行权限
+chmod +x /memory_hog.sh
+
+# 运行脚本
+./memory_hog.sh
+```
+
+这个脚本会创建一个大小为指定MB的文件，并持续读取该文件以占用内存。`sleep infinity`命令保证脚本一直运行，从而保持内存占用状态。
+
+这样，你可以直接在Pod内部进行内存压力测试，并根据需要调整内存占用大小。
+
