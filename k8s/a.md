@@ -713,6 +713,30 @@ spec:
 
 Sources
 
+计算MaxSurge的具体副本数量需要知道期望的副本数。
+
+MaxSurge可以表示为百分比或固定值。如果是百分比，计算时需要根据期望副本数来确定具体的副本数量。
+
+例如，如果期望副本数是10，MaxSurge设置为25%，则计算方式为：
+
+￼￼￼￼￼
+
+向上取整，得到MaxSurge的具体副本数量为3。
+
+如果MaxSurge直接给定为固定值，那该固定值就是具体的副本数量。
+
+在 Kubernetes 滚动更新中，Deployment controller 调整 ReplicaSet 数量时，会严格通过公式(目标副本数 - maxUnavailable) <= 线上实际 Ready 副本数 <= (目标副本数 + maxSurge)来控制发布节奏。其中，maxUnavailable表示和期望 ready 的副本数比，不可用副本数最大比例（或最大值）；maxSurge表示和期望 ready 的副本数比，超过期望副本数最大比例（或最大值）。
+
+两者的取值范围如下：
+
+• 数值：maxUnavailable为￼￼，maxSurge为￼￼。
+
+• 比例：maxUnavailable为￼￼向下取整；maxSurge为￼￼向上取整。
+
+注意：两者不能同时为0。
+
+建议配置为maxUnavailable == 0，maxSurge == 1，即“一上一下，先上后下”的最平滑原则：1 个新版本 pod ready（结合 readiness）后，才销毁旧版本 pod。此配置适用场景是平滑更新、保证服务平稳，但更新速度相对较慢。如果需要根据实际情况加快更新速度，可以适当调整这两个值，但需确保线上能够正常提供服务的 pod 数在合理的区间内。
+
 
 
 
