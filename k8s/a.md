@@ -1,3 +1,50 @@
+
+根据搜索结果和我的理解,HPA(Horizontal Pod Autoscaler)的一些常见最佳实践包括:
+
+1. 合理设置minReplicas和maxReplicas:
+   - minReplicas不要设置太低,至少保证2-3个Pod以保证高可用性。
+   - maxReplicas不要设置过高,避免资源浪费和潜在的系统不稳定。
+
+2. 选择合适的metrics:
+   - CPU使用率是最常用的metric,通常设置为50%-80%。
+   - 内存使用率也可以作为辅助metric。
+   - 对于特定应用,可以考虑使用自定义metrics。
+
+3. 调整scaleUp和scaleDown策略:
+   - 设置适当的冷却时间(cooldown period),避免频繁扩缩容。
+   - scaleUp可以相对激进一些,scaleDown则应该更保守。
+
+4. 使用stabilizationWindowSeconds:
+   - 设置一个稳定窗口期,在此期间内metric波动不会触发扩缩容。
+
+5. 配合PodDisruptionBudget使用:
+   - 确保在缩容过程中不会影响应用可用性。
+
+6. 监控和调优:
+   - 持续监控HPA的行为和效果。
+   - 根据实际情况调整参数,如metrics阈值、冷却时间等。
+
+7. 考虑使用VPA(Vertical Pod Autoscaler):
+   - 对于某些应用,垂直扩展可能比水平扩展更合适。
+
+8. 合理设置resource requests和limits:
+   - HPA基于resource requests进行计算,确保设置合理。
+
+9. 对于测试环境和生产环境,可以采用不同的HPA策略:
+   - 测试环境可以更激进一些,生产环境则需要更保守稳定。
+
+10. 对于关键应用,可以考虑手动设置minReplicas为所需的最小Pod数,以确保基本可用性。
+
+总之,HPA的配置需要根据具体应用和场景进行调整和优化,没有一刀切的方案。持续监控和调优是获得最佳效果的关键。
+
+Sources
+[1] HPA doesn't scale down to minReplicas even though metric is under ... https://github.com/kubernetes/kubernetes/issues/78761
+[2] Allow HPA to scale to 0 · Issue #69687 · kubernetes ... - GitHub https://github.com/kubernetes/kubernetes/issues/69687
+[3] KubernetesのPodとNodeのAuto Scalingについて - Qiita https://qiita.com/sheepland/items/37ea0b77df9a4b4c9d80
+[4] HPA v2 scales up deployment during rolling updates #90461 - GitHub https://github.com/kubernetes/kubernetes/issues/90461
+[5] When increase cpu load HorizontalPodAutoscaler can't auto scale pod https://github.com/kubernetes/kubernetes/issues/16018
+
+
 那我至于我上面所有的问题 我想让我的hpa
 能够动态的扩容和作用缩容而且我的desiredMetricValue
  (目标内存使用率) = 80% 
