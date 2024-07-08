@@ -379,6 +379,46 @@ test_array=($(for i in {1..524288}; do echo "A"; done))
 while true; do sleep 1; done
 ```
 
+
+```bash
+#!/bin/bash
+
+test_array=($(for i in {1..524288}; do echo "A"; done))
+
+while true; do
+    sleep 1
+done
+
+```
+
+这个命令实际上应该分成两行（或者更多行，如果我们考虑到更易读的格式）：
+
+1. 第一行创建数组：
+   ```bash
+   test_array=($(for i in {1..524288}; do echo "A"; done))
+   ```
+
+2. 第二行（或多行）是无限循环：
+   ```bash
+   while true; do
+       sleep 1
+   done
+   ```
+
+在实际使用时，您可以将这些命令保存在一个脚本文件中（例如 `memory_occupier.sh`），然后执行该脚本。或者，您可以在命令行中一行一行地输入这些命令。
+
+如果您想在一行中执行整个命令（虽然这样可读性较差），您可以使用分号连接这两个部分：
+
+```bash
+test_array=($(for i in {1..524288}; do echo "A"; done)); while true; do sleep 1; done
+```
+
+但是，我建议将这些命令分开写，或者保存在脚本文件中，这样更容易理解和修改。
+
+您是想在命令行中直接执行这些命令，还是创建一个脚本文件来运行它们？我可以根据您的需求提供更具体的指导。
+
+
+
 这会创建一个大约占用 512MB 内存的数组,然后保持脚本运行。
 
 这些方法中,Python 脚本可能是最灵活和可控的。您可以轻松修改内存占用量,还可以添加更多功能,比如逐步增加内存使用或模拟内存泄漏。
