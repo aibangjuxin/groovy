@@ -221,3 +221,157 @@ spec:
 但是,由于副本数最多为5个,因此这种配置更适用于非关键或中等重要级别的服务。对于核心业务系统或对高可用性要求极高的场景,您可以考虑提高最大副本数,并降低`maxUnavailable`的值,以进一步提高可靠性。
 
 
+
+到底是向上取整还是向下取整
+您提出了一个很好的问题。确实,关于Kubernetes中maxUnavailable参数的取整方式,存在一些混淆和不一致的说法。让我们来厘清这个问题:
+
+1. 官方文档的说法
+
+根据Kubernetes官方文档[2],对于PodDisruptionBudget(PDB)中的minAvailable和maxUnavailable参数,当使用百分比表示时:
+
+"Kubernetes rounds up to the nearest integer"
+
+这意味着对于PDB,Kubernetes会向上取整。
+
+2. 实际代码实现
+
+然而,对于Deployment的rollingUpdate策略中的maxUnavailable参数,实际的代码实现与文档描述不符。根据GitHub上的一个issue[1]:
+
+"API documentation says deployment.spec.strategy.rollingUpdate.maxUnavailable is rounded up, but it is actually rounded down"
+
+这个issue指出,虽然API文档说maxUnavailable会向上取整,但实际代码中是向下取整的。
+
+3. 原因解释
+
+在同一个issue中[1],Kubernetes开发者解释了这种不一致的原因:
+
+"We changed maxUnavailable to round down so that we wouldn't accidentally infer 100% unavailability for non-100 percentages."
+
+他们改变了maxUnavailable的取整方式为向下取整,以避免在非100%的情况下意外推断出100%不可用。
+
+4. 实际行为
+
+基于以上信息,我们可以总结出:
+
+- 对于Deployment的rollingUpdate策略中的maxUnavailable: 向下取整
+- 对于PodDisruptionBudget(PDB)中的minAvailable和maxUnavailable: 向上取整
+
+5. 文档不一致性
+
+很明显,官方文档和实际代码实现之间存在不一致。这种不一致性可能是导致混淆的主要原因。
+
+6. 建议
+
+鉴于这种情况,建议在使用这些参数时:
+
+- 仔细测试实际行为
+- 不要过分依赖边界情况
+- 如果可能,使用绝对数值而不是百分比来避免取整问题
+
+总之,您的观察是正确的。对于Deployment的maxUnavailable参数,实际上是向下取整的,尽管一些文档可能表述不同。这凸显了在使用Kubernetes时,有时需要通过实际测试来验证行为,而不仅仅依赖文档描述。
+
+Sources
+[1] Incorrect documentation of rollingUpdate.maxUnavailable rounding https://github.com/kubernetes/kubernetes/issues/37083
+[2] Deployments | Kubernetes https://kubernetes.io/docs/concepts/workloads/controllers/deployment/
+[3] maxSurge と maxUnavailable の不思議 - Zenn https://zenn.dev/kariya_mitsuru/articles/2185023ffa4827
+[4] kube-state-metrics should round down maxUnavailable · Issue #1075 https://github.com/kubernetes/kube-state-metrics/issues/1075
+[5] Specifying a Disruption Budget for your Application - Kubernetes https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+[6] Kubernetes Rolling Update Configuration - Blue Matador https://www.bluematador.com/blog/kubernetes-deployments-rolling-update-configuration
+[7] Kubernetes 1.24: Maximum Unavailable Replicas for StatefulSet https://kubernetes.io/blog/2022/05/27/maxunavailable-for-statefulset/
+[8] Rolling update strategy not giving zero downtime in live traffic https://stackoverflow.com/questions/61794422/rolling-update-strategy-not-giving-zero-downtime-in-live-traffic
+[9] Kubernetes Deployment: Ultimate Guide and 8 Deployment Strategies https://spot.io/resources/kubernetes-autoscaling/5-kubernetes-deployment-strategies-roll-out-like-the-pros/
+[10] Understanding the Available condition of a Kubernetes deployment https://maelvls.dev/deployment-available-condition/
+[11] Kubernetes Deployments Demystified: A Guide to the Rolling ... https://semaphoreci.com/blog/kubernetes-rolling-update-deployment
+[12] Rolling update killing off old pod without bringing up new one https://stackoverflow.com/questions/46369100/kubernetes-rolling-update-killing-off-old-pod-without-bringing-up-new-one
+[13] RollingUpdate strategy is not respected with regards to ... - GitHub https://github.com/kedacore/keda/issues/2720
+[14] Building A Robust Kubernetes Deployment Update Strategy - Zeet.co https://zeet.co/blog/kubernetes-deployment-update-strategy
+
+
+非常感谢您的提醒。您说得对,我们需要基于maxUnavailable参数向下取整的事实重新分析这个问题。让我重新回答您的问题:
+
+对于您的情况:
+
+1. maxUnavailable参数的影响
+
+设置 `maxUnavailable: 25%` 在向下取整的情况下:
+
+- 25%的2个Pod = 0.5个Pod
+- 向下取整后,实际上允许0个Pod不可用
+- 这意味着系统会尽量保持所有Pod运行
+
+然而,这个设置实际上并不会直接阻止HPA将Pod数量减少到1个。maxUnavailable主要影响滚动更新过程,而不是HPA的缩容行为。
+
+2. HPA没有缩小到一个Pod的可能原因
+
+a) 冷却期:
+   HPA有一个默认的缩容冷却期(默认5分钟)。在这个时间内,即使满足缩容条件,HPA也不会执行缩容操作。
+
+b) 稳定窗口:
+   HPA会在一段时间内观察指标(默认为1分钟),以确保负载真的降低了,而不是短暂的波动。
+
+c) 其他限制条件:
+   可能存在其他限制条件,如PodDisruptionBudget(PDB),阻止了缩容操作。
+
+3. 高可用性配置建议
+
+考虑到您需要保持高可用性,我建议以下配置:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aibang-deployment
+spec:
+  replicas: 2  # 初始副本数设为2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0  # 确保更新时始终保持所有Pod可用
+  template:
+    # ... Pod模板配置 ...
+
+---
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: aibang-deployment-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: aibang-deployment
+  minReplicas: 2  # 最小副本数设为2,保证高可用
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      targetAverageUtilization: 75
+  - type: Resource
+    resource:
+      name: memory
+      targetAverageUtilization: 80
+```
+
+这个配置的主要特点:
+
+1. 将初始副本数和HPA的`minReplicas`都设置为2,确保始终至少有两个Pod运行,保证高可用性。
+
+2. 将Deployment的`maxUnavailable`设置为0,确保在更新过程中所有Pod都保持可用。
+
+3. `maxSurge`设置为1,允许在更新时临时多创建一个Pod,加快更新速度。
+
+4. HPA配置保持不变,但由于最小副本数为2,它不会缩减到只有1个Pod。
+
+这样的配置可以在保证高可用性的同时,仍然允许HPA根据负载情况进行适当的扩缩容。当负载降低时,它会缩减到2个Pod,而不是1个,从而始终保持服务的可用性。
+
+如果您确实希望在低负载时允许缩减到1个Pod,同时在大多数时候保持高可用性,您可以考虑将`minReplicas`设置为1,但要注意这可能会在某些时刻影响服务的可用性。
+
+Sources
+
+
+
+
+
+
