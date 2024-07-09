@@ -1,3 +1,221 @@
+现在参考下面这一部分的说明也是我经过实际测试的结果
+
+现在总结一下更精确地表述如下：
+
+当比率不在0.9和1.1之间时，HPA会考虑调整Pod数量，并且：
+
+1. 如果计算结果（向上取整后）与当前Pod数量不同，HPA很可能会按照计算结果调整Pod数量。
+
+2. 调整后的Pod数量将等于这个计算结果：
+   ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+
+3. 这个调整仍然受到其他配置的约束，如最小/最大副本数限制。
+
+举例说明：
+
+1. 如果比率是1.2（大于1.1）：
+   - 当前有4个Pod
+   - 计算结果：ceil[4 * 1.2] = ceil[4.8] = 5
+   - HPA很可能会将Pod数量从4增加到5
+
+2. 如果比率是0.8（小于0.9）：
+   - 当前有5个Pod
+   - 计算结果：ceil[5 * 0.8] = ceil[4] = 4
+   - HPA很可能会将Pod数量从5减少到4
+
+3. 边界情况：如果比率是0.85（小于0.9）：
+   - 当前有3个Pod
+   - 计算结果：ceil[3 * 0.85] = ceil[2.55] = 3
+   - 尽管比率小于0.9，但由于向上取整的结果仍是3，HPA可能不会改变Pod数量
+
+因此，您的理解基本正确，但需要注意：
+1. 向上取整可能导致某些情况下不调整Pod数量，即使比率超出了0.9-1.1范围。
+2. HPA的最终决定还可能受到其他因素的影响，如配置的限制和最近的调整历史。
+
+总的来说，当比率超出0.9-1.1范围时，HPA会根据计算结果（向上取整后）来考虑调整Pod数量，但实际调整还需考虑其他因素。这种机制确保了HPA能够灵活且稳定地响应负载变化。​​​​​​​​​​​​​​​​
+
+您的理解基本正确,但我们需要考虑一些额外的因素:
+
+1. 比率范围:
+   确实,当比率不在0.9到1.1之间时,HPA会考虑调整Pod数量。这个范围(默认±10%)被称为容差范围或阈值。
+
+2. 向上取整函数的影响:
+   即使比率超出了容差范围,由于使用了ceil(向上取整)函数,有时计算结果可能仍然等于当前Pod数量。
+
+3. HPA的决策过程:
+   HPA不仅考虑即时的比率,还会考虑最近的趋势和其他配置的规则(如冷却期)。
+
+因此,一个更精确的总结是:
+
+当指标比率(currentMetricValue / desiredMetricValue)不在0.9到1.1之间时,HPA会考虑调整Pod数量,但实际的调整还取决于以下因素:
+
+1. 如果ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]的结果不等于currentReplicas。
+
+2. 调整不违反任何配置的限制(如最小/最大副本数)。
+
+3. 没有处于任何配置的冷却期内。
+
+4. 指标的变化趋势持续稳定,不是短暂的波动。
+
+举例说明:
+
+- 如果比率是0.85(低于0.9),但ceil函数的结果仍等于currentReplicas,可能不会减少Pod数量。
+- 如果比率是1.15(高于1.1),但增加Pod会超过设置的最大副本数,则不会增加Pod。
+- 如果比率刚刚超出范围,但最近刚进行过调整,HPA可能会等待一段时间再次调整。
+
+总之,比率超出0.9-1.1范围是HPA考虑调整Pod数量的必要条件,但不是充分条件。HPA的决策过程考虑多个因素,以确保系统的稳定性和效率。这种设计使得HPA能够智能地应对负载变化,同时避免因瞬时波动导致的频繁缩放。​​​​​​​​​​​​​​​​
+
+
+学习下面这个文章https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+在 Kubernetes 中，Horizontal Pod Autoscaling（HPA）通过自动调整工作负载的 Pod 副本数量来匹配需求。其计算公式为：
+desiredReplicas = ceil[currentReplicas * ( currentMetricValue / desiredMetricValue )]
+其中，ceil表示向上取整
+假设当前情况如下：
+• currentReplicas为 2
+• currentMetricValue = 90
+• desiredMetricValue = 80
+代入公式计算：
+desiredReplicas = ceil[2 * (90 / 80)]
+= ceil[2 * 1.125]
+= ceil[2.25]
+= 3
+同时，根据文档中的说明，控制平面在比率足够接近 1.0（在全局可配置的容差范围内，默认容差为 0.1）时会跳过任何缩放操作。也就是比例值在0.9-1.1之间pod 的数量将会保持不变
+如果超过这个值比，如果上面的例子是1.125
+那么就按照向上取值的方式，期待的数字应该是3
+那我假设我的desiredMetricValue定义为80
+如果我要求我的pod 从当前运行的三变成二
+那么给出我对应的推导公式​​​​​​​​​​​​​​​​
+
+
+
+
+在什么情况下 HPA会将Pod数量从3减少到2，同时保持desiredMetricValue为80。让我们来推导这个过程。
+
+
+
+让我们从HPA的公式开始反向推导：
+
+1. 我们希望desiredReplicas为2（因为我们想从3个Pod减少到2个）
+2. currentReplicas为3（当前运行的Pod数量）
+3. desiredMetricValue保持为80
+
+我们需要找出currentMetricValue应该是多少。
+
+公式：desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+
+反向推导：
+
+2 = ceil[3 * (currentMetricValue / 80)]
+
+为了使ceil函数向上取整后等于2，括号内的值必须小于2但大于1。
+
+让x代表(currentMetricValue / 80)，那么：
+
+1 < 3x < 2
+
+解这个不等式：
+1/3 < x < 2/3
+
+将x替换回去：
+1/3 < (currentMetricValue / 80) < 2/3
+
+求解currentMetricValue：
+80/3 < currentMetricValue < 160/3
+
+简化：
+26.67 < currentMetricValue < 53.33
+
+考虑到HPA的容差范围（0.9到1.1），我们需要确保比率低于0.9：
+
+currentMetricValue / desiredMetricValue < 0.9
+currentMetricValue < 0.9 * 80 = 72
+
+综合以上条件，我们可以得出结论：
+
+当26.67 < currentMetricValue < 53.33时，HPA会考虑将Pod数量从3减少到2。
+
+为了确保缩减操作一定会发生，currentMetricValue应该小于52（这是一个保守估计，确保在容差范围之外）。
+
+示例：
+假设currentMetricValue = 50
+
+代入原始公式验证：
+desiredReplicas = ceil[3 * (50 / 80)]
+               = ceil[3 * 0.625]
+               = ceil[1.875]
+               = 2
+
+比率：50 / 80 = 0.625，这明显小于0.9，因此会触发缩减操作。
+
+总结：如果您希望将运行中的3个Pod减少到2个，同时保持desiredMetricValue为80，您需要将系统负载降低到使currentMetricValue在26.67到52之间（越接近52越保险）。这将触发HPA进行缩减操作。​​​​​​​​​​​​​​​​
+
+
+
+当然,我很乐意为您提供一个详细的推演过程,展示当currentMetricValue为53时,HPA如何决定将Pod数量从3减少到2。让我们一步步来分析这个场景。
+
+场景参数:
+• currentReplicas = 3 (当前运行的Pod数量)
+• currentMetricValue = 53
+• desiredMetricValue = 80
+
+步骤1: 计算desiredReplicas
+
+使用HPA的公式:
+desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]
+
+代入数值:
+desiredReplicas = ceil[3 * (53 / 80)]
+                = ceil[3 * 0.6625]
+                = ceil[1.9875]
+                = 2
+
+步骤2: 计算比率
+
+ratio = currentMetricValue / desiredMetricValue
+     = 53 / 80
+     = 0.6625
+
+步骤3: 评估缩放决策
+
+1. desiredReplicas计算结果为2,小于currentReplicas(3),这表明可能需要缩减。
+
+2. 比率为0.6625,与1.0的差异为0.3375。
+   这个差异明显大于默认的0.1容差范围(0.9到1.1之间)。
+
+3. 0.6625远低于0.9(容差范围的下限),这强烈表明需要缩减。
+
+步骤4: HPA的决策过程
+
+1. HPA观察到当前指标值(53)远低于目标值(80)。
+
+2. 计算结果建议将Pod数量从3减少到2。
+
+3. 比率(0.6625)明显低于容差范围,indicating a significant underutilization。
+
+4. HPA会考虑最近的负载趋势和任何配置的缩放策略(如冷却期)。
+
+5. 假设没有其他限制因素,HPA很可能会决定执行缩减操作。
+
+步骤5: 执行缩减
+
+HPA会指示Kubernetes控制平面将Deployment或StatefulSet的副本数调整为2。
+
+控制平面会选择一个Pod进行终止,通常基于某些准则(如最不重要的Pod)。
+
+结论:
+在这个场景中,当currentMetricValue为53时,HPA会决定将Pod数量从3减少到2。这个决定基于以下关键因素:
+1. 计算得出的desiredReplicas为2。
+2. 当前利用率(ratio = 0.6625)远低于目标值。
+3. 差异显著超出了容差范围。
+
+这个例子很好地说明了HPA如何根据当前指标动态调整Pod数量,以确保资源的高效利用。在实际环境中,HPA可能会考虑更多因素,如指标的历史趋势、缩放的频率限制等,以避免因短期波动而过于频繁地调整Pod数量。​​​​​​​​​​​​​​​​
+
+
+# other
+
+
+
+
 那其实是不是可以这么理解容差范围，只要大于一
 那么计算的结果肯定是要向上取整的
 另外一点，如果这个容差范围大于1.1 那么期待的数量也是会肯定增加的​​​​​​​​​​​​​​​​
