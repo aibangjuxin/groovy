@@ -71,3 +71,110 @@ flowchart TD
 ```
 
 这样可以确保实例在扩缩时使用静态IP地址，并且每个实例都有自己的服务账号。
+
+在Google Cloud Platform (GCP) 中，要确保每个实例在每次重启后都能获取到对应的静态IP地址，使用管理实例组（MIG）和负载均衡器或NAT网关的方法可能不足以满足你的需求，因为这些方法无法直接为每个实例分配静态IP。
+
+要确保每个实例都有其对应的静态IP地址，即使在重启后，可以采取以下步骤：
+
+### 1. 手动分配静态IP给每个实例
+- 为每个实例手动分配一个静态外部IP地址。
+
+### 2. 使用实例模板创建独立实例
+- 创建单独的实例，而不是使用MIG，以确保每个实例都可以使用静态IP地址。
+
+### 步骤详细说明：
+
+#### 1. 创建静态IP地址
+为每个实例预先创建静态IP地址。
+
+```bash
+gcloud compute addresses create static-ip-1 --region us-central1
+gcloud compute addresses create static-ip-2 --region us-central1
+```
+
+#### 2. 创建实例模板
+虽然使用实例模板是MIG的常用方法，但在这种情况下，需要直接使用这些模板创建独立实例。
+
+```bash
+gcloud compute instances create instance-1 \
+    --zone us-central1-a \
+    --machine-type n1-standard-1 \
+    --network default \
+    --address static-ip-1 \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+
+gcloud compute instances create instance-2 \
+    --zone us-central1-a \
+    --machine-type n1-standard-1 \
+    --network default \
+    --address static-ip-2 \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+```
+
+#### 3. 设置自动重启和预留IP地址
+确保实例在重启后仍然使用相同的静态IP地址。
+
+```bash
+gcloud compute instances set-scheduling instance-1 \
+    --zone us-central1-a \
+    --restart-on-failure
+
+gcloud compute instances set-scheduling instance-2 \
+    --zone us-central1-a \
+    --restart-on-failure
+```
+
+### 4. 配置实例组的自动化（可选）
+如果需要管理多个实例，并希望在扩缩容时自动化，可以编写脚本，使用API或Terraform等工具动态管理实例和静态IP地址的分配。
+
+### 综合示例
+
+假设我们有两个实例，每个实例在每次重启后需要保持其静态IP地址，步骤如下：
+
+```bash
+# 创建静态IP地址
+gcloud compute addresses create static-ip-1 --region us-central1
+gcloud compute addresses create static-ip-2 --region us-central1
+
+# 创建实例
+gcloud compute instances create instance-1 \
+    --zone us-central1-a \
+    --machine-type n1-standard-1 \
+    --network default \
+    --address static-ip-1 \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+
+gcloud compute instances create instance-2 \
+    --zone us-central1-a \
+    --machine-type n1-standard-1 \
+    --network default \
+    --address static-ip-2 \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+
+# 设置自动重启
+gcloud compute instances set-scheduling instance-1 \
+    --zone us-central1-a \
+    --restart-on-failure
+
+gcloud compute instances set-scheduling instance-2 \
+    --zone us-central1-a \
+    --restart-on-failure
+```
+
+### Mermaid 流程图
+
+```mermaid
+flowchart TD
+    A[创建静态IP地址] --> B[创建实例]
+    B --> C[设置自动重启]
+```
+
+通过这些步骤，每个实例在重启后都能保持其静态IP地址。这种方法确保了每个实例都有一个固定的静态IP，即使在扩缩和重启过程中也不会改变。
