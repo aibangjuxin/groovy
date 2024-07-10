@@ -48,3 +48,6 @@ Personal goals for enhancing professional skills:
 * Learn Google Dashboard
    Learn and understand Google Dashboard and other necessary knowledge, such as key technical points of BigQuery and Firestore. Achieve an understanding of these technical points and propose technical requirements. Independently complete statistical analysis.
 
+
+This is a scenario we tested so you can help us see if this model works. This is just a test because the test environment is always being cleaned up. If it's okay, can we set up a meeting to discuss it?
+
