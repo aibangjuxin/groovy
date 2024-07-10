@@ -187,6 +187,184 @@ desiredReplicas = ceil[2 * (675 / 1500)] = ceil[0.9] = 1
 
 持续监控和优化这些参数是确保自动扩缩容机制有效工作的关键。您可能需要根据实际运行情况和性能需求来微调这些设置。​​​​​​​​​​​​​​​​
 
+### 假设条件
+- CPU request: 100m
+- HPA target CPU utilization: 750%
+- 目标使用率（实际CPU）：750m (750% * 100m)
+- HPA默认容差：10%
+
+### 推演过程
+
+#### 两个副本的总目标使用率
+总目标使用率 = 2 * 750m = 1500m
+
+#### HPA的基本公式
+desiredReplicas = ceil[currentReplicas * (currentCPUUtilization / targetCPUUtilization)]
+
+#### 缩容到1个副本的条件
+为了触发缩容到1个副本，我们需要：
+\[
+\text{ceil}\left[2 \times \left(\frac{\text{currentCPUUtilization}}{1500}\right)\right] = 1
+\]
+
+这意味着：
+\[
+2 \times \left(\frac{\text{currentCPUUtilization}}{1500}\right) < 1
+\]
+\[
+\text{currentCPUUtilization} < 750m
+\]
+
+#### 考虑10%的容差（缩容时使用下限）
+缩容触发阈值 = 750m * 0.9 = 675m
+
+#### 推演公式
+\[
+\text{desiredReplicas} = \text{ceil}\left[2 \times \left(\frac{675}{1500}\right)\right] = \text{ceil}[0.9] = 1
+\]
+
+### 触发条件
+当两个Pod的总CPU使用持续低于675m时，副本数量将缩减到1。
+
+### 汇总推算结果
+
+1. **从1个副本扩容到2个副本**：
+    - 目标使用率：1 \* 750m = 750m
+    - 考虑10%容差后的触发阈值：750m \* 1.1 = 825m
+    - 推演公式：desiredReplicas = ceil[1 \* (825 / 750)] = ceil[1.1] = 2
+    - 触发条件：当单个Pod的CPU使用持续超过825m时
+
+2. **从2个副本扩容到3个副本**：
+    - 目标使用率：2 \* 750m = 1500m
+    - 考虑10%容差后的触发阈值：1500m \* 1.1 = 1650m
+    - 推演公式：desiredReplicas = ceil[2 \* (1650 / 1500)] = ceil[2.2] = 3
+    - 触发条件：当两个Pod的总CPU使用持续超过1650m时
+
+3. **从3个副本缩容到2个副本**：
+    - 推演公式：desiredReplicas = ceil[3 \* (1350 / 2250)] = ceil[1.8] = 2
+    - 触发条件：当三个Pod的总CPU使用持续低于1350m时
+
+4. **从2个副本缩容到1个副本**：
+    - 目标使用率：2 \* 750m = 1500m
+    - 考虑10%容差后的触发阈值：1500m \* 0.9 = 1350m
+    - 推演公式：desiredReplicas = ceil[2 \* (1350 / 1500)] = ceil[1.8] = 2
+
+结论：在考虑10%容差情况下，当两个Pod的总CPU使用持续低于1350m时，副本数量不会缩减到1，而是保持为2。因此，实际需要缩容的条件应为更低的阈值。
+那么这个最小的是多少呢？
+推算从2个副本缩容到1个副本的过程。我们将使用与之前相同的假设条件，并确保正确使用向上取整（ceil）函数。
+
+假设条件：
+- CPU request: 100m
+- HPA target CPU utilization: 750%
+- 目标使用率（实际CPU）: 750m (750% * 100m)
+- HPA默认容差: 10%
+
+从2个副本缩容到1个副本的推演过程：
+
+1. 两个副本的总目标使用率：
+   总目标使用率 = 2 * 750m = 1500m
+
+2. HPA的基本公式：
+   desiredReplicas = ceil[currentReplicas * (currentCPUUtilization / targetCPUUtilization)]
+
+3. 为了触发缩容到1个副本，我们需要：
+   ceil[2 * (currentCPUUtilization / 1500)] = 1
+
+4. 这意味着：
+   2 * (currentCPUUtilization / 1500) 必须小于 1
+   currentCPUUtilization < 750m
+
+5. 考虑10%的容差（缩容时使用下限）：
+   缩容触发阈值 = 750m * 0.9 = 675m
+
+推演公式：
+desiredReplicas = ceil[2 * (675 / 1500)] = ceil[0.9] = 1
+
+触发条件：当两个Pod的总CPU使用持续低于675m时
+
+总结：
+
+2 -> 1 副本：
+- 公式：ceil[2 * (currentCPUUtilization / 1500)]
+- 触发条件：两个Pod总CPU使用 < 675m
+
+这个计算考虑了HPA的默认容差和向上取整机制。在实际应用中，HPA会在一段时间内（默认3分钟）观察这些条件是否持续满足，然后才做出缩容决策，以避免因短暂的负载下降而频繁调整。
+
+需要注意的是，这个缩容阈值相对较低（总使用率低于目标使用率的45%），这提供了一个相当大的缓冲区，以防止由于短暂的负载波动而过早触发缩容。这有助于维持系统的稳定性和性能。
+
+在实际应用中，您可能需要根据您的具体需求和负载模式来调整这些参数。例如，如果您的应用在负载较低时仍然需要一定的并发处理能力，您可能会考虑将minReplicas设置为2，以防止缩容到单个副本可能带来的性能风险。
+
+持续监控和优化这些参数是确保自动扩缩容机制有效工作的关键。您可能需要根据实际运行情况和性能需求来微调这些设置。​​​​​​​​​​​​​​​​
+
+在第四种情况下，如果两个Pod的总CPU持续使用低于675m，我们来重新推导一下：
+
+### 假设条件
+- CPU request: 100m
+- HPA target CPU utilization: 750%
+- 目标使用率（实际CPU）：750m (750% * 100m)
+- HPA默认容差：10%
+
+### 推演过程
+
+#### 两个副本的总目标使用率
+总目标使用率 = 2 * 750m = 1500m
+
+#### HPA的基本公式
+desiredReplicas = ceil[currentReplicas * (currentCPUUtilization / targetCPUUtilization)]
+
+#### 缩容到1个副本的条件
+为了触发缩容到1个副本，我们需要：
+\[
+\text{ceil}\left[2 \times \left(\frac{\text{currentCPUUtilization}}{1500}\right)\right] = 1
+\]
+
+这意味着：
+\[
+2 \times \left(\frac{\text{currentCPUUtilization}}{1500}\right) < 1
+\]
+\[
+\text{currentCPUUtilization} < 750m
+\]
+
+#### 考虑10%的容差（缩容时使用下限）
+缩容触发阈值 = 750m * 0.9 = 675m
+
+#### 推演公式
+\[
+\text{desiredReplicas} = \text{ceil}\left[2 \times \left(\frac{675}{1500}\right)\right] = \text{ceil}[0.9] = 1
+\]
+
+### 触发条件
+当两个Pod的总CPU使用持续低于675m时，副本数量将缩减到1。
+
+### 总结推算结果
+
+1. **从1个副本扩容到2个副本**：
+    - 目标使用率：1 \* 750m = 750m
+    - 考虑10%容差后的触发阈值：750m \* 1.1 = 825m
+    - 推演公式：desiredReplicas = ceil[1 \* (825 / 750)] = ceil[1.1] = 2
+    - 触发条件：当单个Pod的CPU使用持续超过825m时
+
+2. **从2个副本扩容到3个副本**：
+    - 目标使用率：2 \* 750m = 1500m
+    - 考虑10%容差后的触发阈值：1500m \* 1.1 = 1650m
+    - 推演公式：desiredReplicas = ceil[2 \* (1650 / 1500)] = ceil[2.2] = 3
+    - 触发条件：当两个Pod的总CPU使用持续超过1650m时
+
+3. **从3个副本缩容到2个副本**：
+    - 推演公式：desiredReplicas = ceil[3 \* (1350 / 2250)] = ceil[1.8] = 2
+    - 触发条件：当三个Pod的总CPU使用持续低于1350m时
+
+4. **从2个副本缩容到1个副本**：
+    - 目标使用率：2 \* 750m = 1500m
+    - 考虑10%容差后的触发阈值：1500m \* 0.9 = 1350m
+    - 推演公式：desiredReplicas = ceil[2 \* (675 / 1500)] = ceil[0.9] = 1
+    - 触发条件：当两个Pod的总CPU使用持续低于675m时
+
+因此，当两个Pod的总CPU使用持续低于675m时，HPA会触发将副本数量从2个缩减到1个的操作。
+
+
+
 
 
 学习下面这个文章https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
