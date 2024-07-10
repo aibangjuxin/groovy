@@ -178,3 +178,129 @@ flowchart TD
 ```
 
 通过这些步骤，每个实例在重启后都能保持其静态IP地址。这种方法确保了每个实例都有一个固定的静态IP，即使在扩缩和重启过程中也不会改变。
+
+在Google Cloud Platform (GCP)中，为实例组中的实例分配外部静态IP地址，并通过NAT网关确保它们能够使用静态IP进行出站流量的配置步骤如下：
+
+### 步骤1：创建静态IP地址
+首先，创建一个或多个静态IP地址。这些IP地址将由NAT网关使用。
+
+```bash
+gcloud compute addresses create my-static-ip --region us-central1
+```
+
+### 步骤2：创建Cloud Router
+创建一个Cloud Router，这是配置Cloud NAT的前提条件。
+
+```bash
+gcloud compute routers create my-router --network default --region us-central1
+```
+
+### 步骤3：创建Cloud NAT
+使用之前创建的Cloud Router配置Cloud NAT，并指定静态IP地址。
+
+```bash
+gcloud compute routers nats create my-nat-config \
+    --router=my-router \
+    --region us-central1 \
+    --nat-external-ip-pool=my-static-ip \
+    --nat-all-subnet-ip-ranges
+```
+
+### 步骤4：创建实例模板
+创建一个实例模板，指定服务账号和其他配置。这些实例将由Managed Instance Group (MIG)管理。
+
+```bash
+gcloud compute instance-templates create my-template \
+    --machine-type n1-standard-1 \
+    --network default \
+    --subnet default \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+```
+
+### 步骤5：创建管理实例组（MIG）
+使用实例模板创建一个管理实例组，并设置初始大小。
+
+```bash
+gcloud compute instance-groups managed create my-instance-group \
+    --base-instance-name my-instance \
+    --template my-template \
+    --size 1 \
+    --region us-central1
+```
+
+### 步骤6：配置自动扩缩
+为实例组配置自动扩缩策略。
+
+```bash
+gcloud compute instance-groups managed set-autoscaling my-instance-group \
+    --region us-central1 \
+    --min-num-replicas 1 \
+    --max-num-replicas 10 \
+    --target-cpu-utilization 0.6
+```
+
+### 详细示例
+以下是一个详细的示例，展示了如何设置这些组件：
+
+```bash
+# 1. 创建静态IP地址
+gcloud compute addresses create my-static-ip --region us-central1
+
+# 2. 创建Cloud Router
+gcloud compute routers create my-router --network default --region us-central1
+
+# 3. 创建Cloud NAT，使用静态IP地址
+gcloud compute routers nats create my-nat-config \
+    --router=my-router \
+    --region us-central1 \
+    --nat-external-ip-pool=my-static-ip \
+    --nat-all-subnet-ip-ranges
+
+# 4. 创建实例模板
+gcloud compute instance-templates create my-template \
+    --machine-type n1-standard-1 \
+    --network default \
+    --subnet default \
+    --service-account my-service-account@my-project.iam.gserviceaccount.com \
+    --image-family debian-9 \
+    --image-project debian-cloud
+
+# 5. 创建管理实例组（MIG）
+gcloud compute instance-groups managed create my-instance-group \
+    --base-instance-name my-instance \
+    --template my-template \
+    --size 1 \
+    --region us-central1
+
+# 6. 配置自动扩缩
+gcloud compute instance-groups managed set-autoscaling my-instance-group \
+    --region us-central1 \
+    --min-num-replicas 1 \
+    --max-num-replicas 10 \
+    --target-cpu-utilization 0.6
+```
+
+### Mermaid 流程图
+以下是上述流程的示意图：
+
+```mermaid
+flowchart TD
+    A[创建静态IP地址] --> B[创建Cloud Router]
+    B --> C[创建Cloud NAT]
+    C --> D[创建实例模板]
+    D --> E[创建管理实例组（MIG）]
+    E --> F[配置自动扩缩]
+```
+
+### 解释
+1. **静态IP地址**：创建一个静态IP地址，用于NAT网关出站流量。
+2. **Cloud Router**：创建一个Cloud Router，为NAT服务配置路由。
+3. **Cloud NAT**：创建Cloud NAT并分配静态IP地址，确保实例出站流量使用静态IP。
+4. **实例模板**：创建一个实例模板，定义实例的配置和服务账号。
+5. **管理实例组（MIG）**：使用实例模板创建一个管理实例组，便于实例的扩缩管理。
+6. **自动扩缩**：配置实例组的自动扩缩策略，根据需求自动调整实例数量。
+
+通过这些步骤，实例组中的实例将使用Cloud NAT的静态IP地址进行出站流量，同时可以动态扩缩实例数量，确保每个实例的IP地址静态化。
+
