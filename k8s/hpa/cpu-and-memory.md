@@ -36,7 +36,6 @@ $$
 $$
 
 
-
 其中，ceil 表示向上取整。
 
 ## describe information
