@@ -28,6 +28,12 @@ Horizontal Pod Autoscaler (HPA) 通过监控 Pod 的资源利用率（如 CPU、
 ## 公式：
 \[ \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil \]
 
+
+$$
+\text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil
+$$
+
+
 其中，ceil 表示向上取整。
 
 ## describe information
