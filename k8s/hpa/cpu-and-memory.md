@@ -85,6 +85,7 @@ $$
 
 ### 分析 Memory
 - 从2个副本缩容到1个副本的条件 40%
+
 $$
  \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{40}{80} \right) \right\rceil = \left\lceil 0.5 \right\rceil = 1
 $$
