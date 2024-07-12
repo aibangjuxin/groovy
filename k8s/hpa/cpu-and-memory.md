@@ -33,7 +33,6 @@ $$
 
 
 $$
-
 \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil
 $$
 
@@ -80,7 +79,6 @@ aibang-deployment-hpa   Deployment/aibang-deployment   15%/750%, 58%/80%   1    
 ### 分析 CPU
 - 从2个副本缩容到1个副本的条件 375%
 $$
-
  \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{375}{750} \right) \right\rceil = \left\lceil 0.5 \right\rceil = 1 
 $$
 
