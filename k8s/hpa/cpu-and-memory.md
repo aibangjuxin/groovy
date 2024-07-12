@@ -27,7 +27,8 @@ Horizontal Pod Autoscaler (HPA) 通过监控 Pod 的资源利用率（如 CPU、
 
 ## 公式：
 $$
- \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil $$
+ \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil
+$$
 
 
 
@@ -89,7 +90,8 @@ $$
 ### 分析 Memory
 - 从2个副本缩容到1个副本的条件 40%
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{40}{80} \right) \right\rceil = \left\lceil 0.5 \right\rceil = 1 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{40}{80} \right) \right\rceil = \left\lceil 0.5 \right\rceil = 1
+$$
 
 
 所以，当内存利用率低于 40% 时，HPA 将删除一个副本。
@@ -138,7 +140,8 @@ spec:
 
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{825}{750} \right) \right\rceil = \left\lceil 1.1 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{825}{750} \right) \right\rceil = \left\lceil 1.1 \right\rceil = 2
+$$
 
 
 所以，当 CPU 利用率超过 825% 时，HPA 将创建第二个副本。
@@ -151,7 +154,8 @@ $$
 
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{825}{750} \right) \right\rceil = \left\lceil 2.2 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{825}{750} \right) \right\rceil = \left\lceil 2.2 \right\rceil = 3
+$$
 
 
 所以，当 CPU 利用率超过 825% 时，HPA 将创建第三个副本。
@@ -164,14 +168,16 @@ $$
 
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{675}{750} \right) \right\rceil = \left\lceil 2.7 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{675}{750} \right) \right\rceil = \left\lceil 2.7 \right\rceil = 3
+$$
 
 
 所以，当 CPU 利用率低于 675% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是500%的情况：
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{500}{750} \right) \right\rceil = \left\lceil 3 \times 0.6666 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{500}{750} \right) \right\rceil = \left\lceil 3 \times 0.6666 \right\rceil = 2
+$$
 
 
 所以，当 CPU 利用率低于 500% 时，HPA 将删除一个副本，副本数变为 2。
@@ -185,21 +191,24 @@ $$
 
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{675}{750} \right) \right\rceil = \left\lceil 2 \times 0.9 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{675}{750} \right) \right\rceil = \left\lceil 2 \times 0.9 \right\rceil = 2
+$$
 
 
 所以，当 CPU 利用率低于 675% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是500%的情况：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{500}{750} \right) \right\rceil = \left\lceil 2 \times 0.6666 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{500}{750} \right) \right\rceil = \left\lceil 2 \times 0.6666 \right\rceil = 2
+$$
 
 
 所以，当 CPU 利用率低于 500% 时，HPA 将不会立即删除一个副本。
 
 所以再看下如果是375%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{375}{750} \right) \right\rceil = \left\lceil 2 \times 0.5 \right\rceil = 1 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{375}{750} \right) \right\rceil = \left\lceil 2 \times 0.5 \right\rceil = 1
+$$
 
 
 所以，当 CPU 利用率低于 375% 时，HPA 将删除一个副本，副本数变为 1。
@@ -234,13 +243,15 @@ desiredReplicas = ceil[3 * (50 / 80)]
 - **扩容条件**：80% * 1.1 = 88%
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{88}{80} \right) \right\rceil = \left\lceil 1.1 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{88}{80} \right) \right\rceil = \left\lceil 1.1 \right\rceil = 2
+$$
 
 
 所以，当内存利用率超过 88% 时，HPA 将创建第二个副本。
 例如 当内存利用率超过 90%的时候
 $$
- \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{90}{80} \right) \right\rceil = \left\lceil 1.125 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 1 \times \left( \frac{90}{80} \right) \right\rceil = \left\lceil 1.125 \right\rceil = 2
+$$
 
 
 所以，当内存利用率超过 90% 时，HPA 将创建第二个副本。
@@ -251,7 +262,8 @@ $$
 - **扩容条件**：80% * 1.1 = 88%
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{88}{80} \right) \right\rceil = \left\lceil 2.2 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{88}{80} \right) \right\rceil = \left\lceil 2.2 \right\rceil = 3
+$$
 
 
 
@@ -261,14 +273,16 @@ $$
 - **缩容条件**：80% * 0.9 = 72%
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{72}{80} \right) \right\rceil = \left\lceil 2.16 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{72}{80} \right) \right\rceil = \left\lceil 2.16 \right\rceil = 3
+$$
 
 
 所以，当内存利用率低于 72% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是70%的情况：
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{70}{80} \right) \right\rceil = \left\lceil 2.625 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{70}{80} \right) \right\rceil = \left\lceil 2.625 \right\rceil = 3
+$$
 
 
 所以，当内存利用率低于 70% 时，HPA 将不会立即删除一个副本。
@@ -276,7 +290,8 @@ $$
 再看下如果是60%的情况:
 
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{60}{80} \right) \right\rceil = \left\lceil 2.25 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{60}{80} \right) \right\rceil = \left\lceil 2.25 \right\rceil = 3
+$$
 
 
 所以，当内存利用率低于 60% 时，HPA 将不会立即删除一个副本。
@@ -284,14 +299,16 @@ $$
 
 再看下如果是55%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{55}{80} \right) \right\rceil = \left\lceil 2.0625 \right\rceil = 3 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{55}{80} \right) \right\rceil = \left\lceil 2.0625 \right\rceil = 3
+$$
 
 所以，当内存利用率低于 55% 时，HPA 将不会立即删除一个副本。
 
 
 再看下如果是53%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{53}{80} \right) \right\rceil = \left\lceil 1.9875 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 3 \times \left( \frac{53}{80} \right) \right\rceil = \left\lceil 1.9875 \right\rceil = 2
+$$
 
 所以，当内存利用率低于 53% 时，HPA 将删除一个副本，副本数变为 2。
 
@@ -302,39 +319,45 @@ $$
 - **缩容条件**：80% * 0.9 = 72%
 具体公式如下：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{72}{80} \right) \right\rceil = \left\lceil 1.8 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{72}{80} \right) \right\rceil = \left\lceil 1.8 \right\rceil = 2
+$$
 
 所以，当内存利用率低于 72% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是70%的情况：
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{70}{80} \right) \right\rceil = \left\lceil 1.75 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{70}{80} \right) \right\rceil = \left\lceil 1.75 \right\rceil = 2
+$$
 
 
 所以，当内存利用率低于 70% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是60%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{60}{80} \right) \right\rceil = \left\lceil 1.5 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{60}{80} \right) \right\rceil = \left\lceil 1.5 \right\rceil = 2
+$$
 
 所以，当内存利用率低于 60% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是55%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{55}{80} \right) \right\rceil = \left\lceil 1.375 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{55}{80} \right) \right\rceil = \left\lceil 1.375 \right\rceil = 2
+$$
 
 所以，当内存利用率低于 55% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是50%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{50}{80} \right) \right\rceil = \left\lceil 1.25 \right\rceil = 2 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{50}{80} \right) \right\rceil = \left\lceil 1.25 \right\rceil = 2
+$$
 
 
 所以，当内存利用率低于 50% 时，HPA 将不会立即删除一个副本。
 
 再看下如果是40%的情况:
 $$
- \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{40}{80} \right) \right\rceil = \left\lceil 1 \right\rceil = 1 $$
+ \text{desiredReplicas} = \left\lceil 2 \times \left( \frac{40}{80} \right) \right\rceil = \left\lceil 1 \right\rceil = 1
+$$
 
 
 所以，当内存利用率低于 40% 时，HPA 将删除一个副本，副本数变为 1。
