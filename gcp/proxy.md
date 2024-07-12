@@ -1,5 +1,6 @@
-Google 的认证方式
+# Google 的认证方式
 比如我通过gcloud auth login --cred-file=credentials.json 登录，那么这个credentials.json文件是什么？
+
 credentials.json文件是Google Cloud Platform (GCP) 提供的一种认证方式，用于存储用户的认证信息。这个文件包含了用户的访问令牌、刷新令牌、客户端ID、客户端密钥等信息，这些信息用于向Google Cloud API进行认证和授权。
 
 当用户使用gcloud auth login命令登录时，GCP会引导用户进行身份验证，并生成一个credentials.json文件。这个文件存储在用户指定的位置，通常是在用户的家目录下的.gcloud目录中。
