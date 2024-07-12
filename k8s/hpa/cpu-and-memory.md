@@ -26,11 +26,13 @@
 Horizontal Pod Autoscaler (HPA) 通过监控 Pod 的资源利用率（如 CPU、内存等）来动态调整 Pod 的副本数量。其基本工作原理如下：
 
 ## 公式：
+
 $$
 \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil
 $$
 
 - split line 
+
 $$
 \text{desiredReplicas} = \left\lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \right\rceil
 $$
