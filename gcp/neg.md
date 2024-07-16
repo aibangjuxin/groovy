@@ -200,7 +200,7 @@ graph TD
 
 首先，让我们通过一个图表来可视化这种配置：
 
-```
+```mermaid
 graph TD
     A[客户端] -->|1. 请求| B(GKE Ingress)
     B -->|2. 转发到 ClusterIP| C{ClusterIP Service}
