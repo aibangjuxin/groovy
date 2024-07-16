@@ -37,7 +37,7 @@ graph TD
   subgraph Container-Native Load Balancing with NEG
     D[External Load Balancer]
     E[GKE Cluster with NEG]
-    F[Containers (Pods)]
+    F[Containers Pods]
     D --> E
     E --> F
   end
