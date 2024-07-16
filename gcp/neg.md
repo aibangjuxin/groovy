@@ -148,7 +148,7 @@ graph TD
 
 首先,让我们创建一个展示传统 GKE 外部负载均衡的图表:
 
-```
+```mermaid
 graph TD
     A[客户端] -->|1. 请求| B(GKE 外部负载均衡器)
     B -->|2. 转发到 NodePort| C{Kubernetes 节点}
@@ -168,7 +168,7 @@ graph TD
 
 现在,让我们创建一个使用 NEG 的容器原生负载均衡的图表:
 
-```
+```mermaid
 graph TD
     A[客户端] -->|1. 请求| B(GCP 负载均衡器 with NEG)
     B -->|2. 直接转发到 Pod IP| C[Pod 1 / Kong DP]
