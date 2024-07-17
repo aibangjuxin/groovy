@@ -222,3 +222,52 @@ GKE (Google Kubernetes Engine) 中的 Node Pool 配置选项 "Balanced" 是指�
 这些集群级别的配置都会影响整个集群的行为和性能,需要根据具体的需求进行设置。
 
 
+在Google Kubernetes Engine (GKE)中，自动扩缩器（Auto-scaler）会根据Pod的需求和每个区域的资源可用性来考虑节点的分布，但会尝试在各个区域之间均匀地分布节点。以下是对这一策略的详细解释：
+
+## **自动扩缩器的工作原理**
+
+自动扩缩器会监控集群中的资源使用情况，并根据需求自动调整节点池的大小。其主要目的是确保集群有足够的资源来运行所有的Pod，同时尽量减少资源浪费。具体来说，自动扩缩器会：
+- **监控Pod的资源请求**：包括CPU和内存等资源。
+- **评估当前节点的可用资源**：确定是否需要增加或减少节点。
+- **均衡节点分布**：在多区域集群中，自动扩缩器会尝试在不同区域之间均匀分布节点，以提高可用性和容错能力[1][2]。
+
+## **集群配置选项**
+
+GKE提供了多种集群配置选项，主要包括区域级集群和地区级集群：
+- **区域级集群**：节点可以分布在单个区域或多个区域内。
+- **地区级集群**：节点分布在多个区域，提供更高的可用性[2]。
+
+## **定时任务对Pod分布的影响**
+
+如果你的部署中有一个定时任务去关闭和开启节点，这可能会影响Pod的分布：
+- **Pod重新调度**：当节点关闭时，运行在该节点上的Pod会被重新调度到其他节点上。如果定时任务频繁执行，可能会导致Pod频繁迁移，影响服务的稳定性。
+- **自动扩缩策略失效**：如果节点频繁关闭和开启，自动扩缩器可能无法及时响应，导致资源分配不均或资源浪费。
+
+## **策略的影响**
+
+定时任务对自动扩缩策略的影响主要体现在以下几个方面：
+- **资源分配**：频繁的节点关闭和开启可能导致资源分配不均，影响集群的整体性能。
+- **Pod稳定性**：频繁的Pod迁移可能导致服务中断或性能下降。
+- **扩缩器响应**：自动扩缩器可能需要更多时间来适应频繁变化的节点状态，从而影响其有效性[3][4][5]。
+
+总的来说，定时任务对节点的频繁操作可能会对自动扩缩策略造成一定的影响，建议在使用定时任务时，考虑其对集群稳定性和资源分配的潜在影响，并根据实际需求进行合理配置和优化。
+
+Sources
+[1] ノードプールの追加と管理 | Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/how-to/node-pools?hl=ja
+[2] 集群配置选项简介| Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/concepts/types-of-clusters?hl=zh-cn
+[3] GKE Pod を特定のゾーンに配置する - Google Cloud https://cloud.google.com/kubernetes-engine/docs/how-to/gke-zonal-topology?hl=ja
+[4] ノードシステム構成のカスタマイズ | Google Kubernetes Engine ... https://cloud.google.com/kubernetes-engine/docs/how-to/node-system-config?hl=ja
+[5] 标准集群升级| Google Kubernetes Engine (GKE) https://cloud.google.com/kubernetes-engine/docs/concepts/cluster-upgrades?hl=zh-cn
+[6] K8S面试题（史上最全+ 持续更新） - 博客园 https://www.cnblogs.com/crazymakercircle/p/17052058.html
+[7] GKE上にwebアプリケーションを構築する方法 #Go - Qiita https://qiita.com/dss_hashimoto/items/8edf3452d9912c19c7d8
+[8] ReplicaSet | Kubernetes https://kubernetes.io/zh-cn/docs/concepts/workloads/controllers/replicaset/
+[9] 【NO.106】一文深入理解Kubernetes.md - GitHub https://github.com/0voice/cpp_backend_awsome_blog/blob/main/%E3%80%90NO.106%E3%80%91%E4%B8%80%E6%96%87%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%20Kubernetes.md
+[10] GKE上webアプリケーション構築方法紹介 | DS SOLUTION, INC. https://www.dssolution.jp/ja/gcp-gke-and-web-app-deploy-introduction/
+[11] DeNA 的 GKE 運用 ~ Pod 集約率編 ~ [DeNA インフラ SRE] | BLOG https://engineering.dena.com/blog/2023/06/gke-optimization/
+[12] 新功能发布记录--分布式云原生平台 - 火山引擎 https://www.volcengine.com/docs/7141/658690
+[13] GKE集群配置参考 - Rancher文档 https://docs.rancher.cn/docs/rancher2.5/cluster-admin/editing-clusters/gke-config-reference/_index/
+[14] Kubernetes集群网络揭秘，以GKE集群为例 - 腾讯云 https://cloud.tencent.com/developer/article/1760533
+[15] 名词解释 - Rancher文档 https://docs.rancher.cn/docs/rancher2/overview/glossary/_index/
+
+
+
