@@ -327,4 +327,151 @@ scaleUp:
 
 您可以根据实际需求调整这些参数，找到最适合您的应用场景的配置。​​​​​​​​​​​​​​​​
 
+# preplex
+
+1. 是的,HPA的算法对memory averageValue这种模式同样适用。计算公式desiredReplicas = ceil[currentReplicas * (currentMetricValue / desiredMetricValue)]适用于内存指标[1]。
+
+2. 假设Pod数量从3减少到2,触发缩容的内存平均值约为533Mi。计算过程:
+   533Mi / 800Mi ≈ 2/3,向上取整得2[1]。
+
+3. 针对768Mi、1024Mi和2048Mi的限制,90%对应的平均值分别为:
+   - 691Mi (768Mi * 90%)
+   - 922Mi (1024Mi * 90%) 
+   - 1843Mi (2048Mi * 90%)
+
+   Pod缩小的可能内存值:622Mi (691Mi * 90%)
+
+推荐的behavior配置:
+
+```yaml
+behavior:
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    policies:
+    - type: Percent
+      value: 100
+      periodSeconds: 15
+```
+
+默认策略:
+1. 如果不做配置,默认策略是立即扩容,缓慢缩容[1]。
+
+2. 按数值对应扩缩的配置:
+
+```yaml
+behavior:
+  scaleDown:
+    policies:
+    - type: Pods
+      value: 1
+      periodSeconds: 60
+  scaleUp:
+    policies:
+    - type: Pods  
+      value: 1
+      periodSeconds: 60
+```
+
+这样可以每60秒增加或减少1个Pod[1]。
+
+Sources
+[1] Horizontal Pod Autoscaling https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+
+你说得对，计算缩容的触发值时，我没有提供最小值。让我们重新计算并详细说明。
+
+## 计算Pod缩容触发值
+
+假设当前Pod数量为3，目标是缩减到2个Pod。我们需要计算触发缩容的内存平均值。
+
+### 公式回顾
+$$ \text{desiredReplicas} = \lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \rceil $$
+
+### 具体计算
+1. **768Mi限制，90%平均值691.2Mi**
+   - 目标Pod数量：2
+   - 当前Pod数量：3
+   - 目标平均值：691.2Mi
+
+$$ 2 = \lceil 3 \times \left( \frac{\text{currentMetricValue}}{691.2} \right) \rceil $$
+
+$$ 2 = \lceil \frac{3 \times \text{currentMetricValue}}{691.2} \rceil $$
+
+$$ \frac{3 \times \text{currentMetricValue}}{691.2} \leq 2 $$
+
+$$ \text{currentMetricValue} \leq \frac{2 \times 691.2}{3} $$
+
+$$ \text{currentMetricValue} \leq 460.8 $$
+
+2. **1024Mi限制，90%平均值921.6Mi**
+   - 目标Pod数量：2
+   - 当前Pod数量：3
+   - 目标平均值：921.6Mi
+
+$$ 2 = \lceil 3 \times \left( \frac{\text{currentMetricValue}}{921.6} \right) \rceil $$
+
+$$ 2 = \lceil \frac{3 \times \text{currentMetricValue}}{921.6} \rceil $$
+
+$$ \frac{3 \times \text{currentMetricValue}}{921.6} \leq 2 $$
+
+$$ \text{currentMetricValue} \leq \frac{2 \times 921.6}{3} $$
+
+$$ \text{currentMetricValue} \leq 614.4 $$
+
+3. **2048Mi限制，90%平均值1843.2Mi**
+   - 目标Pod数量：2
+   - 当前Pod数量：3
+   - 目标平均值：1843.2Mi
+
+$$ 2 = \lceil 3 \times \left( \frac{\text{currentMetricValue}}{1843.2} \right) \rceil $$
+
+$$ 2 = \lceil \frac{3 \times \text{currentMetricValue}}{1843.2} \rceil $$
+
+$$ \frac{3 \times \text{currentMetricValue}}{1843.2} \leq 2 $$
+
+$$ \text{currentMetricValue} \leq \frac{2 \times 1843.2}{3} $$
+
+$$ \text{currentMetricValue} \leq 1228.8 $$
+
+## 推荐的behavior配置
+
+```yaml
+behavior:
+  scaleDown:
+    stabilizationWindowSeconds: 300
+    policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15
+  scaleUp:
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+```
+
+## 默认策略
+
+1. 默认策略是立即扩容，缓慢缩容。如果不做任何配置，HPA会根据内置的算法自动调整。
+
+## 按数值对应扩缩的配置
+
+```yaml
+behavior:
+  scaleDown:
+    policies:
+      - type: Pods
+        value: 1
+        periodSeconds: 60
+  scaleUp:
+    policies:
+      - type: Pods  
+        value: 1
+        periodSeconds: 60
+```
+
+这样可以每60秒增加或减少1个Pod。
+
+Sources
+
+
 
