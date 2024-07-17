@@ -97,6 +97,97 @@ spec:
 #### 工作原理
 HPA会监控所有Pod的内存利用率。当集群中所有Pod的平均内存利用率高于80%时，HPA会增加Pod的数量；当低于80%时，HPA会减少Pod的数量。这种配置适用于当你希望基于Pod的内存使用比例来进行扩缩容时。
 
+
+那么我如果按照这种方式来配置
+averageUtilization: 80
+Memory扩容和缩容的触发条件
+	•	1. 从1个副本扩容到2个副本的条件 88%
+	•	2. 从2个副本扩容到3个副本的条件 88%
+	•	3. 从3个副本缩容到2个副本的条件 53%
+	•	4. 从2个副本缩容到1个副本的条件 40%
+基本质上其实和使用 averageValue 没有什么区别 ？
+
+是的，实际上 `averageUtilization` 和 `averageValue` 的触发条件在逻辑上是相似的，区别在于：
+
+- **`averageUtilization`**: 以百分比形式表示，目标是所有Pod的平均利用率。
+- **`averageValue`**: 以具体的资源值（如内存量）表示，目标是所有Pod的平均资源使用量。
+
+### 配置示例
+
+假设目标是内存利用率的80%，即 `averageUtilization: 80`，我们来计算具体的扩缩条件。
+
+### 扩容和缩容条件
+
+1. **从1个副本扩容到2个副本的条件**: 
+   - 内存使用达到88%。
+   - 公式: \( \text{desiredReplicas} = \lceil 1 \times \left( \frac{88}{80} \right) \rceil = \lceil 1.1 \rceil = 2 \)
+
+2. **从2个副本扩容到3个副本的条件**: 
+   - 内存使用达到88%。
+   - 公式: \( \text{desiredReplicas} = \lceil 2 \times \left( \frac{88}{80} \right) \rceil = \lceil 2.2 \rceil = 3 \)
+
+3. **从3个副本缩容到2个副本的条件**: 
+   - 内存使用降至53%。
+   - 公式: \( \text{desiredReplicas} = \lceil 3 \times \left( \frac{53}{80} \right) \rceil = \lceil 2 \rceil = 2 \)
+
+4. **从2个副本缩容到1个副本的条件**: 
+   - 内存使用降至40%。
+   - 公式: \( \text{desiredReplicas} = \lceil 2 \times \left( \frac{40}{80} \right) \rceil = \lceil 1 \rceil = 1 \)
+
+### 配置示例
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-memory-utilization
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300 # 300秒的扩容稳定窗口期
+      policies:
+        - type: Pods
+          value: 2 # 每次最多扩展2个Pod
+          periodSeconds: 60 # 每60秒检查一次
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300 # 300秒的缩容稳定窗口期
+      policies:
+        - type: Pods
+          value: 1 # 每次最多缩减1个Pod
+          periodSeconds: 60 # 每60秒检查一次
+      selectPolicy: Min
+```
+
+### 解释
+
+- **`averageUtilization`**：HPA会根据所有Pod的平均内存使用率进行扩缩容操作。
+- **扩容和缩容的触发条件**：通过配置扩容和缩容的触发条件，可以确保在内存使用量达到特定比例时进行扩容或缩容操作。
+
+### 对比 `averageUtilization` 和 `averageValue`
+
+本质上，`averageUtilization` 和 `averageValue` 在触发扩缩容的条件和逻辑上是类似的。不同的是，`averageUtilization` 使用百分比形式，而 `averageValue` 使用具体值。两者都遵循相同的公式来计算所需的副本数。
+
+### 总结
+
+无论使用 `averageUtilization` 还是 `averageValue`，HPA 的扩缩容机制都基于当前的实际指标值和目标值的比率进行计算和调整。因此，它们在触发条件和行为上没有本质区别，只是表示方式不同。通过正确配置 `behavior` 字段，你可以更精细地控制扩缩容的行为，以满足具体的需求。
+
+
+
+
 ### 配置 2: Average Value
 
 ```yaml
