@@ -1,3 +1,80 @@
+
+是的，HPA的扩容和缩容都是遵循公式：
+
+\[ \text{desiredReplicas} = \lceil \text{currentReplicas} \times \left( \frac{\text{currentMetricValue}}{\text{desiredMetricValue}} \right) \rceil \]
+
+### 扩容和缩容的详细逻辑
+
+1. **扩容**：
+   - 当 \(\frac{\text{currentMetricValue}}{\text{desiredMetricValue}} > 1\) 时，表示当前使用量超过了目标值，需要扩容。
+   - 例如，如果当前Pod数是3，目标值是800Mi，实际使用是880Mi，那么：
+     \[ \text{desiredReplicas} = \lceil 3 \times \left( \frac{880}{800} \right) \rceil = \lceil 3 \times 1.1 \rceil = 4 \]
+   - 这种情况下，Pod数量会从3扩展到4。
+
+2. **缩容**：
+   - 当 \(\frac{\text{currentMetricValue}}{\text{desiredMetricValue}} < 1\) 时，表示当前使用量低于目标值，需要缩容。
+   - 例如，如果当前Pod数是3，目标值是800Mi，实际使用是533Mi，那么：
+     \[ \text{desiredReplicas} = \lceil 3 \times \left( \frac{533}{800} \right) \rceil = \lceil 3 \times 0.66625 \rceil = 2 \]
+   - 这种情况下，Pod数量会从3缩减到2。
+
+### 根据具体值配置示例
+
+假设你希望配置HPA，使得当内存使用量达到某个具体值时进行扩容或缩容，可以设置如下：
+
+- **扩容**：当内存使用量达到目标值的110%时，增加Pod数量。
+- **缩容**：当内存使用量降到目标值的66.7%时，减少Pod数量。
+
+### HPA 配置示例
+
+假设目标值为800Mi，设置为扩容和缩容分别是110%和66.7%的具体值：
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-custom
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Average
+          averageValue: 800Mi
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300 # 300秒的扩容稳定窗口期
+      policies:
+        - type: Pods
+          value: 2 # 每次最多扩展2个Pod
+          periodSeconds: 60 # 每60秒检查一次
+      selectPolicy: Max
+    scaleDown:
+      stabilizationWindowSeconds: 300 # 300秒的缩容稳定窗口期
+      policies:
+        - type: Pods
+          value: 1 # 每次最多缩减1个Pod
+          periodSeconds: 60 # 每60秒检查一次
+      selectPolicy: Min
+```
+
+### 解释
+
+- **scaleUp**：
+  - 当平均内存使用量达到目标值的110%（880Mi）时，每次扩容最多增加2个Pod。
+
+- **scaleDown**：
+  - 当平均内存使用量降到目标值的66.7%（533Mi）时，每次缩容最多减少1个Pod。
+
+通过这种配置，你可以确保在内存使用量超出或低于目标值一定比例时，HPA进行相应的扩容或缩容操作，从而达到资源的合理使用和稳定的工作负载管理。
+
+
 在GKE中，`HorizontalPodAutoscaler`（HPA）可以基于资源利用率或绝对值来自动调整Pod的数量。你提到的两种配置分别是基于内存利用率和内存的平均值。以下是对这两种配置的详细对比和说明：
 
 ### 配置 1: Resource Utilization
