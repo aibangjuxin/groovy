@@ -54,3 +54,93 @@ HPA会监控所有Pod的内存使用情况。当集群中所有Pod的平均内�
 - **配置 2** 适用于你的应用程序对内存的使用量有明显的峰值，并且你希望在内存使用量达到某个绝对值时进行扩缩容。
 
 通过理解这两种配置的区别，你可以根据应用的需求选择合适的HPA配置，以优化资源利用和提升系统的性能。
+
+
+下面是基于内存使用绝对值控制Pod扩展的配置示例，假设你的内存限制分别为768 Mi、1024 Mi和2048 Mi。我们将基于这些内存限制，给出合理的`averageValue`设置，以控制Pod的扩展和缩减。
+
+### 配置示例
+
+假设我们希望在内存使用量达到内存限制的70%时进行扩容，在使用量降至50%以下时进行缩容。以下是推荐的`averageValue`设置：
+
+| 内存限制 (Mi) | 推荐扩展值 (70%) | 推荐缩减值 (50%) |
+|---------------|------------------|------------------|
+| 768 Mi        | 537 Mi           | 384 Mi           |
+| 1024 Mi       | 717 Mi           | 512 Mi           |
+| 2048 Mi       | 1434 Mi          | 1024 Mi          |
+
+### 配置文件示例
+
+以下是基于上表的HPA配置文件示例：
+
+#### 示例 1: 内存限制 768 Mi
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-memory-768mi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Average
+          averageValue: 537Mi
+```
+
+#### 示例 2: 内存限制 1024 Mi
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-memory-1024mi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Average
+          averageValue: 717Mi
+```
+
+#### 示例 3: 内存限制 2048 Mi
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-memory-2048mi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Average
+          averageValue: 1434Mi
+```
+
+### 总结
+
+通过上面的配置示例，你可以根据应用的具体内存限制，合理设置HPA的`averageValue`，以实现自动扩缩容。调整`minReplicas`和`maxReplicas`参数，可以根据实际需要控制Pod的最小和最大副本数。
