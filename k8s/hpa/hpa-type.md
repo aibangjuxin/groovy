@@ -144,3 +144,86 @@ spec:
 ### 总结
 
 通过上面的配置示例，你可以根据应用的具体内存限制，合理设置HPA的`averageValue`，以实现自动扩缩容。调整`minReplicas`和`maxReplicas`参数，可以根据实际需要控制Pod的最小和最大副本数。
+
+在GKE中，HorizontalPodAutoscaler（HPA）基于指定的指标来自动扩展和缩减Pod的数量。虽然我们可以设置扩展的目标值，但缩减值并不是直接在HPA配置中指定的，而是通过控制策略和HPA的工作机制间接实现的。
+
+### HPA的工作机制
+
+HPA通过周期性地监控Pod的资源使用情况，并根据设定的目标值调整Pod的数量。当监控的指标超过目标值时，HPA会增加Pod数量；当低于目标值时，HPA会减少Pod数量。
+
+### 缩减值的计算和控制策略
+
+在HPA中，缩减值通常是相对于扩展目标值的一个较低的阈值，这个阈值可以通过下述方式来实现：
+
+1. **扩展目标值（扩展触发阈值）**：
+   - 基于你设定的内存使用绝对值。
+   - 例如，内存限制为1024Mi，扩展目标值为70%（717Mi）。
+
+2. **缩减值（缩减触发阈值）**：
+   - 通常会设置为一个较低的使用率，例如50%。
+   - 对应内存限制为1024Mi，缩减值为50%（512Mi）。
+
+HPA默认每分钟检查一次指标，使用以下两个控制参数来防止频繁的扩缩容：
+- **`scaleUp`**：控制扩展的速率。
+- **`scaleDown`**：控制缩减的速率。
+
+### 实际配置示例和计算公式
+
+我们先计算并确认缩减值，然后展示实际配置。
+
+| 内存限制 (Mi) | 扩展值 (70%) | 缩减值 (50%) |
+|---------------|--------------|--------------|
+| 768 Mi        | 537 Mi       | 384 Mi       |
+| 1024 Mi       | 717 Mi       | 512 Mi       |
+| 2048 Mi       | 1434 Mi      | 1024 Mi      |
+
+#### HPA 配置示例（基于 1024 Mi 内存限制）
+
+```yaml
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: hpa-memory-1024mi
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: your-deployment-name
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Average
+          averageValue: 717Mi # 扩展值
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 4
+          periodSeconds: 60
+        - type: Percent
+          value: 100
+          periodSeconds: 60
+```
+
+### 解释
+
+- **scaleUp** 和 **scaleDown** 部分的配置用于控制扩展和缩减的速率。
+- **stabilizationWindowSeconds**：稳定窗口时间，防止频繁扩缩容。
+- **policies**：定义扩展或缩减时Pod数量或百分比的变化。
+
+在实际应用中，你可以通过监控实际的内存使用情况和调整HPA的配置参数，确保扩缩容操作能够满足你的应用需求，同时避免频繁的Pod重启和资源浪费。
+
