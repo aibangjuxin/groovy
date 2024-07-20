@@ -109,7 +109,7 @@ $$
 
 ```yaml
 apiVersion: autoscaling/v1
-kind: HorizontalPodAutoscaler
+r
 metadata:
   name: aibang-deployment-hpa
   namespace: aibang
