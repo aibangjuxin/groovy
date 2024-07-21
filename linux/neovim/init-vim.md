@@ -4,7 +4,7 @@
 - Reference:
  - 按照提示的哪些快捷方式可以去尝试了
 
-
+```bash
 " make my backup init.vim
 " 基本配置
 set number          " 显示行号
@@ -101,7 +101,8 @@ require'nvim-web-devicons'.setup {
 }
 EOF
 nnoremap <C-n> :NvimTreeToggle<CR>
-
+```
+```
 
 # Using lazyvim managed my plug 
 - need notice install different 
