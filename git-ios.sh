@@ -72,4 +72,4 @@ else
   echo "No changes to commit."
 fi
 
-# lex add file
+# lex add file and for iPad ios
