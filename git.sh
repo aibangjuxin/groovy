@@ -102,3 +102,6 @@ done
 else
   echo "No changes to commit."
 fi
+
+
+# lex add file
