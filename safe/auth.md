@@ -96,7 +96,7 @@ sequenceDiagram
 
 
 
-```
+```mermaid
 sequenceDiagram
     participant U as 用户
     participant C as 客户端应用
@@ -131,7 +131,7 @@ sequenceDiagram
 
 
 
-```
+```mermaid
 sequenceDiagram
     participant U as 用户
     participant C as 客户端应用
@@ -168,7 +168,7 @@ sequenceDiagram
 
 
 
-```
+```mermaid
 sequenceDiagram
     participant U as 用户
     participant C as 客户端应用
