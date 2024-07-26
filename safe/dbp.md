@@ -4,6 +4,7 @@ GKE RT是一个Java的application 我现在需要从这个里面请求一个目�
 我们走了一个Nginx代理 代理地址为https://lex-nginx.aibang.com:8443
 我的Nginx会按照location来将请求转发到我们对应的目的地,这个Nginx服务是可以和目的地之间通讯的
 比如大概配置如下
+```bash
 Location /abcdefg/ {
    Rewrite ^/abcdefg(/.*)$ $1 break;
    proxy_pass $11589lex;
@@ -14,7 +15,7 @@ Location /abcdefg/ {
 map “” $11598lex {
 default https://www.abc.com;
 }
-
+```
 我想了解如下信息我的nginx是一个7层的服务?
 另外比如我在我的Pod里发送如下请求确实是OK的
 curl -v https://lex-nginx.aibang.com:8443/abcdefg/health
@@ -112,7 +113,7 @@ We're using an Nginx proxy, with the proxy address being https://lex-nginx.aiban
 My Nginx will forward requests to our corresponding destinations based on the location. This Nginx service can communicate with the destination.
 
 For example, the configuration might look like this:
-```
+```bash
 Location /abcdefg/ {
    Rewrite ^/abcdefg(/.*)$ $1 break;
    proxy_pass $11589lex;
