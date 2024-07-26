@@ -67,7 +67,25 @@ GKE Pod (Java应用) -> Nginx -> Squid (HTTP代理) -> 目标网站 (https://www
 如果您需要有关Nginx SSL配置或任何其他方面的具体帮助，请随时告诉我。​​​​​​​​​​​​​​​​
 
 
+- mermaid
+```mermaid
+sequenceDiagram
+    participant JavaApp as Java应用 (GKE Pod)
+    participant Nginx
+    participant Squid
+    participant Website as 目标网站 (https://www.abc.com)
+    
+    JavaApp ->> Nginx: 发送请求 (HTTP/HTTPS)
+    Nginx ->> Squid: 转发请求 (HTTP)
+    Squid ->> Nginx: 确认转发成功
+    Nginx ->> Website: 与目标网站建立连接 (HTTPS)
+    Website ->> Nginx: 响应数据 (HTTPS)
+    Nginx ->> Squid: 转发响应数据 (HTTP)
+    Squid ->> JavaApp: 转发响应数据 (HTTP)
 
+```
+```
+```
 
 
 对于Nginx,除非它也参与SSL终止,否则它在证书验证过程中不起作用 我的Nginx 不参与SSL终止 另外可以看到SQUID走的都是http 协议的代理 所以可以确认 关键是要在发起HTTPS请求的客户端(您的Java应用)中正确配置证书信任,而不是在中间的代理服务器上。​​​​​​​​​​​​​​​​另外我用keytool 应该倒入几个证书？是不是应该有几个匹配的情况出现或者是多个？​​​​​​​​​​​​​​​​
