@@ -182,8 +182,8 @@ Remember to replace all placeholders (like `${PRODUCER_PROJECT_ID}`, `${CONSUMER
 # other reference
 
 Sample Case
-This is an example that producer publish service from hsbc-default-network where:
-• PSC subnets are created automatically in default VPC hsbc-default-network with subnet naming convention=psc-<region>, e.g. psc-asia-east2
+This is an example that producer publish service from aibang-default-network where:
+• PSC subnets are created automatically in default VPC aibang-default-network with subnet naming convention=psc-<region>, e.g. psc-asia-east2
 • VM MUST include network tag "fwtag-psc-ingress" in order to allow ingress traffic from PSC subnet to MIG
 • Create a MIG and Network Load Balancer
 
@@ -198,7 +198,7 @@ Create service Attachment in Producer Project
 export PROJECT_ID=<producer project>
 export SERVICE_ ATTACHMENT_NAME=lex-mig # Must be a match of regex ' (?: [a-z] (?: [-a-z0-9] (0, 61) [a-z0-9]) ?) ' 
 export REGION=asia-east2
-export NAT_SUBNETS=psc-$(REGION) # this is pre-defined PSC subnet in hsbc-default-network. Application need to change for self service
+export NAT_SUBNETS=psc-$(REGION) # this is pre-defined PSC subnet in aibang-default-network. Application need to change for self service
 export FWD_RULE=<Forward Rule which create when set up network load balancer> 
 export ACCEPT_LIST=<project-id>=10, <project-id2>=10 # this is accept list of project
 gcloud compute service-attachments create $(SERVICE_ATTACHMENT_ NAME} \
@@ -214,63 +214,3 @@ Note: Parameter DOMAIN_NAME should not use as this require public domain.
 Application can go to console Network>Private Service Connect > Published Services to check if creation succeed.
 
 - gcp ==> console ==> private service connect ==> published services 
-
-
-- Create static address in consumer project 
-
-Create static address in Consumer project
-• Application should create network/ subnet first before create address. Please note it must within self service network
-IP address
-Static IP address MUST create at the same region as service attachment in Producer project.
-
-```bash
-export PROJECT_ID=<project-id>
-export ADDR_NAME=psc-endpoint-<your application suffix>
-export REGION=asia-east2
-export SUBNET=<Subnet>
-gcloud compute addresses create ${ADDR_NAME} \
---project=${PROJECT_ID} \
---region=${REGION} \
---subnet=${SUBNET}
-```
-
-- create endpoint in consumer project
-Same or Cross Region access
-PoC Endpoint SHOULD be the same region as service attachment in Producer project. lo enable cross region access, adding argument "--allow-psc-global-access".
-• Please note by default it will register in the service directory with namespace goog-psc-default. The option to assign to different namespace (--service-directory-registration) did not work as expected.
-• If team need to change service directory namespace, either they can do it console or they need to perform three steps: credle namespace-nups://cloud.google.com/service-directory/docs/configuring-service-directory#confiqure a namespace
-° create service - https://cloud.google.com/service-directory/docs/configuring-service-directory#configure_a_service
-o create endpoint - https://cloud.google.com/service-directory/docs/configuring-service-directory#configure an endpoint
-
-
-```bash
-export CONSUMER_PROJECT_ID=lex-consumer
-export PRODUCER_PROJECT_ID=lex-aibang
-export REGION=asia-east2
-export FWD_RULE_NAME=psc-endpoint
-export ADDR_NAME=projects/${CONSUMER_PROJECT_ID}/regions/${REGION}/addresses/psc-endpoint
-export NETWORK=projects/${CONSUMER_PROJECT_ID}/global/networks/cinternal-vpcl
-export TARGET_SERVICE_ATTACHMENT=projects/$1{PRODUCER_PROJECT_ID}/regions/${REGION}/serviceAttachments/lex-mig
-gcloud computer forwarding-rules create ${FWD_RULE_NAME} \
---project=${CONSUMER_PROJECT_ID} \
---region=${REGION} \
---network=${NETWORK} \
---target-service-attachment=${TARGET_SERVICE_ATTACHMENT} \
---address=${ADDR_NAME} \
---allow-psc-global-access
-```
-```
-```
-- create firewall rule in consumer project
-  - Create Egress Firewall Rule in Consumer project v firewalison - Allow egress to endpoint
-- allow egress to forwarding address 
-```bash
-gcloud compute firewall-rules create my-firewall-rule \
---project=consumer-project \
---region=us-central1 \
---network=psc-network-1 \
---source-ranges=10.0.0.0/24 \
---target-tags=psc-network-1 \
---allow=tcp:80,443
-```
-
