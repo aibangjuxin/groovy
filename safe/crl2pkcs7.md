@@ -1,6 +1,17 @@
+这是一个由两个 openssl 命令组成的命令行操作。
+
+openssl crl2pkcs7 -nocrl -certfile./output.crt ：这个命令的作用是将证书文件（./output.crt）转换为 PKCS#7 格式。-nocrl 选项表示在转换过程中不包含证书吊销列表（CRL）。
+
+| ：这是管道符号，它将前一个命令的输出作为后一个命令的输入。
+
+openssl pkcs7 -print_certs -text -noout ：这个命令用于处理 PKCS#7 格式的数据。-print_certs 选项表示打印出包含在 PKCS#7 结构中的证书。-text 选项以文本形式显示证书的详细信息。-noout 选项则表示不输出编码的内容，仅输出文本信息。
+
+总的来说，这个组合命令的目的是将指定的证书文件转换为 PKCS#7 格式，并以文本形式打印出其中包含的证书的详细信息。
+
+
 在使用 `openssl` 工具时，命令的选项和参数需要正确拼写和使用。以下是你提到的两个常见错误以及如何解决它们：
 
-### 1. `-certifile` 选项错误
+### 1. `-certfile` 
 
 在 `openssl crl2pkcs7` 命令中，选项应为 `-certfile` 而不是 `-certifile`。这是一个拼写错误。正确的命令如下：
 
