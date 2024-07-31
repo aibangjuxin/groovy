@@ -107,3 +107,5 @@ nginx_proxy_send_timeout = 300s
 
 通过上述配置和最佳实践，可以有效处理长时间请求并优化整个流量路径。
 
+
+是的，为了确保整个请求链条能够处理长时间的请求，Google Cloud Backend Service 的 `timeoutSec` 配置应该与其他组件的超时设置一致。因此，建议将 `timeoutSec` 设置为 300 秒。这样可以避免由于超时不一致导致的请求失败或中断。确保所有组件，包括Nginx实例和Kong DP，具有一致的超时配置，是处理长时间请求的最佳实践。
