@@ -116,7 +116,6 @@ nginx_proxy_send_timeout = 300s
 
 
 首先,让我们用一个图表来可视化整个请求流程和各个组件的超时设置:
-
 ```mermaid
 graph LR
     Client[客户端] -->|请求| A[A组件: 7层Nginx]
