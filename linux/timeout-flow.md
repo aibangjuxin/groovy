@@ -215,3 +215,31 @@ graph LR
 总结:
 处理长时间运行的请求需要在整个系统中进行全面的超时设置和优化。关键是要确保每一层的超时设置都能够容纳预期的最长请求时间,同时实施一些最佳实践来提高系统的整体性能和可靠性。定期监控和调整这些设置也很重要,以适应不断变化的负载和需求。
 
+```mermaid
+graph LR
+    Client[客户端] -->|请求| A[A组件: 7层Nginx]
+    A -->|proxy_pass| B[B组件: 4层Nginx]
+    B -->|proxy_pass| C[C组件: Kong DP]
+    
+    subgraph "A组件 (7层Nginx)"
+    A1[backend-service timeoutSec: 300s]
+    A2[backend-service drainingTimeoutSec: 300s]
+    A3[proxy_read_timeout: 300s]
+    A4[proxy_connect_timeout: 300s]
+    A5[proxy_send_timeout: 300s]
+    end
+    
+    subgraph "B组件 (4层Nginx)"
+    B1[backend-service timeoutSec: 300s]
+    B2[backend-service drainingTimeoutSec: 300s]
+    B3[proxy_read_timeout: 300s]
+    B4[proxy_connect_timeout: 300s]
+    B5[proxy_send_timeout: 300s]
+    end
+    
+    subgraph "C组件 (Kong DP)"
+    C1[nginx_proxy_read_timeout: 300s]
+    C2[nginx_proxy_connect_timeout: 300s]
+    C3[nginx_proxy_send_timeout: 300s]
+    end
+```
