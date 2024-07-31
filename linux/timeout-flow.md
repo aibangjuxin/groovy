@@ -339,7 +339,7 @@ graph LR
 
 1. 递增超时策略：
 
-```
+```mermaid
 graph LR
     Client[客户端] -->|请求| A[A组件: 7层Nginx]
     A -->|proxy_pass| B[B组件: 4层Nginx]
@@ -360,7 +360,7 @@ graph LR
 
 2. 递减超时策略：
 
-```
+```mermaid
 graph LR
     Client[客户端] -->|请求| A[A组件: 7层Nginx]
     A -->|proxy_pass| B[B组件: 4层Nginx]
