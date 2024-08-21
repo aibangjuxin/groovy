@@ -117,3 +117,6 @@ ENTRYPOINT ["java", "-jar", "your-app.jar"]
 - **可行性**：JDK 11编译的字节码在JRE 17上运行是可行的，并且大多数情况下不会有问题。
 - **测试**：强烈建议在切换到JRE 17之前，进行充分的测试，确保应用在新的运行时环境中没有问题。
 - **灵活性**：使用JRE 17作为运行时环境可以为将来的Java版本升级做好准备，同时仍然支持现有的JDK 11编译环境。
+
+
+We've been discussing within our group to have pipeline support compiled with JDK11. Target Version continues to be 11.
