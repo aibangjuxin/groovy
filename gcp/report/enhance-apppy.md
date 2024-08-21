@@ -105,3 +105,85 @@ load_data_to_bigquery(client, 'your_dataset_id', 'your_table_id', 'gs://your_buc
    - 这样可以减少不必要的日志输出,提高效率。
 
 综上所述,建议您先尝试使用批量写入或流式写入的方式,结合适当的日志输出频率。如果情况允许,也可以考虑使用分区表。同时,您需要根据数据量和写入频率,适当调整批量大小或写入速率,以避免触发写入限制。
+
+# client.insert_rows_json
+当然,我会详细介绍如何使用 `client.insert_rows_json` 方法将多个 JSON 文件合并后一次性写入到 BigQuery 表中。
+
+首先,我们需要从 Google Cloud Storage 获取所有 JSON 文件的路径。以下代码可以帮助您获取指定前缀的所有文件路径:
+
+```python
+from google.cloud import storage
+
+def get_json_file_paths(bucket_name, prefix):
+    """
+    获取 Google Cloud Storage 桶中指定前缀的所有 JSON 文件路径
+    """
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob_list = list(bucket.list_blobs(prefix=prefix))
+    file_paths = [f"gs://{bucket_name}/{blob.name}" for blob in blob_list if blob.name.endswith(".json")]
+    return file_paths
+```
+
+接下来,我们需要从这些 JSON 文件中读取数据,并将它们合并为一个大列表。以下代码可以帮助您完成这个任务:
+
+```python
+from google.cloud import bigquery
+
+def load_json_data(file_paths):
+    """
+    从 JSON 文件路径中读取数据,并合并为一个列表
+    """
+    json_data = []
+    for file_path in file_paths:
+        with open(file_path, "r") as f:
+            json_data.extend(json.load(f))
+    return json_data
+```
+
+最后,我们可以使用 `client.insert_rows_json` 方法将合并后的数据一次性写入到 BigQuery 表中。以下代码展示了如何完成这个操作:
+
+```python
+from google.cloud import bigquery
+
+def load_data_to_bigquery(json_data, dataset_id, table_id):
+    """
+    将 JSON 数据写入到 BigQuery 表中
+    """
+    client = bigquery.Client()
+    table_ref = client.dataset(dataset_id).table(table_id)
+    table = client.get_table(table_ref)
+    errors = client.insert_rows_json(json_data, table)
+    if not errors:
+        print(f"Data inserted successfully into {table_id}")
+    else:
+        print(f"Encountered errors while inserting data: {errors}")
+```
+
+把这些代码片段组合起来,您可以按照以下步骤操作:
+
+1. 使用 `get_json_file_paths` 函数获取 Google Cloud Storage 桶中所有 JSON 文件的路径。
+2. 使用 `load_json_data` 函数从这些文件路径中读取数据,并将它们合并为一个列表。
+3. 使用 `load_data_to_bigquery` 函数将合并后的数据一次性写入到 BigQuery 表中。
+
+下面是一个完整的示例代码:
+
+```python
+bucket_name = "your-bucket-name"
+prefix = "path/to/json/files/"
+dataset_id = "your-dataset-id"
+table_id = "your-table-id"
+
+# 获取 JSON 文件路径
+file_paths = get_json_file_paths(bucket_name, prefix)
+
+# 从 JSON 文件中读取数据并合并
+json_data = load_json_data(file_paths)
+
+# 将数据写入到 BigQuery 表中
+load_data_to_bigquery(json_data, dataset_id, table_id)
+```
+
+使用这种方式,您可以一次性将多个 JSON 文件的数据合并并写入到 BigQuery 表中,从而提高写入效率并避免触发写入限制。同时,您也可以根据需要调整批量大小,以获得最佳性能。
+
+
