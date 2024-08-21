@@ -120,3 +120,10 @@ ENTRYPOINT ["java", "-jar", "your-app.jar"]
 
 
 We've been discussing within our group to have pipeline support compiled with JDK11. Target Version continues to be 11.
+
+We are discussing within the group to make pipeline support compiled with JDK11, Target Version will continue to be 11.
+
+We will schedule the corresponding development tasks for the next Sprint.
+If there is a corresponding update, I will leave you a message in Teams.
+For now I will close this Jira
+
