@@ -154,3 +154,12 @@ subprocess.run(["python", "backup.py"])
 - **最佳实践**：确保在构建Docker镜像时，包括所有必要的文件和依赖，并正确设置工作目录，以确保脚本运行环境与开发环境一致。
 
 使用CronJob执行 `abc.py` 是可行的，不会影响到你的脚本正常调用其他Python文件。
+
+
+
+
+# PDB 
+使用 PodDisruptionBudget (PDB): PDB 可以防止你的 Pod 意外被删除或重新创建，确保你的关键服务持续运行
+
+
+
