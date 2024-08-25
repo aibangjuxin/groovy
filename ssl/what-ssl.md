@@ -30,6 +30,8 @@
       - [7. **证书验证成功，建立会话密钥**](#7-证书验证成功建立会话密钥)
     - [mTLS 验证过程的Flow图](#mtls-验证过程的flow图)
     - [解释](#解释-2)
+- [How Does the https work](#how-does-the-https-work)
+    - [修订后的解释：](#修订后的解释)
 - [wget-ssl.md](#wget-sslmd)
   - [要获取一个HTTPS网站的证书链，你可以使用以下几种方法：](#要获取一个https网站的证书链你可以使用以下几种方法)
     - [使用 `openssl` 命令行工具](#使用-openssl-命令行工具)
@@ -499,6 +501,63 @@ sequenceDiagram
 - **客户端证书验证**: 服务器验证客户端证书的过程确保客户端的身份是可信的。
 - **中间证书和根证书**: 在mTLS中，中间证书链和根证书用于建立信任路径，确保所有证书都是由受信任的CA签发的。
 - **双向身份验证**: mTLS要求双方都验证对方的身份，只有在双方验证成功后才会建立安全的通信通道。
+
+
+
+# How Does the https work 
+
+- ![image](https://github.com/aibangjuxin/groovy/blob/main/gif/howdoeshttpswork.png?raw=true)
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+
+    Note over Client,Server: 1. TCP Handshake (建立连接)
+    Client->>Server: TCP SYN
+    Server-->>Client: TCP SYN + ACK
+    Client->>Server: TCP ACK
+
+    Note over Client,Server: 2. Certificate Check (证书验证)
+    Client->>Server: Client Hello
+    Server-->>Client: Server Hello
+    Server-->>Client: Certificate
+    Server-->>Client: Server Hello Done
+
+    Note over Client,Server: 3. Key Exchange (密钥交换)
+    Client->>Server: Client Key Exchange (with session key)
+    Client->>Server: Change Cipher Spec
+    Client->>Server: Finished
+    Server-->>Client: Change Cipher Spec
+    Server-->>Client: Finished
+
+    Note over Client,Server: 4. Data Transmission (数据传输)
+    Client->>Server: Encrypted Data (with session key)
+    Server-->>Client: Encrypted Data (with session key)
+
+    Note right of Client: Asymmetric Encryption (公钥加密)
+    Note right of Server: Symmetric Encryption (对称加密)
+```
+
+### 修订后的解释：
+
+1. **TCP Handshake**:
+   - 这个部分描述的是客户端和服务器之间的三次握手流程，确保了TCP连接的建立。
+
+2. **Certificate Check**:
+   - 这一阶段涉及客户端和服务器的“Hello”消息交换，服务器同时发送其证书以供客户端验证。
+
+3. **Key Exchange**:
+   - 客户端生成会话密钥并通过服务器的公钥加密后发送给服务器。双方随后交换消息，确认切换到加密的会话。
+
+4. **Data Transmission**:
+   - 最后阶段是使用对称加密算法进行的数据传输。
+
+通过将这些说明与各步骤紧密结合，你的Mermaid图将更准确地反映SSL/TLS通信过程中的每个关键阶段。
+
+
+
+
 
 # wget-ssl.md
 
