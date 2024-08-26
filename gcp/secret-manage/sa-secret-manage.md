@@ -210,7 +210,7 @@ kubectl annotate serviceaccount ${SPACE}-${REGION}-${API_NAME}-ksa \
 
 
 
-```
+```mermaid
 sequenceDiagram
     participant Admin
     participant SMGCPGroup as SM GCP Group
