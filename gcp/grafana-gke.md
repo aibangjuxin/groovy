@@ -335,7 +335,7 @@ spec:
 
 #### 创建区域绑定的PV (示例为`us-central1-a`)
 创建区域绑定的PV (示例为us-central1-a)
-
+```yaml
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -358,9 +358,9 @@ spec:
           operator: In
           values:
           - us-central1-a  # 替换为对应的可用区
-
+```
 创建PVC
-
+```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -372,14 +372,14 @@ spec:
     requests:
       storage: 10Gi
   volumeName: grafana-pv  # 绑定到特定的PV
-
+```
 4. 使用Regional Persistent Disks
 
 Google Cloud提供了Regional Persistent Disks，可以自动跨两个区域复制数据，这样即使一个区域的节点不可用，Pod也能被调度到另一个区域。
 
 	•	优点：提高了高可用性，并且不需要手动指定区域。
 	•	配置：在StorageClass中指定replication-type: regional-pd。
-
+```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -390,7 +390,7 @@ parameters:
   replication-type: regional-pd
   zones: us-central1-a,us-central1-b  # 指定你希望的两个区域
 volumeBindingMode: WaitForFirstConsumer
-
+```
 结论
 
 	•	简单区域限制：使用 nodeAffinity 结合 WaitForFirstConsumer 的StorageClass来确保Pod和PVC在同一区域。
@@ -525,7 +525,6 @@ spec:
 
 6. 考虑使用Grafana的官方Helm Chart，它提供了许多配置选项，可以更容易地管理这些复杂的部署场景。
 
-您想更深入地了解其中任何一个方案吗？或者您有其他特定的需求需要考虑？​​​​​​​​​​​​​​​​
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
