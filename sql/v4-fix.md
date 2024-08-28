@@ -182,3 +182,93 @@ WHERE aibangteams.name IS NOT NULL;
 ```
 ```
 ```
+
+
+enhance 
+
+以下是优化建议，以提高查询性能：
+
+1. **减少`SELECT *`的使用**: 明确列出所需的字段，以避免不必要的数据传输，减少I/O开销。
+
+2. **索引优化**: 确保在连接条件列（如`api_name`、`region`、`env`等）上有适当的索引，以提高JOIN操作的速度。
+
+3. **消除冗余的条件检查**: 如果`cpu_limit`和`memory_limit`的值较为固定，可以将CASE语句改为映射表。
+
+4. **避免子查询**: 考虑将最后一个`LEFT JOIN`的子查询部分提取出来，作为一个临时表或视图以提高查询效率。
+
+优化后的SQL可能如下：
+
+```sql
+WITH filtered_gke_pods AS (
+    SELECT api_name, region, env, cpu_limit, memory_limit, containersize, 
+           externalGateway, internalGateway, Owner, SrsFQDN, SrsSSLCert, 
+           eimId, fileUpload, serviceAccount, offPlatform, websocket, 
+           egressCode, customDomainCode, fileUploadMaxSize, 
+           backendServices, firstDeployAt, updatedDeployAt, labels_kdp
+    FROM `mygoogleproject.aibang_api_data.gke_pods`
+    WHERE api_name IS NOT NULL AND region IS NOT NULL AND env IS NOT NULL
+),
+filtered_aibangteams AS (
+    SELECT name, extDP, intDP, aibangOrgName
+    FROM `mygoogleproject.aibang_api_data.firestore_aibangteams`
+    WHERE name NOT IN ("aibang", "aibang-in", "abcoe", "aibang", "ssvc-aibang", "ssvc-aibangtest", "COLt")
+),
+metadatas AS (
+    SELECT a.*, b.name AS teamName
+    FROM `mygoogleproject.aibang_api_data.firestore_apimetadatas` a
+    LEFT JOIN `mygoogleproject.aibang_api_data.firestore_cpworkspaces` b
+        ON a.owner = b.team AND a.region = b.region AND a.env = b.env
+)
+
+SELECT DISTINCT
+    aibangorgs.name AS aibangOrg,
+    aibangteams.name AS teamName,
+    gke_pods.*,
+    CASE
+        WHEN cpu_limit = "200m" THEN 0.2
+        WHEN cpu_limit = '500m' THEN 0.5
+        ELSE CAST(cpu_limit AS FLOAT64)
+    END as cpu_limit_value,
+    CASE
+        WHEN memory_limit = '2Gi' THEN 2848.0
+        WHEN memory_limit = '1Gi' THEN 1024.0
+        WHEN memory_limit = '512Mi' THEN 512.0
+        WHEN memory_limit = '768Mi' THEN 768.0
+        ELSE 0
+    END as memory_limit_value,
+    COALESCE(containersize, 'S') AS containerSize,
+    CASE
+        WHEN labels_kdp IS NULL OR labels_kdp = "undefined" THEN 'Mule'
+        ELSE 'Kong'
+    END AS Gateway,
+    CASE
+        WHEN aibangteams.extDP = "aibang-ext-kdp" OR aibangteams.intDP = "aibang-init-kdp" THEN "common"
+        WHEN aibangteams.extDP IS NOT NULL OR aibangteams.intDP IS NOT NULL THEN 'dedicated'
+        ELSE 'ule'
+    END AS GatewayMode,
+    metadatas.teamName AS cpworkspaces,
+    externalGateway, internalGateway, Owner, SrsFQDN, SrsSSLCert, eimId, fileUpload, serviceAccount,
+    offPlatform, websocket, TO_JSON_STRING(egressCode) AS egressCode, 
+    TO_JSON_STRING(customDomainCode) AS customDomainCode, fileUploadMaxSize, 
+    TO_JSON_STRING(backendServices) AS backendServices, firstDeployAt, updatedDeployAt
+FROM filtered_gke_pods AS gke_pods
+LEFT JOIN `mygoogleproject.aibang_api_data.firestore_apis` AS apis
+    ON gke_pods.api_name = apis.name AND gke_pods.minor_version = apis.version
+INNER JOIN filtered_aibangteams AS aibangteams
+    ON apis.aibangTeam = aibangteams.name
+LEFT JOIN `mygoogleproject.aibang_api_data.firestore_aibangorganizations` AS aibangorgs
+    ON aibangteams.aibangOrgName = aibangorgs.name
+LEFT JOIN metadatas
+    ON gke_pods.api_name = metadatas.name
+    AND gke_pods.env = metadatas.env
+    AND gke_pods.region = metadatas.region
+WHERE aibangteams.name IS NOT NULL;
+```
+
+### 优化要点：
+- **明确选择字段**，避免使用`SELECT *`。
+- **索引**：确保在连接列和WHERE条件列上创建适当的索引。
+- **消除冗余检查**：将CASE语句尽量优化为简单的条件判断。
+- **子查询优化**：提取并将子查询单独处理为临时表。
+
+这会减少I/O开销、提高查询性能，并保持原有的逻辑不变。
