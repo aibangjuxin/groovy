@@ -11,7 +11,7 @@ WITH filtered_gke_pods AS (
 filtered_aibangteams AS (
     SELECT *
     FROM `mygoogleproject.aibang_api_data.firestore_aibangteams`
-    WHERE name NOT IN ("aibang", "aibang-in", "spcoe", "aibang", "ssvc-aibang", "svc-aibangtest", "COLt")
+    WHERE name NOT IN ("aibang", "aibang-in", "abcoe", "aibang", "ssvc-aibang", "ssvc-aibangtest", "COLt")
 )
 
 SELECT DISTINCT
@@ -99,3 +99,86 @@ LEFT JOIN (
 3. 如果可能,考虑重新设计数据模型,使得各个表之间的关系更加清晰和一致。
 
 最后,建议您在实际运行这个查询时,先测试一小部分数据,确保结果符合预期,然后再应用到整个数据集。
+
+这个更新后的查询主要做了以下改变：
+
+将 aibangteams 的 LEFT JOIN 改为 INNER JOIN。这确保了只有在 aibangteams 表中找到匹配的记录时，才会返回结果。
+在查询的最后添加了 WHERE aibangteams.name IS NOT NULL 条件。这是一个额外的保障，确保不会返回 teamName 为空的记录。
+
+这些修改应该能够有效地排除 teamName 为空的数据。同时，它还保留了之前的优化，包括使用 CTE 来预先过滤数据和使用 DISTINCT 来去除可能的重复行
+
+```sql
+WITH filtered_gke_pods AS (
+    SELECT *
+    FROM `mygoogleproject.aibang_api_data.gke_pods`
+    WHERE api_name IS NOT NULL AND region IS NOT NULL AND env IS NOT NULL
+),
+filtered_aibangteams AS (
+    SELECT *
+    FROM `mygoogleproject.aibang_api_data.firestore_aibangteams`
+    WHERE name NOT IN ("aibang", "aibang-in", "abcoe", "aibang", "ssvc-aibang", "ssvc-aibangtest", "COLt")
+)
+
+SELECT DISTINCT
+    aibangorgs.name AS aibangOrg,
+    aibangteams.name AS teamName,
+    gke_pods.*,
+    CASE
+        WHEN cpu_limit = "200m" THEN 0.2
+        WHEN cpu_limit = '500m' THEN 0.5
+        ELSE CAST(cpu_limit AS FLOAT64)
+    END as cpu_limit_value,
+    CASE
+        WHEN memory_limit = '2Gi' THEN 2848.0
+        WHEN memory_limit = '1Gi' THEN 1024.0
+        WHEN memory_limit = '512Mi' THEN 512.0
+        WHEN memory_limit = '768Mi' THEN 768.0
+        ELSE 0
+    END as memory_limit_value,
+    COALESCE(containersize, 'S') AS containerSize,
+    externalGateway,
+    internalGateway,
+    Owner,
+    SrsFQDN,
+    SrsSSLCert,
+    eimId,
+    fileUpload,
+    serviceAccount,
+    offPlatform,
+    websocket,
+    TO_JSON_STRING(egressCode) AS egressCode,
+    TO_JSON_STRING(customDomainCode) AS customDomainCode,
+    fileUploadMaxSize,
+    TO_JSON_STRING(backendServices) AS backendServices,
+    firstDeployAt,
+    updatedDeployAt,
+    CASE
+        WHEN labels_kdp IS NULL OR labels_kdp = "undefined" THEN 'Mule'
+        ELSE 'Kong'
+    END AS Gateway,
+    CASE
+        WHEN aibangteams.extDP = "aibang-ext-kdp" OR aibangteams.intDP = "aibang-init-kdp" THEN "common"
+        WHEN aibangteams.extDP IS NOT NULL OR aibangteams.intDP IS NOT NULL THEN 'dedicated'
+        ELSE 'ule'
+    END AS GatewayMode,
+    metadatas.teamName AS cpworkspaces
+FROM filtered_gke_pods AS gke_pods
+LEFT JOIN `mygoogleproject.aibang_api_data.firestore_apis` AS apis
+    ON gke_pods.api_name = apis.name AND gke_pods.minor_version = apis.version
+INNER JOIN filtered_aibangteams AS aibangteams
+    ON apis.aibangTeam = aibangteams.name
+LEFT JOIN `mygoogleproject.aibang_api_data.firestore_aibangorganizations` AS aibangorgs
+    ON aibangteams.aibangOrgName = aibangorgs.name
+LEFT JOIN (
+    SELECT a.*, b.name AS teamName
+    FROM `mygoogleproject.aibang_api_data.firestore_apimetadatas` a
+    LEFT JOIN `mygoogleproject.aibang_api_data.firestore_cpworkspaces` b
+        ON a.owner = b.team AND a.region = b.region AND a.env = b.env
+) AS metadatas
+    ON gke_pods.api_name = metadatas.name
+    AND gke_pods.env = metadatas.env
+    AND gke_pods.region = metadatas.region
+WHERE aibangteams.name IS NOT NULL;
+```
+```
+```
