@@ -1,5 +1,8 @@
+# only need REPLACE
 
-
+mygoogleproject --> 
+aibang --> 
+## left with inner
 将 aibangteams 的 LEFT JOIN 改为 INNER JOIN。这确保了只有在 aibangteams 表中找到匹配的记录时，才会返回结果。
 在查询的最后添加了 WHERE aibangteams.name IS NOT NULL 条件。这是一个额外的保障，确保不会返回 teamName 为空的记录。
 
@@ -19,7 +22,7 @@ WITH filtered_gke_pods AS (
 filtered_aibangteams AS (
     SELECT *
     FROM `mygoogleproject.aibang_api_data.firestore_aibangteams`
-    WHERE name NOT IN ("aibang", "aibang-in", "spcoe", "aibang", "ssvc-aibang", "svc-aibangtest", "COLt")
+    WHERE name NOT IN ("aibang", "aibang-in", "abcoe", "aibang", "ssvc-aibang", "svc-aibangtest", "COLt")
 )
 
 SELECT DISTINCT
@@ -104,7 +107,7 @@ lookup_memory AS (
 filtered_aibangteams AS (
   SELECT name, aibangOrgName, extDP, intDP
   FROM `mygoogleproject.aibang_api_data.firestore_aibangteams`
-  WHERE name NOT IN ("aibang", "aibang-in", "spcoe", "aibang", "ssvc-aibang", "svc-aibangtest", "COLt")
+  WHERE name NOT IN ("aibang", "aibang-in", "abcoe", "aibang", "ssvc-aibang", "svc-aibangtest", "COLt")
 )
 
 SELECT
@@ -228,3 +231,43 @@ WHERE gke_pods.api_name IS NOT NULL
 4. 错误预防：如果将来有人修改查询并添加具有相同列名的新表，明确的表前缀可以防止潜在的列名冲突。
 
 总的来说，添加这些前缀是一种良好的编程实践，可以提高代码的质量和可维护性，而不会改变查询的基本功能或结果。如果您更喜欢简洁的语法，也可以选择不使用这些前缀，特别是在确定不会有列名冲突的情况下。这主要是一个风格和可读性的选择，而不是功能上的改变。
+
+
+
+
+你的优化看起来非常合理，尤其是通过使用`lookup_cpu`和`lookup_memory`表来简化CPU和内存限制值的映射。这种方式不仅提高了可读性，还增强了维护性。如果以后需要增加或修改这些映射值，只需在`lookup_cpu`和`lookup_memory`中更新数据，而不需要修改复杂的`CASE`语句。
+
+### 详细分析
+
+1. **使用查找表`lookup_cpu`和`lookup_memory`进行映射：**
+    - 通过将CPU和内存的映射关系提取到独立的CTE（公用表表达式）`lookup_cpu`和`lookup_memory`中，减少了原SQL中`CASE`语句的冗长，使代码更简洁和易于维护。
+    - 例如，`lookup_cpu`表中的值将`200m`和`500m`等转换为对应的浮点数值。对于未在表中定义的`cpu_limit`值，使用`COALESCE`函数结合字符串处理进行动态计算，这进一步提高了灵活性。
+
+2. **`filtered_aibangteams` CTE优化：**
+    - 将`firestore_aibangteams`表中不需要的记录直接在CTE中排除，从而减少了主查询中的数据处理量。
+    - 这有助于减少JOIN时的数据集大小，提高查询性能。
+
+3. **`COALESCE`函数的使用：**
+    - `COALESCE(cpu_lookup.cpu_value, CAST(REPLACE(gke_pods.cpu_limit, 'm', '') AS FLOAT64) / 1000)`:
+        - 优先从`lookup_cpu`中获取CPU值，如果未找到匹配的值，则动态计算。
+    - `COALESCE(memory_lookup.memory_value, 0)`:
+        - 优先从`lookup_memory`中获取内存值，未匹配到则返回0。这种方式能确保即使没有匹配到内存值，查询仍然能够返回结果。
+
+4. **避免重复的过滤逻辑：**
+    - 在主查询中，你只保留了有效的记录(`gke_pods.api_name IS NOT NULL AND gke_pods.region IS NOT NULL AND gke_pods.env IS NOT NULL`)，减少了不必要的数据处理。
+
+### 优化后的优势
+
+- **简洁性和可维护性：** 通过使用查找表，你将复杂的逻辑抽象出来，使SQL语句更加直观且易于理解。如果在未来需要调整这些映射关系，只需修改CTE的内容，而不需要触及主查询逻辑。
+  
+- **性能提升：** 通过在CTE中预先过滤和映射数据，减少了主查询中的数据集大小和计算量，可能会提升查询性能，尤其是在处理大数据集时。
+
+### 可能的改进
+
+1. **进一步扩展查找表：** 如果将来有更多的CPU或内存配置需要支持，可以简单地扩展`lookup_cpu`和`lookup_memory`表，而不影响主查询的逻辑。
+  
+2. **索引优化：** 如果你的数据量很大，可以考虑为`gke_pods.cpu_limit`和`gke_pods.memory_limit`字段建立索引，或者针对`lookup_cpu`和`lookup_memory`中的映射字段建立索引，以加速JOIN操作。
+
+### 总结
+
+你的优化非常有效，不仅增强了SQL的可读性和维护性，还可能带来性能上的提升。通过查找表处理固定映射值是一个良好的实践，特别是在映射关系较为复杂时。
