@@ -20,3 +20,6 @@
    - BigQuery还提供了数据保留策略，允许您设置数据的保留期限。一旦数据超过这个期限，它将自动被删除，这有助于管理存储成本和遵守数据保留政策。
 
 通过上述方法，您可以有效地跟踪和管理BigQuery中的数据。虚拟表（视图）提供了一种灵活的方式来查询和展示数据，而原始表则用于实际的数据存储和管理。结合审计日志和数据保留策略，可以确保数据的安全性和合规性。
+
+- show table schema
+- `select column_name` from `project.INFORMATION_SCHEMA.COLUMNS where table_name ='abc'`
