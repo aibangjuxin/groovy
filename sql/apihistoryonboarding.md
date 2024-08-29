@@ -295,3 +295,65 @@ ORDER BY m1.YearMonth;
 ### 最终的SQL代码
 
 如果上述问题都没有出现，那么代码是正确的。否则，根据具体的数据格式和要求进行相应的调整。
+
+
+# Q 
+如果我想统计的时候可能还存在一种情况就是比如在某个env,region上线的时间早于另一个env,region。那么我仅仅想要统计最早上线的那个，那么我的SQL是否需要进行调整？
+
+理解了您的需求。您想要统计每个API（由teamName、name和version唯一标识）第一次上线的时间，而不考虑具体是在哪个env和region上线的。这确实需要对SQL进行一些调整。我来为您修改SQL并解释变化。
+```sql
+WITH base_data AS (
+    SELECT
+        a.teamName,
+        b.name,
+        b.version,
+        FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
+    FROM
+        `project.aibang_api_data.v4_api_dev_data` a
+    JOIN
+        `project.aibang_api_data.firestore_apis` b ON a.teamName = b.aibangTeam
+),
+ranked_data AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY teamName, name, version
+            ORDER BY YearMonth
+        ) AS rn
+    FROM base_data
+),
+monthly_new_apis AS (
+    SELECT
+        YearMonth,
+        teamName,
+        name,
+        version
+    FROM ranked_data
+    WHERE rn = 1
+)
+SELECT
+    YearMonth,
+    COUNT(*) AS new_api_count,
+    STRING_AGG(DISTINCT CONCAT(teamName, ':', name, ':', version), ', ') AS new_apis
+FROM monthly_new_apis
+GROUP BY YearMonth
+ORDER BY YearMonth
+```
+
+这是修改后的SQL查询。让我解释一下主要的变化：
+
+1. 在`base_data` CTE中：
+   - 移除了`a.env`和`a.region`字段，因为我们不再需要这些信息来确定API的首次部署。
+
+2. 在`ranked_data` CTE中：
+   - `PARTITION BY`子句中移除了`env`和`region`，现在只按`teamName`、`name`和`version`进行分区。这意味着我们现在是在所有env和region中寻找每个API的最早部署时间。
+
+3. 在`monthly_new_apis` CTE中：
+   - 移除了`env`和`region`字段的选择。
+
+4. 在最终的`SELECT`语句中：
+   - `STRING_AGG`函数中移除了`env`和`region`，现在只连接`teamName`、`name`和`version`。
+
+这些修改确保了我们只统计每个API（由teamName、name和version唯一标识）的首次部署，而不考虑它是在哪个env或region首次部署的。这样，即使一个API在不同的env或region有不同的部署时间，我们也只会计算最早的那次部署。
+
+这个修改后的查询将给出每个月新部署的API数量，以及这些API的详细信息（不包括env和region），仅考虑每个API的首次部署时间。​​​​​​​​​​​​​​​​

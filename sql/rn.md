@@ -83,4 +83,139 @@ WHERE
 
 希望这些例子和解释能帮助您更好地理解 SQL 语句中 `row_number` 函数和 `rn` 的用法。 
 
+```sql
+WITH base_data AS (
+    SELECT
+        a.teamName,
+        b.name,
+        b.version,
+        a.env,
+        a.region,
+        FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
+    FROM
+        `project.aibang_api_data.v4_api_dev_data` a
+    JOIN
+        `project.aibang_api_data.firestore_apis` b ON a.teamName = b.aibangTeam
+),
+ranked_data AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY teamName, name, version, env, region
+            ORDER BY YearMonth
+        ) AS rn
+    FROM base_data
+),
+monthly_new_apis AS (
+    SELECT
+        YearMonth,
+        teamName,
+        name,
+        version,
+        env,
+        region
+    FROM ranked_data
+    WHERE rn = 1
+)
+SELECT
+    YearMonth,
+    COUNT(*) AS new_api_count,
+    STRING_AGG(DISTINCT CONCAT(teamName, ':', name, ':', version, ':', env, ':', region), ', ') AS new_apis
+FROM monthly_new_apis
+GROUP BY YearMonth
+ORDER BY YearMonth
+```
 
+这个 SQL 语句实现的功能是： **统计每个月新上线的 API 数量，并列出每个新 API 的详细信息。** 
+
+下面我们逐层解释这个语句：
+
+**1. WITH 语句：定义了三个公共表表达式 (CTE)**
+
+* **base_data:**
+    * 这是一个基础数据表，通过 `JOIN` 操作将 `project.aibang_api_data.v4_api_dev_data` 和 `project.aibang_api_data.firestore_apis` 这两个表格连接起来。
+    * 连接条件是 `a.teamName = b.aibangTeam`，即两个表格中 `teamName` 和 `aibangTeam` 列的值相同。
+    * 从连接后的结果中选取了 `teamName`, `name`, `version`, `env`, `region` 以及 `firstDeployAt` 列。
+    * 使用 `FORMAT_TIMESTAMP` 函数将 `firstDeployAt` 列中的时间戳格式化为 `YearMonth` 格式，方便后续统计。
+
+* **ranked_data:**
+    * 基于 `base_data` 表构建，使用 `ROW_NUMBER()` 窗口函数为每个 `teamName, name, version, env, region` 组合生成唯一的序列号 `rn`。
+    * 序列号的生成顺序是根据 `YearMonth` 升序排列。
+
+* **monthly_new_apis:**
+    * 基于 `ranked_data` 表构建，只选取了 `rn` 为 1 的行，代表每个 `teamName, name, version, env, region` 组合中最早上线的时间。
+    * 也就是说，`monthly_new_apis` 表包含了每个月新上线的 API 信息。
+
+**2. 最终 SELECT 语句：**
+
+* 从 `monthly_new_apis` 表中根据 `YearMonth` 分组。
+* 使用 `COUNT(*)` 函数统计每个月的 API 数量，命名为 `new_api_count`。
+* 使用 `STRING_AGG` 函数将每个月的 API 信息拼接在一起，并用逗号分隔，命名为 `new_apis`。
+* 最后按 `YearMonth` 升序排列结果。
+
+**总结:**
+
+这个 SQL 语句通过 CTE 的方式，首先处理了数据源，然后使用 `ROW_NUMBER()` 窗口函数标识出每个月新上线的 API，最后根据月分组统计 API 数量并列出所有 API 信息。
+
+希望这个解释能够帮助您理解这个 SQL 语句。 
+
+如果您有任何其他问题，请随时提问！
+
+
+
+理解了您的需求。您想要统计每个API（由teamName、name和version唯一标识）第一次上线的时间，而不考虑具体是在哪个env和region上线的。这确实需要对SQL进行一些调整。我来为您修改SQL并解释变化。​​​​​​​​​​​​​​​​
+
+这是修改后的SQL查询。让我解释一下主要的变化：
+```sql
+WITH base_data AS (
+    SELECT
+        a.teamName,
+        b.name,
+        b.version,
+        FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
+    FROM
+        `project.aibang_api_data.v4_api_dev_data` a
+    JOIN
+        `project.aibang_api_data.firestore_apis` b ON a.teamName = b.aibangTeam
+),
+ranked_data AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY teamName, name, version
+            ORDER BY YearMonth
+        ) AS rn
+    FROM base_data
+),
+monthly_new_apis AS (
+    SELECT
+        YearMonth,
+        teamName,
+        name,
+        version
+    FROM ranked_data
+    WHERE rn = 1
+)
+SELECT
+    YearMonth,
+    COUNT(*) AS new_api_count,
+    STRING_AGG(DISTINCT CONCAT(teamName, ':', name, ':', version), ', ') AS new_apis
+FROM monthly_new_apis
+GROUP BY YearMonth
+ORDER BY YearMonth
+```
+1. 在`base_data` CTE中：
+   - 移除了`a.env`和`a.region`字段，因为我们不再需要这些信息来确定API的首次部署。
+
+2. 在`ranked_data` CTE中：
+   - `PARTITION BY`子句中移除了`env`和`region`，现在只按`teamName`、`name`和`version`进行分区。这意味着我们现在是在所有env和region中寻找每个API的最早部署时间。
+
+3. 在`monthly_new_apis` CTE中：
+   - 移除了`env`和`region`字段的选择。
+
+4. 在最终的`SELECT`语句中：
+   - `STRING_AGG`函数中移除了`env`和`region`，现在只连接`teamName`、`name`和`version`。
+
+这些修改确保了我们只统计每个API（由teamName、name和version唯一标识）的首次部署，而不考虑它是在哪个env或region首次部署的。这样，即使一个API在不同的env或region有不同的部署时间，我们也只会计算最早的那次部署。
+
+这个修改后的查询将给出每个月新部署的API数量，以及这些API的详细信息（不包括env和region），仅考虑每个API的首次部署时间。​​​​​​​​​​​​​​​​
