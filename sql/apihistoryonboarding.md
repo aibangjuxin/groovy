@@ -391,7 +391,7 @@ WITH base_data AS (
     a.teamName,
     b.name,
     b.version,
-    FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%d/%m/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
+    FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
   FROM
     `project.aibang_api_data.v4_api_dev_data` a
   JOIN
