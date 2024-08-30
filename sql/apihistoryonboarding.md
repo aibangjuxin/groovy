@@ -357,3 +357,75 @@ ORDER BY YearMonth
 这些修改确保了我们只统计每个API（由teamName、name和version唯一标识）的首次部署，而不考虑它是在哪个env或region首次部署的。这样，即使一个API在不同的env或region有不同的部署时间，我们也只会计算最早的那次部署。
 
 这个修改后的查询将给出每个月新部署的API数量，以及这些API的详细信息（不包括env和region），仅考虑每个API的首次部署时间。​​​​​​​​​​​​​​​​
+
+
+- notice ABC the new list
+我为之前的误解深表歉意。您的需求非常清晰，我现在完全理解了。您希望完全去掉 `new_apis` 这个外层结构，直接得到 `ABC` 作为列名。让我们来实现这个需求。
+
+这个修改后的查询做了以下改变：
+
+1. 我们移除了 `STRUCT` 的使用，不再创建嵌套的 `new_apis` 结构。
+
+2. 直接使用 `ARRAY_AGG` 函数来聚合各个字段：
+   - `ARRAY_AGG(teamName) AS ABC`: 这将创建一个名为 `ABC` 的列，包含所有的 teamName。
+   - `ARRAY_AGG(name) AS APIName`: 创建一个名为 `APIName` 的列，包含所有的 name。
+   - `ARRAY_AGG(version) AS Version`: 创建一个名为 `Version` 的列，包含所有的 version。
+
+3. 保留了 `YearMonth` 和 `new_api_count` 列，它们的行为与之前相同。
+
+这个查询的结果将直接包含以下列：
+
+- YearMonth
+- new_api_count
+- ABC （原 teamName）
+- APIName （原 name）
+- Version （原 version）
+
+现在，`ABC` 直接作为一个顶级列出现，而不是嵌套在 `new_apis` 结构中。这应该完全符合您的要求。
+
+请注意，这种方法改变了数据的结构。原先在 `new_apis` 中的嵌套结构现在被"拍平"成了独立的数组列。每个数组列（ABC, APIName, Version）都包含了相应月份的所有值。
+
+``` sql
+WITH base_data AS (
+  SELECT
+    a.teamName,
+    b.name,
+    b.version,
+    FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%d/%m/%Y, %H:%M:%S', b.firstDeployAt)) AS YearMonth
+  FROM
+    `project.aibang_api_data.v4_api_dev_data` a
+  JOIN
+    `project.aibang_api_data.firestore_apis` b ON a.teamName = b.capTeam 
+), ranked_data AS (
+  SELECT
+    *,
+    ROW_NUMBER() OVER (
+      PARTITION BY teamName, name, version
+      ORDER BY YearMonth
+    ) AS rn
+  FROM
+    base_data
+), monthly_new_apis AS (
+  SELECT
+    YearMonth,
+    teamName,
+    name,
+    version
+  FROM
+    ranked_data
+  WHERE
+    rn = 1
+)
+SELECT
+  YearMonth,
+  COUNT(*) AS new_api_count,
+  ARRAY_AGG(teamName) AS ABC,
+  ARRAY_AGG(name) AS APIName,
+  ARRAY_AGG(version) AS Version
+FROM
+  monthly_new_apis
+GROUP BY
+  YearMonth
+ORDER BY
+  YearMonth
+``` 
