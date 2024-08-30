@@ -301,6 +301,7 @@ ORDER BY m1.YearMonth;
 如果我想统计的时候可能还存在一种情况就是比如在某个env,region上线的时间早于另一个env,region。那么我仅仅想要统计最早上线的那个，那么我的SQL是否需要进行调整？
 
 理解了您的需求。您想要统计每个API（由teamName、name和version唯一标识）第一次上线的时间，而不考虑具体是在哪个env和region上线的。这确实需要对SQL进行一些调整。我来为您修改SQL并解释变化。
+- 这个是可以在环境里面运行的一个SQL 
 ```sql
 WITH base_data AS (
     SELECT
@@ -330,6 +331,10 @@ monthly_new_apis AS (
         version
     FROM ranked_data
     WHERE rn = 1
+    -- if we want filter same teamName eg
+    AND teamName NOT IN ("lex",
+      "lextest",
+      "lex123456")
 )
 SELECT
     YearMonth,
@@ -339,6 +344,14 @@ FROM monthly_new_apis
 GROUP BY YearMonth
 ORDER BY YearMonth
 ```
+- the sql will output
+
+| YearMonth | new_api_count | new_apis.teamName | new_apis.name | new_apis.version |
+|---|---|---|---|---|
+| 2023-02 | 2 | [A] | [API1] | [v1] |
+|         |   | [B] | [API4] | [v3] |
+| 2023-03 | 1 | [A] | [API1] | [v2] |
+| 2023-04 | 1 | [B] | [API2] | [v1] |
 
 这是修改后的SQL查询。让我解释一下主要的变化：
 
