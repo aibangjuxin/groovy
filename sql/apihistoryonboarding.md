@@ -371,7 +371,7 @@ ORDER BY YearMonth
 
 这个修改后的查询将给出每个月新部署的API数量，以及这些API的详细信息（不包括env和region），仅考虑每个API的首次部署时间。​​​​​​​​​​​​​​​​
 
-
+# rename title success
 - notice ABC the new list
 我为之前的误解深表歉意。您的需求非常清晰，我现在完全理解了。您希望完全去掉 `new_apis` 这个外层结构，直接得到 `ABC` 作为列名。让我们来实现这个需求。
 
