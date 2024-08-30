@@ -429,3 +429,44 @@ GROUP BY
 ORDER BY
   YearMonth
 ``` 
+
+
+**SQL 语句的概要：**
+
+该SQL语句旨在根据每个团队、API名称和版本的首次部署日期，计算每个月新API的数量。
+
+**步骤：**
+
+1. 创建一个临时表`base_data`，包含每个团队、API名称、版本和首次部署日期的信息。
+2. 使用`ROW_NUMBER()`函数对每个`teamName`、`name`和`version`组合的月份进行排序，并分配一个唯一的行号。
+3. 创建一个临时表`monthly_new_apis`，包含每个月首次部署的API的信息。
+4. 从`monthly_new_apis`表中分组并聚合数据，计算每个月新API的数量，并生成团队名称、API名称和版本数组。
+
+**结果：**
+
+该语句的执行结果是一张表，包含以下列：
+
+* `YearMonth`：月份
+* `new_api_count`：每个月新API的数量
+* `ABC`：团队名称数组
+* `APIName`：API名称数组
+* `Version`：版本数组
+
+**示例：**
+
+假设以下数据：
+
+| teamName | name | version | firstDeployAt |
+|---|---|---|---|
+| A | API1 | v1 | 2/15/2023, 10:00:00 |
+| A | API1 | v2 | 3/10/2023, 12:00:00 |
+| B | API2 | v1 | 4/05/2023, 08:00:00 |
+| C | API3 | v1 | 5/20/2023, 16:00:00 |
+
+执行该SQL语句的结果：
+
+| YearMonth | new_api_count | ABC | APIName | Version |
+|---|---|---|---|---|
+| 2023-02 | 1 | [A] | [API1] | [v1] |
+| 2023-03 | 1 | [A] | [API1] | [v2] |
+| 2023-04 | 1 | [B] | [API2] | [v1  |
