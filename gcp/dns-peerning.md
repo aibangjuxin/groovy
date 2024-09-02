@@ -200,10 +200,50 @@ graph TD
 这个流程图展示了从Pod发起DNS查询到最终获得结果的整个过程，包括内部域名和外部域名的不同处理路径。
 
 
+您的分析是准确的，DNS查询过程中的确存在您所担心的情况。在配置了DNS Peering的环境中，DNS查询时的过程如您所述。
 
+DNS 查询流程概述
 
+当GKE中的Pod想要解析一个域名（如azure.com）时，查询过程如下：
 
+1. Pod向Cloud DNS发送请求： Pod发送DNS请求到169.254.254.254（VPC2的Cloud DNS）。
+2. Cloud DNS检查DNS Peering： 如果有DNS Peering配置, Cloud DNS会查看请求域名（如azure.com）是否属于配置的Forwarding Zone。
+3. Forwarding Zone处理:
+	• 存在解析记录: 如果在Shared VPC的Forwarding Zone中找到azure.com的记录，返回给Pod。
+	• 不存在解析记录: 如果没有找到，Cloud DNS会将请求进行递归查询，尝试找出外部的DNS服务器。
 
-```
-```
+潜在问题
 
+如果您在VPC2中额外为azure.com配置DNS Peering，这将导致以下情况：
+
+• DNS查询可能先尝试在VPC2的配置中查找，如果没有记录，会转职向Shared VPC的DNS进行请求。
+• 如果在Shared VPC的Forwarding Zone中找不到记录，最终只依靠外部DNS进行查询。
+
+这会增加查询的复杂性，也可能影响性能和解析速度。因此，避免在VPC2配置与Shared VPC重叠的DNS Peering是明智的选择。
+
+建议
+
+1. 保持域名管理清晰：对于内部使用的域名，确保对域名和Forwarding Zones的管理保持一致，避免任何重叠。
+2. 监控DNS查询的结果：使用DNS查询日志来监控成功和失败的解析，以便更快地识别和解决潜在问题。
+3. 避免冗余的DNS配置：只在需要的地方配置DNS Peering，确保每个域名只在一个地方管理。
+
+Mermaid 流程图
+
+以下是表示DNS查询流程的Mermaid流程图：
+
+graph TD;
+    A[Pod请求域名解析] --> B[发送请求到169.254.254.254]
+    B --> C{Cloud DNS检查DNS Peering}
+    C -->|存在Forwarding Zone| D[转发请求到VPC1的DNS服务器]
+    C -->|不存在Forwarding Zone| E[向外部DNS进行递归查询]
+    D --> F{检查Forwarding Zone}
+    F -->|找到记录| G[返回记录给Pod]
+    F -->|未找到记录| H[递归查询外部DNS]
+    E --> H
+
+    H --> I[返回外部DNS的结果给Pod]
+    G --> I
+
+结论
+
+您的理解和分析都是准确的。保持DNS查询的清晰结构，避免在多个VPC中配置重叠的DNS Peering是确保网络稳定和性能的重要环节。
