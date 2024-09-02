@@ -230,7 +230,7 @@ DNS 查询流程概述
 Mermaid 流程图
 
 以下是表示DNS查询流程的Mermaid流程图：
-
+```mermaid
 graph TD;
     A[Pod请求域名解析] --> B[发送请求到169.254.254.254]
     B --> C{Cloud DNS检查DNS Peering}
@@ -243,7 +243,8 @@ graph TD;
 
     H --> I[返回外部DNS的结果给Pod]
     G --> I
-
+```
+```
 结论
 
 您的理解和分析都是准确的。保持DNS查询的清晰结构，避免在多个VPC中配置重叠的DNS Peering是确保网络稳定和性能的重要环节。
