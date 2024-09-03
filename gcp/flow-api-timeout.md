@@ -170,6 +170,121 @@ flowchart TD
 
 通过这个流程图，可以更直观地理解在成功获取数据后，后续API调用的情况及其潜在的超时问题。这有助于你在诊断问题时进行系统化思考。
 
+每个重要结果反馈之后打印对应的日志是一个非常好的做法。这种做法能够帮助你有效地进行断点跟踪，便于识别和定位问题。通过记录详细的日志信息，你可以获得每个步骤的状态和执行情况，从而更好地诊断问题。以下是一些建议和最佳实践：
+
+### 日志记录建议
+
+1. **关键步骤日志**:
+   - 在每一个重要的步骤后面（如API请求、数据库查询、数据处理等）记录日志，确保捕获成功与失败的状态。例如，在执行BigQuery操作后，记录查询是否成功以及返回的数据量。
+
+2. **错误处理和异常日志**:
+   - 在捕获到任何异常时及时记录相关错误信息，包括异常类型、错误消息和堆栈跟踪。这将帮助你快速识别出现问题的具体位置。
+
+3. **时间戳和上下文信息**:
+   - 在日志中加入时间戳和相关上下文信息（如调用的API名称、请求参数等），这样可以更好地分析日志并追踪请求的执行流。
+
+4. **结构化日志**:
+   - 尽可能采用结构化日志格式（如JSON），以便进行更复杂的日志分析和聚合。结构化日志更便于机器处理，可以应用于日志分析工具。
+
+5. **日志级别**:
+   - 使用适当的日志级别（如DEBUG、INFO、WARN、ERROR），分级打印信息，便于后续分析和过滤。当出现高频率的错误或警告时，可以适时调整日志级别，增强排查能力。
+
+6. **审计日志**:
+   - 对于安全和合规要求，记录审计日志以追踪用户或系统的操作，这样可以帮助在问题发生时重建事件序列
+
+
+程序是使用Java编写的。以下是针对Java程序的日志记录建议和示例代码，帮助你在关键步骤后进行有效的日志记录，以便更好地追踪和调试。
+
+### 日志记录建议
+
+在Java中，你通常会使用日志框架，如SLF4J、Log4j或Logback等。以下是一些相应的建议：
+
+1. **关键步骤日志**：
+   - 在每一个重要的步骤后记录日志，捕获成功和失败的状态。包括API请求、数据库操作、数据处理等。
+
+2. **错误处理和异常日志**：
+   - 在捕获到任何异常时，及时记录具体的错误信息和异常堆栈跟踪，以便于快速定位问题。
+
+3. **时间戳**：
+   - 日志框架通常自动附加时间戳，确保记录的日志能够准确反映事件发生的时间。
+
+4. **结构化日志**：
+   - 如果使用支持JSON格式日志的框架，可以生成结构化日志，以利于后续日志分析。
+
+5. **日志级别**：
+   - 使用适当的日志级别（如DEBUG、INFO、WARN、ERROR）来分级打印信息，以便于后续分析和过滤。
+
+### 示例代码
+
+以下是一个使用SLF4J记录日志的示例，展示了在API调用和数据处理过程中如何记录详细日志：
+
+```java
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+public class MyApplication {
+    private static final Logger logger = LoggerFactory.getLogger(MyApplication.class);
+
+    public static void main(String[] args) {
+        logger.info("程序开始执行");
+        Data data = queryBigQuery();
+        if (data != null) {
+            logger.info("成功获取了数据: {}", data.getSize());
+            ProcessedData processedData = processData(data);
+            logger.info("数据处理成功");
+            ApiResponse response = callNextApi(processedData);
+            if (response != null) {
+                logger.info("最终结果返回成功");
+            } else {
+                logger.error("获取最终结果失败");
+            }
+        } else {
+            logger.error("查询BigQuery时未返回任何数据");
+        }
+    }
+
+    private static Data queryBigQuery() {
+        logger.info("开始查询BigQuery");
+        // BigQuery查询逻辑
+        try {
+            // 假设使用某个BigQuery客户端
+            Data result = bigQueryClient.query("SELECT * FROM table");
+            return result;
+        } catch (Exception e) {
+            logger.error("查询BigQuery时出错: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    private static ApiResponse callNextApi(ProcessedData data) {
+        logger.info("调用下一个API");
+        // 调用下一个API的逻辑
+        try {
+            ApiResponse response = someApiClient.post("https://api.example.com/endpoint", data);
+            if (response.getStatusCode() == 200) {
+                return response;
+            } else {
+                logger.error("下一个API调用失败，状态码: {}", response.getStatusCode());
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("调用下一个API时出错: {}", e.getMessage(), e);
+            return null;
+        }
+    }
+
+    // 数据处理方法
+    private static ProcessedData processData(Data data) {
+        // 数据处理逻辑
+        return new ProcessedData();
+    }
+}
+```
+
+### 总结
+
+通过在每个关键步骤后记录日志，你将能够更直观地追踪程序的执行流，并能及时发现和定位问题。使用适当的日志框架，可以让你更加容易地记录和管理日志，从而提升整体的可维护性和调试效率。
+
 
 
 我们的GKE pod 里面运行一个API 我从我的本地发送一个post请求 比如https://www.abc.com/v1/bq/view/retrival 
