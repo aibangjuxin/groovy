@@ -264,3 +264,53 @@ autocmd FileType yaml setlocal tabstop=2 shiftwidth=2 expandtab
 重启 Vim 并打开一个 YAML 文件，按 `F2` 键切换到粘贴模式，然后粘贴内容，看看是否已按预期工作。
 
 通过这些设置，你可以确保在 Vim 中编辑 YAML 文件时，缩进和排版的一致性，以及粘贴内容时不受自动格式化的影响。
+
+" 在您的 .vimrc 中添加以下内容：
+
+   " 使用 Control-P 作为粘贴模式的开关
+   set pastetoggle=<C-p>
+
+   " 或者使用 ,p 作为粘贴模式的开关（逗号后跟p）
+   " nnoremap ,p :set invpaste paste?<CR>
+
+   " 显示粘贴模式状态
+   set showmode
+
+   " 可选：自动检测粘贴（可能在某些 iPad 终端应用中不起作用）
+   if &term =~ "xterm" || &term =~ "screen"
+     let &t_SI .= "\<Esc>[?2004h"
+     let &t_EI .= "\<Esc>[?2004l"
+     function! XTermPasteBegin()
+       set pastetoggle=<Esc>[201~
+       set paste
+       return ""
+     endfunction
+     inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+   endif
+
+" 在您的 .vimrc 中添加以下内容：
+
+   " 使用 Control-P 作为粘贴模式的开关
+   set pastetoggle=<C-p>
+
+   " 或者使用 ,p 作为粘贴模式的开关（逗号后跟p）
+   " nnoremap ,p :set invpaste paste?<CR>
+
+   " 显示粘贴模式状态
+   set showmode
+
+   " 可选：自动检测粘贴（可能在某些 iPad 终端应用中不起作用）
+   if &term =~ "xterm" || &term =~ "screen"
+     let &t_SI .= "\<Esc>[?2004h"
+     let &t_EI .= "\<Esc>[?2004l"
+     function! XTermPasteBegin()
+       set pastetoggle=<Esc>[201~
+       set paste
+       return ""
+     endfunction
+     inoremap <special> <expr> <Esc>[200~ XTermPasteBegin()
+   endif
+
+input + ctrl +P 右下角没有任何东西的时候点击插入 第一次按可以出先一个bot,那就再按一次
+
+
