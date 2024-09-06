@@ -322,6 +322,42 @@ In Nginx, handling file uploads and managing large body sizes are crucial for en
 
 
 ## Nginx配置详解：限制文件上传
+- 再次理解下这个的好处，就是我这个可以单独禁止上传文件
+- 对于我的环境来说在nginx里面配置client_max_body_size来限制上传大小
+- 但是对于Nginx而言 并没有独立的控制整个Payload size的概念，所以也只能单纯的增加client_max_body_size的尺寸来达到假设用户紧紧需要payload_size
+- 对于上面的用户需求，比如用户说我要2G的payload_size那么我们通过405的方式来限制就可以来。
+  - 1  nginx 配置
+  ```nginx
+  if (§content_type ~ (multipart\/form-data|text\/plain)) {
+    return 405;
+  }
+  ```
+  - 2 adjust client_max_body_size > 2048M;
+  - 3 这样我们payload_size支持来2G➕ 但是限制来上传
+```
+
+
+## 1. Payload Size
+
+- **定义**：Payload Size通常指的是HTTP请求体的大小。在RESTful API中，请求的有效载荷（即数据）通常是以JSON、XML或表单数据的形式存在的。
+- **用途**：Payload Size的重要性在于，服务器需要能处理的请求体大小，以避免因为非法的请求体导致内存溢出或服务器变慢。
+
+## 2. `client_max_body_size` （Nginx）
+
+- **定义**：`client_max_body_size`是Nginx中的一个配置选项，用于限制HTTP请求体的大小。默认值是1MB。
+- **用途**：这个设置可以防止过大的请求体对Nginx及其后端服务造成压力，保护服务器资源。
+- **配置示例**：
+  ```nginx
+  server {
+      client_max_body_size 10M;  # 最大请求体为10MB
+  }
+  ```
+
+### 区别
+
+- **范围**：Payload Size是一个更一般的概念，适用于任何HTTP请求，而`client_max_body_size`是Nginx特定的配置项。
+- **功能**：Payload Size描述的是请求的数据大小，而`client_max_body_size`则是Nginx为了防止过大请求体而引入的限制。若请求体大于设置的值，Nginx将返回413错误。
+
 
 该Nginx配置用于限制文件上传，具体解析如下：
 
