@@ -54,6 +54,10 @@
 ## network flow
 GKE Pod (Java应用) -> Nginx -> Squid (HTTP代理) -> 目标网站 (https://www.abc.com)
 
+## The request flow 
+Client -> Nginx -> Squid -> Target Website
+
+
 在这种情况下，我们需要仔细考虑每个组件的角色：
 
 1. Java应用（GKE Pod）：
@@ -114,8 +118,6 @@ GKE Pod (Java应用) -> Nginx -> Squid (HTTP代理) -> 目标网站 (https://www
 以确保它能够成功连接到https://www.abc.com。Java应用虽然是初始请求的发起者，但在这个特定的SSL/TLS链中，它的角色较为有限。
 
 
-
-
 ## The request flow 
 - mermaid
 ```mermaid
@@ -166,13 +168,13 @@ Subject Alternative Name (SAN) 和 Subject Name (SN) 是数字证书中的两个
 
 ## Subject Name (SN)
 
-- **定义**：Subject Name 是证书中用于标识持有者的主要名称，通常是一个单一的域名或主机名。它在证书的主体字段中定义。
+- **定义**：Subject Name 是证书中用于标识持有者的主要名称，**通常是一个单一的域名或主机名**。它在证书的主体字段中定义。
   
 - **局限性**：传统的SN只能指定一个名称，这在多域名和子域名的环境中显得不够灵活。根据RFC 2818，使用SN的做法已经被逐渐弃用，因为它无法满足现代网络的需求。
 
 ## Subject Alternative Name (SAN)
 
-- **定义**：SAN 是X.509证书标准中的一个扩展字段，允许在同一证书中指定多个名称,使得一张证书能够支持多个主机名。这些名称可以是域名、IP地址、电子邮件地址等.这种类型的证书通常被称为通配符证书或多域名证书。
+- **定义**：SAN 是X.509证书标准中的一个扩展字段，**允许在同一证书中指定多个名称,使得一张证书能够支持多个主机名**。这些名称可以是域名、IP地址、电子邮件地址等.这种类型的证书通常被称为通配符证书或多域名证书。
 
 - **优势**：SAN的引入使得一个证书能够支持多个主机名，极大地提高了证书的灵活性和效率。现代浏览器和应用程序主要依赖SAN进行证书验证，甚至在存在SAN的情况下，忽略SN的验证。
 
@@ -502,7 +504,21 @@ sequenceDiagram
 - **中间证书和根证书**: 在mTLS中，中间证书链和根证书用于建立信任路径，确保所有证书都是由受信任的CA签发的。
 - **双向身份验证**: mTLS要求双方都验证对方的身份，只有在双方验证成功后才会建立安全的通信通道。
 
+### TLS和mTLS的主要区别是:
 
+TLS (Transport Layer Security) 只验证服务器身份,而 mTLS (Mutual TLS) 同时验证服务器和客户端双方的身份。
+
+更详细的解释:
+
+TLS:
+客户端验证服务器的身份
+服务器提供证书给客户端验证
+主要用于保护客户端到服务器的通信
+mTLS:
+客户端和服务器互相验证对方的身份
+双方都需要提供证书
+通常用于服务间通信,提供更高级别的安全性
+mTLS在微服务架构和零信任网络中特别有用,因为它能确保通信双方的身份,防止未授权的访问。
 
 # How Does the https work 
 
@@ -834,8 +850,8 @@ OHOBMHhLAy1qOkuHj1HzO0oQVQMpgapvBuep
   - 用以下命令来查看证书内容
   - `openssl x509 -in <certificate-file> -noout -text`
 - curl 
-- kubectl get secret <secret-name> -o jsonpath='{.data.tls\.crt}' | base64 --decode > tls.crt
-- kubectl get secret tls-secret -n namespace  -o jsonpath="{.data['tls\.crt']}" | base64 --decode | openssl x509 -noout -subject | sed -n '/^subject/s/^.*CN=//p'
+- `kubectl get secret <secret-name> -o jsonpath='{.data.tls\.crt}' | base64 --decode > tls.crt`
+- `kubectl get secret tls-secret -n namespace  -o jsonpath="{.data['tls\.crt']}" | base64 --decode | openssl x509 -noout -subject | sed -n '/^subject/s/^.*CN=//p'`
 
 
 
