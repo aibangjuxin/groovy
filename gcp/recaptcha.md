@@ -187,17 +187,17 @@ reCAPTCHA的作用和功能
 
 
 前端集成：
-
+```html
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <form action="?" method="POST">
   <div class="g-recaptcha" data-sitekey="你的站点密钥"></div>
   <br/>
   <input type="submit" value="Submit">
 </form>
-
+```
 
 后端验证（Java示例）：
-
+```java
 import java.io.*;
 import java.net.*;
 import javax.json.*;
@@ -229,9 +229,9 @@ public class VerifyRecaptcha {
         return jsonObject.getBoolean("success");
     }
 }
-
+```
 Mermaid流程图
-
+```mermaid
 graph TD
     A[用户提交表单] --> B[前端嵌入reCAPTCHA]
     B --> C[用户完成reCAPTCHA验证]
@@ -241,7 +241,7 @@ graph TD
     F --> G{验证成功?}
     G -->|是| H[处理用户请求]
     G -->|否| I[拒绝请求]
-
+```
 自动化调用API的影响
 
 在涉及自动化调用API的场景中，reCAPTCHA可能会带来一些挑战，因为它通常需要用户交互来完成验证。然而，reCAPTCHA v3通过评分机制在后台运行，可以减少对自动化流程的干扰，但仍需根据评分结果采取适当的措施[3][4][5]。
