@@ -200,13 +200,13 @@ String decodedFileName = URLDecoder.decode(fileName, "UTF-8");
 第二步：上传文件到指定目录
 
 将文件上传到 /tmp/ 目录并处理该文件，确保将文件以原始名称存储：
-
+```
 File uploads = new File("/tmp/");
 File file = new File(uploads, decodedFileName);
 try (InputStream input = filePart.getInputStream()) {
     Files.copy(input, file.toPath(), StandardCopyOption.REPLACE_EXISTING);
 }
-
+```
 第三步：判断文件是否上传完成
 
 你可以简单地检查文件是否存在及其大小来判断是否上传完成：
@@ -220,25 +220,27 @@ if (file.exists() && file.length() > 0) {
 要解析 PDF 文件内容，可以使用 Apache PDFBox 等库，以下是一个示例：
 
 1. 添加依赖（如果使用 Maven）：
+```
 <dependency>
     <groupId>org.apache.pdfbox</groupId>
     <artifactId>pdfbox</artifactId>
     <version>2.0.24</version>
 </dependency>
-
+```
 2. 解析 PDF 内容：
+```
 try (PDDocument document = PDDocument.load(file)) {
     PDFTextStripper pdfStripper = new PDFTextStripper();
     String pdfContent = pdfStripper.getText(document);
     
     // 处理获取到的内容
 }
-
+```
 
 第五步：将内容传送到另一个 API
 
 使用 HttpURLConnection 或其他 HTTP 客户端库如 OkHttp 或 Apache HttpClient 将处理的内容传送到另一 API。例如：
-
+```
 URL url = new URL("http://another-api-url");
 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 conn.setRequestMethod("POST");
@@ -249,7 +251,7 @@ try (OutputStream os = conn.getOutputStream()) {
     byte[] input = jsonInputString.getBytes("utf-8");
     os.write(input, 0, input.length);           
 }
-
+```
 总结
 
 通过以上步骤，确保你的 Java API 能正确接收和处理中文文件名及其内容。使用正确的编码和合适的库来处理文件将有效避免乱码问题，并能顺利提取和上传文件内容。
