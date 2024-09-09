@@ -257,3 +257,196 @@ try (OutputStream os = conn.getOutputStream()) {
 通过以上步骤，确保你的 Java API 能正确接收和处理中文文件名及其内容。使用正确的编码和合适的库来处理文件将有效避免乱码问题，并能顺利提取和上传文件内容。
 
 如果你在实现这些步骤时遇到任何问题，或者有更具体的需求，请告诉我！
+
+
+
+```java
+@RequestMapping(value = "/upload/file", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<CommonResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+    Data data = new Data();
+    data.setStatus("fail!!");
+    if (file.isEmpty()) {
+        return new ResponseEntity<>(new CommonResponse("File is empty", data), HttpStatus.BAD_REQUEST);
+    }
+    try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+        String line;
+        log.info("File content:");
+        while ((line = br.readLine())!= null) {
+            log.info(line);
+        }
+        String filePath = "/tmp/" + file.getOriginalFilename();
+        File dest = new File(filePath);
+        try (FileOutputStream fos = new FileOutputStream(dest)) {
+            fos.write(file.getBytes());
+            data.setStatus("ok!");
+            data.setDetails("File uploaded successfully");
+        } catch (Exception e) {
+            log.error("", e);
+            return new ResponseEntity<>(new CommonResponse("Error reading file", data), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    } catch (IOException e) {
+        log.error("", e);
+        return new ResponseEntity<>(new CommonResponse("Error uploading file", data), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    return new ResponseEntity<>(new CommonResponse("File uploaded successfully", data), HttpStatus.OK);
+}
+```
+
+```
+
+这段代码实现了文件上传的基本功能，但要确保证中文文件名正常工作，还需关注以下几个方面：
+
+代码分析与修正建议
+
+1. 处理中文文件名：
+	• 使用 MultipartFile 的 getOriginalFilename() 方法获取文件名时，确保文件名是 UTF-8 编码的。如果通过 Web 浏览器上传的文件名中包含中文，通常情况下这个方法会正确返回中文文件名。但是某些情况下，例如文件名乱码，你可能需要手动解码。
+	• 下面的修改示例会使用 URLDecoder 解码文件名：
+
+String originalFilename = URLDecoder.decode(file.getOriginalFilename(), StandardCharsets.UTF_8.toString());
+String filePath = "/tmp/" + originalFilename;
+File dest = new File(filePath);
+
+2. 文件内容读取：
+	• 使用 BufferedReader 来读取输入流内容时，使用了 StandardCharsets.UTF_8 来解码输入流，这样可以处理 UTF-8 编码的文本文件内容。然而，如果上传的文件内容是 PDF 等二进制文件，读取文本内容的方法将不适用。
+	• 在这种情况下，如果你只处理 PDF 文件，建议检查文件的类型，并考虑使用合适的库（例如 Apache PDFBox）处理 PDF 文件内容。
+3. 文件上传逻辑：
+	• 代码逻辑中，位于 fos.write(file.getBytes()); 的这行实际上是将文件的字节写入到指定路径中，若文件很大，可能会导致性能问题。此时，建议流式写入文件内容而不是把整个文件的字节加载到内存中：
+
+try (InputStream inputStream = file.getInputStream(); FileOutputStream fos = new FileOutputStream(dest)) {
+    byte[] buffer = new byte[1024];
+    int bytesRead;
+    while ((bytesRead = inputStream.read(buffer)) != -1) {
+        fos.write(buffer, 0, bytesRead);
+    }
+}
+
+4. 日志记录：
+	• 当前的日志记录是正确的，可以记录文件内容，但要记住，如果上传的是二进制文件或较大的文件，这可能会产生大量日志信息。可以考虑限制输出只记录一些特定提示或大小，而不是每一行的内容。
+
+修改后的代码示例
+
+在综合上述建议后，代码可能修改为如下：
+
+@RequestMapping(value = "/upload/file", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<CommonResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+    Data data = new Data();
+    data.setStatus("fail!!");
+    if (file.isEmpty()) {
+        return new ResponseEntity<>(new CommonResponse("File is empty", data), HttpStatus.BAD_REQUEST);
+    }
+    
+    String originalFilename;
+    try {
+        originalFilename = URLDecoder.decode(file.getOriginalFilename(), StandardCharsets.UTF_8.toString());
+    } catch (UnsupportedEncodingException e) {
+        log.error("Error decoding filename", e);
+        return new ResponseEntity<>(new CommonResponse("Failed to decode filename", data), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    String filePath = "/tmp/" + originalFilename;
+    File dest = new File(filePath);
+    
+    try (InputStream inputStream = file.getInputStream(); FileOutputStream fos = new FileOutputStream(dest)) {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+        }
+        data.setStatus("ok!");
+        data.setDetails("File uploaded successfully");
+        log.info("Uploaded file to: {}", filePath);
+    } catch (IOException e) {
+        log.error("Error during file upload", e);
+        return new ResponseEntity<>(new CommonResponse("Error uploading file", data), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    return new ResponseEntity<>(new CommonResponse("File uploaded successfully", data), HttpStatus.OK);
+}
+
+总结
+
+以上修改确保了能够正确处理中文文件名和文件上传逻辑的合理性。通过在处理中文文件名时进行 URL 解码以及使用流式方式写入文件，可以提升代码的鲁棒性和性能。如果有任何特定的错误或问题，请继续提问！
+
+
+
+根据您提供的代码,对于中文文件名的处理有以下几点需要注意:
+
+1. 文件名解码:
+您的代码已经使用 URLDecoder.decode() 对文件名进行了 UTF-8 解码,这是正确的做法。这样可以处理大多数情况下的中文文件名。
+
+2. 文件系统编码:
+即使文件名正确解码,如果服务器文件系统不支持 UTF-8,仍可能出现乱码。确保服务器文件系统使用 UTF-8 编码。
+
+3. 文件名安全处理:
+为了进一步确保文件名不出现乱码,可以考虑以下改进:
+
+
+
+```java
+@RequestMapping(value = "/upload/file", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+public ResponseEntity<CommonResponse> uploadFile(@RequestParam("file") MultipartFile file) {
+    Data data = new Data();
+    data.setStatus("fail!!");
+    if (file.isEmpty()) {
+        return new ResponseEntity<>(new CommonResponse("File is empty", data), HttpStatus.BAD_REQUEST);
+    }
+    
+    String originalFilename;
+    try {
+        originalFilename = URLDecoder.decode(file.getOriginalFilename(), StandardCharsets.UTF_8.toString());
+        // 移除不安全的字符
+        originalFilename = originalFilename.replaceAll("[^a-zA-Z0-9\\.\\-]", "_");
+        // 确保文件名不为空
+        if (originalFilename.isEmpty()) {
+            originalFilename = "unnamed_file";
+        }
+    } catch (UnsupportedEncodingException e) {
+        log.error("Error decoding filename", e);
+        return new ResponseEntity<>(new CommonResponse("Failed to decode filename", data), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    String timestamp = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
+    String filePath = "/tmp/" + timestamp + "_" + originalFilename;
+    File dest = new File(filePath);
+    
+    try (InputStream inputStream = file.getInputStream(); FileOutputStream fos = new FileOutputStream(dest)) {
+        byte[] buffer = new byte[1024];
+        int bytesRead;
+        while ((bytesRead = inputStream.read(buffer)) != -1) {
+            fos.write(buffer, 0, bytesRead);
+        }
+        data.setStatus("ok!");
+        data.setDetails("File uploaded successfully");
+        log.info("Uploaded file to: {}", filePath);
+    } catch (IOException e) {
+        log.error("Error during file upload", e);
+        return new ResponseEntity<>(new CommonResponse("Error uploading file", data), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+    
+    return new ResponseEntity<>(new CommonResponse("File uploaded successfully", data), HttpStatus.OK);
+}
+
+```
+
+这个改进后的代码做了以下几点修改:
+
+1. 文件名安全处理: 使用正则表达式移除了可能导致问题的字符,只保留字母、数字、点和横杠。
+
+2. 空文件名处理: 如果处理后的文件名为空,设置一个默认名称。
+
+3. 时间戳前缀: 在文件名前添加了时间戳,这样可以避免文件名冲突,并且可以按上传顺序排序。
+
+这些改进应该能够解决大多数与中文文件名相关的问题。但是,还有一些其他建议:
+
+1. 日志记录: 在保存文件后,记录原始文件名和保存后的文件名,这样可以方便追踪。
+
+2. 文件类型检查: 考虑添加文件类型检查,只允许上传特定类型的文件(如PDF)。
+
+3. 文件大小限制: 添加文件大小限制,防止超大文件占用服务器资源。
+
+4. 安全存储路径: 确保 /tmp/ 目录具有适当的权限,并考虑使用更安全的存储位置。
+
+5. 错误处理: 为不同类型的错误(如磁盘空间不足)提供更具体的错误信息。
+
+通过这些改进,您应该能够成功上传中文名称的PDF文件,并且在 /tmp/ 目录下看到它们,文件名不会出现乱码。如果仍然遇到问题,可能需要检查服务器的文件系统编码和Java运行时的默认编码设置。
+```
