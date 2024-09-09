@@ -487,7 +487,7 @@ public class JavaVersionLogger {
 
 ```
 resource.type="k8s_container"
-resource.labels.cluster_name="YOUR_CLUSTER_NAME"
+resource.labels.jiqun_name="YOUR_CLUSTER_NAME"
 "JAVA_VERSION_INFO"
 ```
 
@@ -522,12 +522,12 @@ resource.labels.cluster_name="YOUR_CLUSTER_NAME"
 ```python
 from google.cloud import logging_v2
 
-def generate_java_version_report(project_id, cluster_name):
+def generate_java_version_report(project_id, jiqun_name):
     client = logging_v2.Client(project=project_id)
 
     filter_str = f'''
     resource.type="k8s_container"
-    resource.labels.cluster_name="{cluster_name}"
+    resource.labels.jiqun_name="{jiqun_name}"
     "JAVA_VERSION_INFO"
     '''
 
@@ -980,11 +980,11 @@ chmod +x check_java_version.sh
 
 # 设置变量
 PROJECT_ID=$(gcloud config get-value project)
-CLUSTER_NAME="your-cluster-name"
-CLUSTER_LOCATION="your-cluster-location"
+CLUSTER_NAME="your-jiqun-name"
+CLUSTER_LOCATION="your-jiqun-location"
 
 # 确保已经连接到正确的集群
-gcloud container clusters get-credentials $CLUSTER_NAME --zone $CLUSTER_LOCATION --project $PROJECT_ID
+gcloud container jiquns get-credentials $CLUSTER_NAME --zone $CLUSTER_LOCATION --project $PROJECT_ID
 
 # 获取所有 Deployment 的镜像信息
 echo "Collecting image information from all Deployments..."
@@ -1054,3 +1054,156 @@ echo "Image information collection completed."
 - 如果镜像数量很多，脚本可能需要一些时间来运行。考虑添加进度指示器或将输出重定向到文件。
 - 根据您的具体需求，您可能想要调整输出格式，例如输出为 CSV 或 JSON 格式以便后续处理。
 
+# logfilter 
+
+下面是我在GCP工程里面过滤的日志条件
+```bash
+resource.type "k8s_container"
+resource.labels.project_id “aibang-google-project"
+resource.labels. location "europe-west2" resource.labels.jiqun_name “aibang”-myjiqun
+textPayload: (“using Java" NOT "Using Java Agent Version")
+这个过滤条件没有问题,也能获取到我想要的日志 我如果想要对这个日志进行深度分析.有什么好的办法? 比如我更关注日志的textPayload部分,因为我想去分析这个部分.这个里面记录了我的Java的版本信息和API的名字
+比如关键字
+AppName=aibang-health-check Starting Application using Java 17.0.2 with
+```
+
+要对 GCP 日志进行深度分析，特别关注 textPayload 部分，以下是一些有效的方法和工具，你可以根据自己的需求进行选择：
+
+方法 1: 使用 GCP Logging 的 BigQuery 导出
+
+将日志导出到 BigQuery 是分析 GCP 日志的强大方法之一。通过 BigQuery，你可以使用 SQL 查询轻松探查和分析日志内容。
+
+步骤：
+
+1. 设置日志导出:在 GCP 控制台，转到 Logging →  Logs Router，创建一个新的导出，将日志导出到 BigQuery 数据集。
+2. 编写 SQL 查询:使用 SQL 语法去分析 textPayload 中的内容，下面是一个示例查询，它提取特定的 Java 版本和应用程序名称：
+SELECT
+  JSON_EXTRACT_SCALAR(textPayload, '$.AppName') AS AppName,
+  REGEXP_EXTRACT(textPayload, r'using Java ([\d\.]+)') AS JavaVersion
+FROM
+  `your_project_id.your_dataset_id.your_table_id`
+WHERE
+  textPayload LIKE '%using Java%'
+
+3. 执行和分析:在 BigQuery 中执行查询，查看结果，并根据需要调整查询以获取更深入的信息。
+
+方法 2: 使用 Cloud Functions + Pub/Sub
+
+如果你希望以更自动化的方式处理日志，可以使用 Cloud Functions 和 Pub/Sub 进行实时分析。每当日志写入时，你都可以触发 Cloud Function。
+
+步骤：
+
+1. 创建 Pub/Sub 主题:将 Cloud Logging 的导出设置为向 Pub/Sub 主题发送日志。
+2. 编写 Cloud Function:创建一个 Cloud Function，接收 Pub/Sub 消息，并从中提取和分析 textPayload 信息。
+import base64
+import json
+import re
+
+def log_analysis(data, context):
+    pubsub_message = base64.b64decode(data['data']).decode('utf-8')
+    log_entry = json.loads(pubsub_message)
+
+    text_payload = log_entry.get('textPayload', '')
+    app_name_match = re.search(r'AppName=(\w+)', text_payload)
+    java_version_match = re.search(r'using Java ([\d\.]+)', text_payload)
+
+    if app_name_match and java_version_match:
+        app_name = app_name_match.group(1)
+        java_version = java_version_match.group(1)
+
+        print(f'Application Name: {app_name}, Java Version: {java_version}')
+
+3. 部署并测试:部署 Cloud Function 并测试 Pub/Sub 消息。你可以将分析结果输出到日志或存储到 BigQuery。
+
+方法 3: 使用 Logging Explorer 和分析工具
+
+如果你只需要一次性分析，并且没有部署要求，可以直接在 GCP 的 Logging Explorer 中进行。
+
+1. 在 Logging Explorer 中搜索你的日志。
+2. 使用过滤器，如你所描述的条件。
+3. 导出日志：使用 “导出” 选项将日志下载为 CSV 格式，利用 Excel 或 Pandas 等进行更复杂的分析。
+
+方法 4: 本地分析
+
+如果你决定从 GCP 中导出日志文件，可以使用 Python 脚本进行本地分析。
+
+1. 下载日志文件。
+2. 编写 Python 脚本读取和分析日志：
+import re
+
+def analyze_logs(filename):
+    with open(filename, 'r') as file:
+        for line in file:
+            if "using Java" in line:
+                app_match = re.search(r'AppName=(\w+)', line)
+                version_match = re.search(r'using Java ([\d\.]+)', line)
+                if app_match and version_match:
+                    app_name = app_match.group(1)
+                    java_version = version_match.group(1)
+                    print(f'Application Name: {app_name}, Java Version: {java_version}')
+
+analyze_logs('your_log_file.txt')
+
+
+总结
+
+通过 BigQuery、Cloud Functions、Logging Explorer 或者本地分析，你可以根据需求选择合适的方法来深入分析 GCP 日志。BigQuery 提供强大的即席查询功能，而 Cloud Functions 则适合需要实时处理的场景。
+
+```
+当然可以！下面是详细的步骤来设置 GCP 日志导出到 BigQuery，包括如何创建数据集和表。
+
+第一步：在 BigQuery 中创建数据集
+
+1. 登录到 Google Cloud Console：前往 Google Cloud Console.
+2. 打开 BigQuery 控制台：在左侧菜单中，点击 “BigQuery”，这会进入 BigQuery 控制台。
+3. 创建数据集：在 BigQuery 控制台的左侧，找到“资源”部分：
+	• 点击你的项目名称旁边的 “+” 创建数据集。
+	• 在弹出的窗口中，输入数据集的名称（例如 logs_dataset）。
+	• 选择数据集的默认存储位置（例如 US 或 EU）。
+	• 点击 “创建数据集”。
+
+第二步：在 Logging 中设置日志导出
+
+1. 打开 Logging 控制台：在 Google Cloud Console 中，点击左侧菜单中的 “Logging”，然后选择 “Logs Router”。
+2. 创建导出规则：
+	• 点击 “创建导出”。
+	• 在 “名称” 字段中，输入导出的名称（例如 logs_to_bigquery）。
+	• 在 “描述” 字段中，可以选择性地输入描述。
+	• 在 “目标” 字段中，选择 “BigQuery 数据集”。
+	• 在 “选择 BigQuery 数据集” 下拉菜单中，选择刚刚创建的 logs_dataset。
+3. 设置过滤条件：
+	• 在 “日志过滤器” 部分，输入你想要捕获的日志过滤条件（例如你先前提供的过滤条件）。
+	• 示例过滤条件：
+resource.type="k8s_container"
+resource.labels.project_id="aibang-google-project"
+resource.labels.location="europe-west2"
+resource.labels.jiqun_name="aibang-myjiqun"
+textPayload:"using Java" NOT "Using Java Agent Version"
+
+4. 创建导出规则：
+	• 确保所有信息填写完整且正确无误后，点击 “创建导出”。
+
+第三步：查看导出的日志数据
+
+1. 在 BigQuery 中查看导出的数据：
+	• 返回到 BigQuery 控制台。
+	• 点击新创建的数据集（例如 logs_dataset），你将在右侧看到面板中显示的表。
+	• 导出日志将在 BigQuery 中以表的形式出现，命名为 log_YYYYMMDD（日志的日期将以日期命名）。
+
+第四步：分析和查询数据
+
+1. 编写 SQL 查询：
+	• 你可以直接在 BigQuery 控制台中编写 SQL 查询，如下所示：
+
+SELECT *
+FROM `your_project_id.logs_dataset.log_*`
+WHERE textPayload LIKE '%using Java%'
+
+以上查询将选择所有在 textPayload 中包含”using Java”的日志。
+
+注意事项
+
+• 数据表创建：你不需要手动创建数据表，BigQuery 会自动生成表来存储导出的日志数据。
+• 数据延迟：从 Logs Router 导出到 BigQuery 的日志可能会有一些延迟。通常它们会在几分钟内可用，但具体时间取决于系统的负载。
+
+以上是将 GCP 日志导出到 BigQuery 的详细步骤。如果你在操作过程中遇到任何问题，欢迎随时询问！
