@@ -223,5 +223,152 @@ CMD ["java", "-jar", "your-application.jar"]
 
 通过这些设置，您的 Docker 容器应该能够正确处理 UTF-8 编码的中文字符了。
 
+为确保通过Java接口上传的中文文件名能够正确显示，即使你已经设置了Docker容器的本地语言环境，仍然需要确认以下几个关键点：
 
+1. **确保Java应用程序使用UTF-8编码**：
+   - 通过`file.encoding`设置：
+     在启动Java应用时，确认文件编码设置为UTF-8。这可以通过添加以下系统属性来确保：
 
+     ```bash
+     -Dfile.encoding=UTF-8
+     ```
+
+     你可以在Dockerfile中通过`JAVA_OPTS`或`JAVA_TOOL_OPTIONS`变量添加此设置：
+
+     ```Dockerfile
+     ENV JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF-8"
+     ```
+
+2. **检查文件上传的编码处理**：
+   - 如果你使用的是`MultipartFile`（如Spring框架），需要确保处理上传请求时设置了正确的字符集编码。比如在Spring中，可以在处理上传请求时显式设置请求的编码为UTF-8：
+
+     ```java
+     @RequestMapping(value = "/upload", method = RequestMethod.POST)
+     public String uploadFile(@RequestParam("file") MultipartFile file) throws Exception {
+         String originalFilename = file.getOriginalFilename();
+         System.out.println("Uploaded file name: " + originalFilename); // 应该正确显示中文
+         return "uploadSuccess";
+     }
+     ```
+
+3. **Docker容器中的本地化设置**：
+   - 确保你在`Dockerfile`中正确生成并激活了所需的本地化设置。例如：
+
+     ```Dockerfile
+     RUN apt-get update && apt-get install -y locales \
+         && locale-gen zh_CN.UTF-8 \
+         && update-locale LANG=zh_CN.UTF-8
+     ENV LANG=zh_CN.UTF-8
+     ENV LANGUAGE=zh_CN:zh
+     ENV LC_ALL=zh_CN.UTF-8
+     ```
+
+   - 确保生成后的镜像中，区域设置已正确生效。你可以通过以下命令检查容器的区域设置：
+
+     ```bash
+     docker exec -it <container_id> locale
+     ```
+
+4. **Kubernetes Pod中的环境变量**：
+   确保在Kubernetes中部署的Pod继承了镜像的环境设置。如果没有继承，可以在`deployment.yaml`中显式添加这些环境变量：
+
+   ```yaml
+   env:
+     - name: LANG
+       value: "zh_CN.UTF-8"
+     - name: LANGUAGE
+       value: "zh_CN:zh"
+     - name: LC_ALL
+       value: "zh_CN.UTF-8"
+   ```
+
+5. **调试步骤**：
+   - 确保文件在上传后正确保存后，通过以下命令检查文件是否以正确的中文名显示：
+
+     ```bash
+     docker exec -it <container_id> ls /tmp
+     ```
+
+6. **文件名编码转换**：
+   如果文件上传过程中仍然有问题，可以检查是否在上传处理流程中有任何强制转换编码的地方。确保所有涉及文件名的处理都是基于UTF-8的。
+
+总结来说，你需要确保Java应用程序、Docker镜像和Pod环境都使用了正确的UTF-8编码，这样上传的中文文件名才能被正确处理并显示。
+
+如果你不能通过在启动时设置`file.encoding`为UTF-8，可以尝试以下方法确保Java程序在运行时正确处理中文文件名：
+
+### 1. **手动处理文件名的字符编码**
+   在处理上传的文件时，可以显式地将文件名转换为UTF-8编码。比如在Spring MVC中，获取文件名后可以手动转换编码：
+
+   ```java
+   String originalFilename = file.getOriginalFilename();
+   // 将文件名从默认字符集转换为UTF-8
+   String utf8Filename = new String(originalFilename.getBytes("ISO-8859-1"), "UTF-8");
+   System.out.println("Uploaded file name: " + utf8Filename);
+   ```
+
+   这种方式确保即使系统默认编码不是UTF-8，你也可以在代码中显式处理中文文件名。
+
+### 2. **在代码中显式设置编码**
+   如果你无法修改系统默认的编码，可以在Java应用程序的核心代码中通过设置编码来处理文件名。例如：
+
+   ```java
+   System.setProperty("file.encoding", "UTF-8");
+   ```
+
+   将此代码放置在应用程序的早期初始化阶段，这样整个应用程序都会使用UTF-8作为文件名编码。然而，需要注意的是，这种方式在某些环境下可能不会生效，特别是如果JVM已经初始化了编码设置。
+
+### 3. **使用`InputStreamReader`和`OutputStreamWriter`**
+   如果你的Java应用程序在处理上传文件时需要读取或写入文件名，可以显式地通过`InputStreamReader`或`OutputStreamWriter`指定UTF-8编码：
+
+   ```java
+   BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream(), "UTF-8"));
+   ```
+
+   这种方法确保在文件处理过程中强制使用UTF-8编码。
+
+### 4. **验证请求中的编码**
+   检查请求头中是否明确指定了字符集编码，确保上传请求的字符集被设置为UTF-8。在Spring MVC中，你可以通过以下方式确保请求使用UTF-8：
+
+   ```java
+   @PostMapping("/upload")
+   public ResponseEntity<?> uploadFile(HttpServletRequest request, @RequestParam("file") MultipartFile file) throws Exception {
+       request.setCharacterEncoding("UTF-8");
+       String originalFilename = file.getOriginalFilename();
+       System.out.println("Uploaded file name: " + originalFilename);
+       return ResponseEntity.ok("Success");
+   }
+   ```
+
+   如果你的应用程序是通过表单上传文件，确保表单也指定了UTF-8编码：
+
+   ```html
+   <form method="post" enctype="multipart/form-data" accept-charset="UTF-8">
+       <input type="file" name="file" />
+       <input type="submit" value="Upload" />
+   </form>
+   ```
+
+### 5. **使用过滤器设置编码**
+   你还可以创建一个编码过滤器，在每个请求到达时强制设置字符编码：
+
+   ```java
+   @WebFilter("/*")
+   public class EncodingFilter implements Filter {
+       public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+               throws IOException, ServletException {
+           request.setCharacterEncoding("UTF-8");
+           response.setCharacterEncoding("UTF-8");
+           chain.doFilter(request, response);
+       }
+   }
+   ```
+
+   这个过滤器确保每个请求都会使用UTF-8字符集进行处理。
+
+### 6. **处理文件存储路径**
+   如果问题仅在于文件的临时存储路径（例如`/tmp`），确保在存储路径相关操作中使用了正确的编码格式。可以通过类似的手段，在临时文件路径中强制使用UTF-8编码。
+
+### 7. **检查上传工具或库**
+   确认你使用的Java文件上传库是否有对文件名进行编码的支持，或者是否提供了相关的配置选项。比如`Commons FileUpload`或Spring的`MultipartResolver`可能有额外的配置可以用于指定编码。
+
+通过这些方法，你可以在不修改启动参数的情况下处理文件名的字符编码问题，并确保Java接口上传的中文文件名能够正确处理。
