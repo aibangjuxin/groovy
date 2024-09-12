@@ -49,10 +49,14 @@ CMD ["java", "-jar", "/app/app.jar"]
    ENV LANG=C.UTF-8 \
        LC_ALL=C.UTF-8 \
        LANGUAGE=C.UTF-8
+   -- testing success 
+   ENV LANG zh_CN.UTF-8
+   ENV LANGAGE zh_CN:zh
+   ENV LC_ALL zh_CN.UTF-8
    ```
    这些环境变量确保容器内部的语言和字符集设置为UTF-8。`LANG`、`LC_ALL` 和 `LANGUAGE` 是常用的环境变量，用于控制字符集和语言环境。
 
-3. **安装必要的工具**:
+3. **安装必要的工具**: this testing success --> 
    ```Dockerfile
    RUN apt-get update && \
        apt-get install -y --no-install-recommends \
@@ -97,7 +101,7 @@ CMD ["java", "-jar", "/app/app.jar"]
 # 使用官方 OpenJDK 镜像作为基础镜像
 FROM openjdk:11-jre-slim
 
-# 设置环境变量以支持 UTF-8 和中文字符
+# 设置环境变量以支持 UTF-8 和中文字符 ==> test success part
 ENV LANG zh_CN.UTF-8
 ENV LANGUAGE zh_CN:zh
 ENV LC_ALL zh_CN.UTF-8
