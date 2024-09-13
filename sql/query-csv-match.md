@@ -4,6 +4,7 @@
     - e.g. api_name_with_major_version = "com.example.api:1.0"
     - load this CSV file into BigQuery as a table named "my_tmp_api_name_table"
     ```bash
+    Testing OK 
     bq load --source_format=CSV --skip_leading_rows=1 \
       your-project-id:your-dataset-id.my_tmp_api_name_table \
       your-csv-file.csv
@@ -124,8 +125,10 @@ echo "Update completed for aibangOrg and teamName in $TMP_API_TABLE."
 # BigQuery 连接查询
 如果您希望在 BigQuery 页面直接查询并获取 my_tmp_api_name_table 表与 your-dataset-table 表之间的对应数据，可以使用以下 SQL 查询。这段查询会从 your-dataset-table 中提取与 my_tmp_api_name_table 中的 API 名称和版本相匹配的 aibangOrg 和 teamName 信息。
 ```sql
--- 方法2：直接连接查询
+-- 方法2：直接连接查询 Testing OK 
+-- need notice my_tmp_api_name_table need have a api_name_with_major_version OR using `API Name` 
 SELECT
+  DISTINCT
   tmp.api_name_with_major_version,
   src.aibangOrg,
   src.teamName
@@ -146,7 +149,36 @@ ON
 	• 进行左连接（LEFT JOIN）将 your-dataset-table 与 my_tmp_api_name_table 连接，匹配 api_name_with_major_version 字段。这意味着即使在 your-dataset-table 中找不到匹配项，my_tmp_api_name_table 的所有条目依然会被返回，对于没有匹配的 aibangOrg 和 teamName 则会返回 NULL。
 4. ON 子句：
 	• 指定连接条件，即匹配两个表中的 api_name_with_major_version 字段。
-
+- last success sql reference
+```sql
+SELECT
+  DISTINCT
+-- 因为我想要展示我原表的所有字段，所以下面是*，
+  tmp.*,
+  src.aibangOrg,
+  src.teamName
+FROM
+  `your-project-id.my_tmp_api_name_table` AS tmp
+LEFT JOIN
+  `your-project-id.your-dataset-table` AS src
+ON
+-- 我要求原表里面的条件api_name_with_major_version = src 其实SRC叫做目的表更合适
+  tmp.api_name_with_major_version = src.api_name_with_major_version
+```
+- last success sql reference -- edit 
+```sql
+SELECT
+  DISTINCT
+  tmp.*,
+  src.aibangOrg,
+  src.teamName
+FROM
+  `your-project-id.my_tmp_api_name_table` AS tmp
+LEFT JOIN
+  `your-project-id.your-dataset-table` AS dst
+ON
+  tmp.api_name_with_major_version = dst.api_name_with_major_version
+```
 执行步骤
 
 1. 登录到 BigQuery 控制台。
