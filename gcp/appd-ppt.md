@@ -47,7 +47,7 @@ graph TD;
     style C fill:#00f,stroke:#333,stroke-width:2px;
     style D fill:#ff0,stroke:#333,stroke-width:2px;
 ```
-```
+
 幻灯片 6: 示例代码
 ```python
 • 数据发送示例（Python）：
@@ -62,7 +62,7 @@ def send_data(tier_name, tier_node, performance_data):
     }
     response = requests.post(endpoint, json=payload)
     return response.status_code
-
+```
 
 幻灯片 7: 结论
 

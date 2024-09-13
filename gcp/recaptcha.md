@@ -38,15 +38,16 @@
 	• 解析验证结果，依据结果决定是否继续处理请求。
 
 幻灯片 5: 示例代码
-
+```html
 • 前端 HTML 示例：
 <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 <form action="YOUR_BACKEND_ENDPOINT" method="POST">
   <div class="g-recaptcha" data-sitekey="YOUR_SITE_KEY"></div>
   <button type="submit">Submit</button>
 </form>
-
+```
 • 后端验证示例（Python）：
+```python
 import requests
 
 def verify_recaptcha(recaptcha_response):
@@ -56,7 +57,7 @@ def verify_recaptcha(recaptcha_response):
         data={'secret': secret_key, 'response': recaptcha_response}
     )
     return response.json()
-
+```
 
 幻灯片 6: 结论
 
