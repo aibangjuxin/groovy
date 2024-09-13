@@ -170,8 +170,8 @@ ON
 SELECT
   DISTINCT
   tmp.*,
-  src.aibangOrg,
-  src.teamName
+  dst.aibangOrg,
+  dst.teamName
 FROM
   `your-project-id.my_tmp_api_name_table` AS tmp
 LEFT JOIN
@@ -179,6 +179,26 @@ LEFT JOIN
 ON
   tmp.api_name_with_major_version = dst.api_name_with_major_version
 ```
+这个SQL查询的主要目的是从两个表 your-project-id.my_tmp_api_name_table (tmp 别名) 和 your-project-id.your-dataset-table (dst 别名) 中提取数据，并进行左连接（LEFT JOIN）。
+
+解释每个部分：
+SELECT DISTINCT:
+这表示查询结果需要去重，避免返回重复的行。
+tmp.*:
+选择 tmp 表中的所有列。
+src.aibangOrg 和 src.teamName:
+从查询中推测，这里可能是需要将某些列从别名 src 引入，但在这个SQL中，src 并没有定义。可能是手误，正确的列应该来自 dst 表，因此可以改为 dst.aibangOrg 和 dst.teamName。
+FROM your-project-id.my_tmp_api_name_table AS tmp:
+指定查询的主表是 my_tmp_api_name_table，并给它一个别名 tmp，方便后续引用。
+LEFT JOIN:
+将 tmp 表和 dst 表进行左连接。LEFT JOIN 的含义是，即使右边的 dst 表没有匹配的行，也会返回 tmp 表的所有行。
+ON tmp.api_name_with_major_version = dst.api_name_with_major_version:
+连接条件，表示 tmp 表的 api_name_with_major_version 列要和 dst 表的 api_name_with_major_version 列匹配。
+输出结果：
+查询返回 tmp 表的所有列以及 dst 表中的 aibangOrg 和 teamName 列。
+如果 tmp.api_name_with_major_version 和 dst.api_name_with_major_version 之间有匹配的记录，则会从 dst 表获取 aibangOrg 和 teamName 的值。如果没有匹配，返回 tmp 表的数据，且 dst 表中的列将会是 NULL。
+因为使用了 DISTINCT，所以如果有重复的行，将会自动去除。
+
 执行步骤
 
 1. 登录到 BigQuery 控制台。
