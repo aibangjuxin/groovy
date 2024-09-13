@@ -182,6 +182,7 @@ ON
 这个SQL查询的主要目的是从两个表 your-project-id.my_tmp_api_name_table (tmp 别名) 和 your-project-id.your-dataset-table (dst 别名) 中提取数据，并进行左连接（LEFT JOIN）。
 
 解释每个部分：
+```bash
 SELECT DISTINCT:
 这表示查询结果需要去重，避免返回重复的行。
 tmp.*:
@@ -198,7 +199,8 @@ ON tmp.api_name_with_major_version = dst.api_name_with_major_version:
 查询返回 tmp 表的所有列以及 dst 表中的 aibangOrg 和 teamName 列。
 如果 tmp.api_name_with_major_version 和 dst.api_name_with_major_version 之间有匹配的记录，则会从 dst 表获取 aibangOrg 和 teamName 的值。如果没有匹配，返回 tmp 表的数据，且 dst 表中的列将会是 NULL。
 因为使用了 DISTINCT，所以如果有重复的行，将会自动去除。
-
+```
+```
 执行步骤
 
 1. 登录到 BigQuery 控制台。
