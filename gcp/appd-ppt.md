@@ -37,7 +37,7 @@
 	• 提供 API 或界面，允许用户查看和分析汇总数据。
 
 幻灯片 5: 示例架构图
-
+```mermaid
 graph TD;
     A[用户应用] -->|发送数据| B[GKE 数据汇总服务]
     B --> C[MongoDB/Cloud SQL]
@@ -46,9 +46,10 @@ graph TD;
     style B fill:#0f0,stroke:#333,stroke-width:2px;
     style C fill:#00f,stroke:#333,stroke-width:2px;
     style D fill:#ff0,stroke:#333,stroke-width:2px;
-
+```
+```
 幻灯片 6: 示例代码
-
+```python
 • 数据发送示例（Python）：
 import requests
 
