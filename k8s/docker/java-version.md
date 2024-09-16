@@ -251,14 +251,14 @@ gcloud artifacts docker images list europe-docker.pkg.dev/your-project/your-repo
 ```
 # 列出镜像的基本信息（不包含标签）
 gcloud artifacts docker images list europe-docker.pkg.dev/your-project/your-repository/your-image
-
+```bash
 # 输出示例：
 # IMAGE                                                                  DIGEST                                                                   CREATE_TIME                UPDATE_TIME
 # europe-docker.pkg.dev/your-project/your-repository/your-image          sha256:a1b2c3d4e5f6...                                                   2023-09-15T10:00:00       2023-09-15T10:00:00
-
-# 列出特定镜像的所有标签
-gcloud artifacts docker tags list europe-docker.pkg.dev/your-project/your-repository/your-image
-
+```
+- 列出特定镜像的所有标签
+- `gcloud artifacts docker tags list europe-docker.pkg.dev/your-project/your-repository/your-image`
+```bash
 # 输出示例：
 # TAG      Images       DIGEST
 # 1.0.0
@@ -267,15 +267,16 @@ gcloud artifacts docker tags list europe-docker.pkg.dev/your-project/your-reposi
 # java11
 # java17-
 # 获取特定标签的详细信息，包括 Digest
-gcloud artifacts docker images describe europe-docker.pkg.dev/your-project/your-repository/your-image:specific-tag
+```
+- `gcloud artifacts docker images describe europe-docker.pkg.dev/your-project/your-repository/your-image:specific-tag`
+```bash
 image_summary:
   digest:
   full_qualified_digest:
   registry:
   repository:
   slsa_build_level:
-
-
+```
 
 
 # get version all tags
