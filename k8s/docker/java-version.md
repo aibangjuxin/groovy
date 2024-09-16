@@ -245,12 +245,40 @@ gcloud artifacts docker tags list $IMAGE_NAME
 
 ```bash
 gcloud artifacts docker images list europe-docker.pkg.dev/your-project/your-repository/your-image
+
+命令的输出不包含标签信息。它主要提供了镜像的基本信息，如您所说的 image、DIGEST、CREATE_TIME 和 UPDATE_TIME
+
 ```
+# 列出镜像的基本信息（不包含标签）
+gcloud artifacts docker images list europe-docker.pkg.dev/your-project/your-repository/your-image
 
-这个命令会列出指定镜像的所有版本，包括它们的标签和 Digest。
+# 输出示例：
+# IMAGE                                                                  DIGEST                                                                   CREATE_TIME                UPDATE_TIME
+# europe-docker.pkg.dev/your-project/your-repository/your-image          sha256:a1b2c3d4e5f6...                                                   2023-09-15T10:00:00       2023-09-15T10:00:00
 
-您觉得这个解决方案如何？是否满足您的需求？如果您需要进一步的解释或有任何其他问题，请随时告诉我。
+# 列出特定镜像的所有标签
+gcloud artifacts docker tags list europe-docker.pkg.dev/your-project/your-repository/your-image
 
+# 输出示例：
+# TAG      Images       DIGEST
+# 1.0.0
+# 2.0.0
+# latest
+# java11
+# java17-
+# 获取特定标签的详细信息，包括 Digest
+gcloud artifacts docker images describe europe-docker.pkg.dev/your-project/your-repository/your-image:specific-tag
+image_summary:
+  digest:
+  full_qualified_digest:
+  registry:
+  repository:
+  slsa_build_level:
+
+
+
+
+# get version all tags
 
 很好的问题！您想要获取特定版本（如2.1.2）对应的所有标签。这确实是版本管理中的一个常见需求。让我为您提供一个解决方案。
 
