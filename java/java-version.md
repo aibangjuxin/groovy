@@ -189,3 +189,206 @@ Sources
 [7] Unable to debug java app through stack driver in google kubernetes ... https://stackoverflow.com/questions/58765251/unable-to-debug-java-app-through-stack-driver-in-google-kubernetes-cluster
 [8] Enabling Tracing for a Java Application on Google Kubernetes Engine https://docs.datadoghq.com/tracing/guide/tutorial-enable-java-gke/
 
+
+要统计 GKE 部署中的所有 Deployment 使用的 Java 版本，可以采取多种思路。你所描述的情况，关键是想要追踪和记录容器中的 Java 版本，以便后期分析和统计。以下是几种可行的方法和思路：
+
+### 1. **使用 Pod 标签或注释**
+你可以在 Kubernetes 的 `Deployment` 或 `Pod` 中，使用标签(`labels`)或注释(`annotations`)来记录 Java 的版本信息。
+
+#### 标签方式：
+可以在 CI/CD 流水线中自动为 Deployment 或 Pod 添加标签，记录 Java 版本。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  labels:
+    java-version: "azuljava-jre-ubuntu-11"
+spec:
+  template:
+    metadata:
+      labels:
+        java-version: "azuljava-jre-ubuntu-11"
+    spec:
+      containers:
+      - name: my-container
+        image: gcr.io/my-project/my-app:1.0
+```
+
+#### 注释方式：
+标签有长度限制，如果版本信息较长，使用注释更加灵活。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  annotations:
+    java-version: "azuljava-jre-ubuntu-11"
+spec:
+  template:
+    metadata:
+      annotations:
+        java-version: "azuljava-jre-ubuntu-11"
+    spec:
+      containers:
+      - name: my-container
+        image: gcr.io/my-project/my-app:1.0
+```
+
+**优点：**
+- 方便通过 `kubectl` 查询。
+- 可以通过标签选择器轻松过滤使用特定 Java 版本的 Pod。
+
+**缺点：**
+- 需要在 CI/CD 流水线中手动或自动添加标签/注释。
+- 需要确保标签信息与实际的 Java 版本保持一致。
+
+### 2. **在容器启动时记录 Java 版本信息**
+你可以在容器启动时通过环境变量或启动脚本记录 Java 版本信息。这样在容器启动后，可以通过日志或命令行查询每个容器的 Java 版本。
+
+#### 在容器中打印 Java 版本：
+可以修改 `Dockerfile` 或 `entrypoint.sh`，让容器启动时打印 Java 版本。
+
+```bash
+#!/bin/sh
+java -version
+exec "$@"
+```
+
+#### 或者将 Java 版本信息作为环境变量：
+可以通过 CI/CD 流水线将 Java 版本作为环境变量传递给容器。
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: my-container
+        image: gcr.io/my-project/my-app:1.0
+        env:
+        - name: JAVA_VERSION
+          value: "azuljava-jre-ubuntu-11"
+```
+
+然后在容器内部通过环境变量来打印或记录该信息。
+
+**优点：**
+- 容器启动时自动记录 Java 版本，便于后续排查。
+- 可以直接查看启动日志，获取详细的 Java 版本信息。
+
+**缺点：**
+- 需要手动查看日志，无法快速全局统计。
+
+### 3. **使用 Kubernetes 审计日志或 PodSpec 信息**
+每当你部署或者更新 Deployment 时，Kubernetes 会记录事件和审计日志。你可以配置一个工具来收集这些事件，聚合成一个报告。
+
+#### 使用 `kubectl` 获取所有正在运行的 Pod 的镜像：
+```bash
+kubectl get pods --all-namespaces -o json | jq '.items[] | {name: .metadata.name, image: .spec.containers[].image}'
+```
+
+这样你可以快速获取所有正在运行的 Pod 使用的镜像，然后从镜像名称中推断 Java 版本。
+
+**优点：**
+- 不需要修改现有的 CI/CD 流水线和容器。
+- 通过 Kubernetes 原生功能可以统计所有 Pod 的镜像信息。
+
+**缺点：**
+- 需要手动解析镜像名称，可能会比较繁琐。
+  
+### 4. **通过 Prometheus 和 Custom Metrics 监控**
+你可以在容器中运行一个小的进程或者脚本，定期将 Java 版本信息暴露为 Prometheus 自定义指标。然后 Prometheus 可以抓取这些指标，Grafana 可以展示汇总的 Java 版本统计信息。
+
+#### 在容器中暴露 Java 版本信息：
+编写一个简单的 HTTP 服务，通过 `/metrics` 端点暴露 Java 版本信息。
+
+```bash
+#!/bin/sh
+while true; do
+  echo "java_version $(java -version 2>&1 | awk -F '"' '/version/ {print $2}')"
+  sleep 60
+done
+```
+
+**ä
+d 的 Java 版本信息。
+
+**缺点：**
+- 需要额外的监控配置。
+- 需要每个容器暴露 Java 版本信息，增加了一定的复杂性。
+
+### 5. **在 CI/CD 流水线中记录和管理版本信息**
+你可以将 Java 版本信息记录到 CI/CD 流水线的构建日志中，或者生成一个包含版本信息的文件。在部署时，可以将这些文件保存到 GCS（Google Cloud Storage）等持久化存储，再定期从这些存储中统计版本信息。
+
+- 在 CI/CD 中，生成一个包含 Java 版本信息的文件，例如 `version.txt`。
+- 在部署时，将此文件存储到 Google Cloud Storage。
+- 定期从 GCS 中获取这些文件，生成统计报告。
+
+**优点：**
+- 版本信息可以集中管理和持久化。
+- 不依赖 Kubernetes 集群中的运行状态。
+
+**缺点：**
+- 需要额外的存储和管理工作。
+- 需要修改 CI/CD 流水线。
+
+### 6. **集成 ConfigMap 或 Secret**
+在每个 Deployment 中，可以使用 `ConfigMap` 或 `Secret` 来存储 Java 版本信息。这样即使镜像名称没有直接包含版本信息，你也可以通过配置文件获取对应的 Java 版本。
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: java-version-config
+data:
+  java-version: "azuljava-jre-ubuntu-11"
+```
+
+然后在 Deployment 中引用该 `ConfigMap`：
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+spec:
+  template:
+    spec:
+      containers:
+      - name: my-container
+        image: gcr.io/my-project/my-app:1.0
+        envFrom:
+        - configMapRef:
+            name: java-version-config
+```
+
+**优点：**
+- 可以集中管理 Java 版本信息。
+- 配置灵活，易于更新。
+
+**缺点：**
+- 需要额外的配置管理工作。
+
+---
+
+### 总结
+
+为了统计运行中的 Deployment 使用的 Java 版本，以下几种方式最为直接：
+
+1. **使用 Kubernetes 标签或注释**：在 CI/CD 流水线中为每个 Deployment 或 Pod 打上 Java 版本的标签，并通过 `kubectl` 查询。
+   
+2. **容器内记录 Java 版本**：通过容器启动时记录 Java 版本信息，或者暴露为环境变量，便于后续查询。
+
+3. **使用 Prometheus 自定义监控**：在容器中暴露 Java 版本信息，使用 Prometheus 和 Grafana 生成可视化统计报告。
+
+4. **CI/CD 记录版本信息**：在 CI/CD 流水线中记录 Java 版本信息，并将其保存到持久化存储，例如 GCS，后续可以定期统计。
+
+推荐根据你的团队现有的工具和流程，选择最符合实际需求的方案。
+然后 Prometheus 可以定期抓取这些信息，Grafana 可以展示一个汇总图表。
+
