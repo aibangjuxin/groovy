@@ -17,17 +17,17 @@
    ```
    ✅ This is correct.
 
-2. **Update the GKE jiqun:**
+2. **Update the GKE cluster:**
    ```bash
-   gcloud container jiqun update CLUSTER_NAME --location LOCATION --gateway-api=standard
+   gcloud container cluster update CLUSTER_NAME --location LOCATION --gateway-api=standard
    ```
-   ✅ Correct for enabling the Gateway API on your jiqun.
+   ✅ Correct for enabling the Gateway API on your cluster.
 
-3. **Verify the jiqun has Gateway API enabled:**
+3. **Verify the cluster has Gateway API enabled:**
    ```bash
-   gcloud container jiqun describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
+   gcloud container cluster describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
    ```
-   ✅ This command will show if Gateway API is enabled on your jiqun.
+   ✅ This command will show if Gateway API is enabled on your cluster.
 
 4. **Verify the Gateway Class:**
    ```bash
@@ -98,15 +98,15 @@ These adjustments should improve the overall process and ensure successful confi
 ```bash
 gcloud services enable container.googleapis.com
 ```
-- update the gke jiqun
+- update the gke cluster
 ```bash
-gcloud container jiqun update CLUSTER_NAME --location LOCATION --gateway-api=standard
+gcloud container cluster update CLUSTER_NAME --location LOCATION --gateway-api=standard
 ```
-- verify the jiqun enabled the gateway
+- verify the cluster enabled the gateway
 ```bash
-gcloud container jiqun describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
+gcloud container cluster describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
 ```
-- verify jiqun enable gateway class 
+- verify cluster enable gateway class 
 ```bash
 kubectl get gatewayclasses
 kubectl api-resources | grep gatewayclasses
