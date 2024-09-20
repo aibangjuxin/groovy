@@ -1,3 +1,14 @@
+- [Verify step](#verify-step)
+    - [Step-by-Step Review:](#step-by-step-review)
+    - [Debugging Gateway:](#debugging-gateway)
+    - [Summary of Suggestions:](#summary-of-suggestions)
+- [Gateway install and configuration](#gateway-install-and-configuration)
+  - [enable the GKE API](#enable-the-gke-api)
+  - [create a gateway and supports https](#create-a-gateway-and-supports-https)
+- [Ingress with Gateway](#ingress-with-gateway)
+
+
+# Verify step 
 ### Step-by-Step Review:
 
 1. **Enable GKE API:**
@@ -8,13 +19,13 @@
 
 2. **Update the GKE jiqun:**
    ```bash
-   gcloud container jiquns update CLUSTER_NAME --location LOCATION --gateway-api=standard
+   gcloud container jiqun update CLUSTER_NAME --location LOCATION --gateway-api=standard
    ```
    ✅ Correct for enabling the Gateway API on your jiqun.
 
 3. **Verify the jiqun has Gateway API enabled:**
    ```bash
-   gcloud container jiquns describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
+   gcloud container jiqun describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
    ```
    ✅ This command will show if Gateway API is enabled on your jiqun.
 
@@ -89,11 +100,11 @@ gcloud services enable container.googleapis.com
 ```
 - update the gke jiqun
 ```bash
-gcloud container jiquns update CLUSTER_NAME --location LOCATION --gateway-api=standard
+gcloud container jiqun update CLUSTER_NAME --location LOCATION --gateway-api=standard
 ```
 - verify the jiqun enabled the gateway
 ```bash
-gcloud container jiquns describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
+gcloud container jiqun describe CLUSTER_NAME --location LOCATION --format='yaml(gatewayConfig.enabled)'
 ```
 - verify jiqun enable gateway class 
 ```bash
