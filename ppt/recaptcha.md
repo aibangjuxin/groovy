@@ -1,4 +1,5 @@
 以下是按照段落对应翻译的内容：
+```bash 
 1. 标题：Introducing reCAPTCHA to Our GKE API Platform（将reCAPTCHA引入我们的GKE API平台）
 
 Enhance your API security with Google's reCAPTCHA. This powerful tool protects against spam and abuse. It ensures human users while blocking automated attacks.（使用谷歌的reCAPTCHA增强您的API安全性。这个强大的工具可以防止垃圾邮件和滥用。它确保人类用户的同时阻止自动化攻击。）
@@ -74,7 +75,7 @@ Easy Implementation（易于实施）
 Simple integration steps make reCAPTCHA an accessible solution for developers of all levels.（简单的集成步骤使reCAPTCHA成为各级开发人员都易于使用的解决方案。）
 希望以上翻译对您有所帮助。如果您还有其他问题，请随时提问。
 
-
+``` 
 
 
 Homepage
