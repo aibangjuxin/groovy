@@ -33,6 +33,7 @@
     - [脚本说明：](#脚本说明)
     - [前提：](#前提)
     - [执行方式：](#执行方式)
+- [logfilter](#logfilter)
 
 
 # Q 如何在GKE中批量获取Pod的Java版本信息
@@ -1062,7 +1063,7 @@ resource.type "k8s_container"
 resource.labels.project_id “aibang-google-project"
 resource.labels. location "europe-west2" resource.labels.jiqun_name “aibang”-myjiqun
 textPayload: (“using Java" NOT "Using Java Agent Version")
-这个过滤条件没有问题,也能获取到我想要的日志 我如果想要对这个日志进行深度分析.有什么好的办法? 比如我更关注日志的textPayload部分,因为我想去分析这个部分.这个里面记录了我的Java的版本信息和API的名字
+这个过滤条件没有问题,也能获取到我想要的日志我如果想要对这个日志进行深度分析.有什么好的办法?比如我更关注日志的textPayload部分,因为我想去分析这个部分.这个里面记录了我的Java的版本信息和API的名字
 比如关键字
 AppName=aibang-health-check Starting Application using Java 17.0.2 with
 ```
