@@ -465,3 +465,47 @@ https://cloud.google.com/kubernetes-engine/docs/how-to/deploying-gateways
 
 ### 总结
 综上所述，Gateway提供了更强大和灵活的流量管理能力，适合较大、复杂的应用场景，而Ingress适合于较简单的用例。选择哪种方式取决于你的具体需求。如果你需要更多的配置示例或帮助，请告诉我！
+
+
+
+在Google Kubernetes Engine (GKE)中，使用Gateway替换Ingress的主要区别体现在架构、功能和灵活性等方面。以下是这两者的比较：
+
+## **主要区别**
+
+### **1. 架构和设计**
+- **Ingress**: Ingress是Kubernetes的原生资源，主要用于管理HTTP和HTTPS路由。它通过Ingress Controller（如GCE Ingress Controller）来实现负载均衡，通常用于简单的HTTP路由场景。
+  
+- **Gateway**: Gateway API是一个更为灵活和可扩展的API，旨在提供更丰富的流量管理功能。它允许用户定义更复杂的路由规则，并支持多种协议（不仅限于HTTP/HTTPS），如TCP和UDP。
+
+### **2. 功能**
+- **Ingress**:
+  - 支持基本的负载均衡和SSL终止。
+  - 适合简单的应用场景，配置相对简单。
+  - 主要依赖于Annotations来扩展功能。
+
+- **Gateway**:
+  - 提供更细粒度的流量控制，如基于请求内容的路由、重试策略、超时设置等。
+  - 支持多种类型的服务（如TCP、HTTP、gRPC等）。
+  - 可以通过GatewayClass来定义不同类型的网关，实现不同的流量管理策略。
+
+### **3. 灵活性与可扩展性**
+- **Ingress**: 在复杂应用中可能会遇到限制，尤其是在需要多种流量管理策略时。Ingress的功能扩展性较低。
+
+- **Gateway**: 设计上考虑了可扩展性，可以通过不同的GatewayClass和Route资源轻松添加新功能和策略，更适合微服务架构和复杂应用场景。
+
+### **4. 社区支持与发展**
+- **Ingress**: 作为Kubernetes早期引入的特性，社区支持良好，但功能更新相对缓慢。
+
+- **Gateway**: 作为较新的API，正在积极发展中，社区也在不断增加对其支持，未来可能会成为Kubernetes流量管理的主流方案。
+
+## **总结**
+如果你的应用需要简单的HTTP路由和负载均衡，Ingress仍然是一个有效的选择。然而，如果你需要更复杂的流量管理、支持多种协议或希望在未来有更大的灵活性和扩展性，那么采用Gateway API将是一个更好的选择。
+
+Sources
+[1] Configuring Ingress for internal Application Load Balancers | Google Kubernetes Engine (GKE) | Google Cloud https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balance-ingress
+[2] Deploying Gateways | Google Kubernetes Engine (GKE) | Google Cloud https://cloud.google.com/kubernetes-engine/docs/how-to/deploying-gateways
+[3] Configuring Ingress for internal Application Load Balancers | Google Kubernetes Engine (GKE) | Google Cloud https://cloud.google.com/kubernetes-engine/docs/how-to/internal-load-balance-ingress
+[4] Deploying Gateways | Google Kubernetes Engine (GKE) | Google Cloud https://cloud.google.com/kubernetes-engine/docs/how-to/deploying-gateways
+
+
+
