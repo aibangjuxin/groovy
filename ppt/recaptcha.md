@@ -1,3 +1,58 @@
+# one page 
+What is reCAPTCHA and The Benefits of reCAPTCHA?
+什么是reCAPTCHA和reCAPTCHA的好处?
+
+
+What is reCAPTCHA?（什么是reCAPTCHA？）
+
+Google's Security Tool（谷歌的安全工具）
+reCAPTCHA is a free service provided by Google. It's designed to protect websites from fraudulent activities.
+（reCAPTCHA是谷歌提供的免费服务。它旨在保护网站免受欺诈活动的侵害。）
+
+Human Verification（人类验证）
+The primary purpose is to distinguish between human users and automated bots. This ensures genuine user interactions.
+（主要目的是区分人类用户和自动化机器人。这确保了真正的用户交互。）
+
+Continuous Evolution（持续进化）
+reCAPTCHA has evolved from text-based challenges to more sophisticated, user-friendly methods. It adapts to emerging threats.（
+reCAPTCHA已经从基于文本的挑战发展到更复杂、用户友好的方法。它适应新兴的威胁。）
+
+
+The Benefits of reCAPTCHA（reCAPTCHA的好处）
+reCAPTCHA effectively prevents spam and malicious activities. It adds a robust layer of protection to your API.（
+reCAPTCHA有效地防止垃圾邮件和恶意活动。它为您的API添加了强大的保护层。）
+
+
+Enhanced Security（增强安全性）
+
+reCAPTCHA is compatible with various tech stacks. It's easy to implement in both front-end and back-end systems.
+（reCAPTCHA与各种技术堆栈兼容。它在前端和后端系统中都易于实现。）
+
+User-Friendly Experience（用户友好体验）
+
+The Enterprise version offers a smooth, unobtrusive user experience. It doesn't interrupt the user's workflow.
+（企业版提供流畅、不干扰的用户体验。它不会中断用户的工作流程。）
+
+
+Simple Integration（简单集成）
+reCAPTCHA is compatible with various tech stacks. It's easy to implement in both front-end and back-end systems.
+（reCAPTCHA与各种技术堆栈兼容。它在前端和后端系统中都易于实现。）
+
+# two page 
+1. User access public access webpage and loads the reCAPTCHA JavaScript.
+2. When the end user triggers an HTML action (such as login) protected by reCAPTCHA, reCAPTCHA Enterprise sends an encrypted response, called the user's response token (token*), to the end user's browser.
+3. The browser securely sends the encrypted reCAPTCHA token* to the backend via a reverse proxy for assessment. The backend application runtime utilizes a custom SA and authenticates the call to the reCAPTCHA Enterprise AP| using IAM-based authentication.
+4. After assessing, reCAPTCHA Enterprise returns a score (from
+0.0 through 1.0) and reason code (based on the interactions) to the backend/web server Depending on the score, application can determine the next steps to take action on the user.
+
+1. 用户访问公共访问网页并加载 reCAPTCHA JavaScript。
+2. 当最终用户触发受 reCAPTCHA 保护的 HTML 操作（例如登录）时，reCAPTCHA Enterprise 会向最终用户的浏览器发送一个加密响应，称为用户的响应令牌（token*）。
+3. 浏览器通过反向代理安全地将加密的 reCAPTCHA 令牌 * 发送到后端进行评估。后端应用程序运行时使用自定义服务账户，并使用基于 IAM 的身份验证对 reCAPTCHA Enterprise API 的调用进行身份验证。
+4. 评估后，reCAPTCHA Enterprise 会向后端 / 网络服务器返回一个分数（从 0.0 到 1.0）和原因代码（基于交互）。根据分数，应用程序可以确定对用户采取行动的后续步骤。
+
+
+
+
 以下是按照段落对应翻译的内容：
 ```bash 
 1. 标题：Introducing reCAPTCHA to Our GKE API Platform（将reCAPTCHA引入我们的GKE API平台）

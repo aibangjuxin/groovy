@@ -1,3 +1,44 @@
+# one page 
+Definition（定义）
+APPD is an advanced application performance monitoring (APM) tool. It tracks and analyzes application performance in real-time.
+（APPD是一种先进的应用程序性能监测（APM）工具。它实时跟踪和分析应用程序性能。）
+Purpose（目的）
+APPD monitors application status, identifies bottlenecks, and optimizes performance. It's essential for maintaining smooth operations.
+（APPD监测应用程序状态，识别瓶颈并优化性能。它对于维持平稳运行至关重要。）
+
+the Benefits of Custom APPD Aggregation（自定义APPD聚合的好处）
+
+Deep Insights（深入洞察）
+Gain detailed understanding of application performance. Identify trends and patterns for optimization.
+（深入了解应用程序性能。识别优化的趋势和模式。）
+
+Accelerated Troubleshooting（加速故障排除）
+Quickly pinpoint and resolve issues. Reduce downtime and improve overall system reliability.
+（快速定位和解决问题。减少停机时间并提高整体系统可靠性。）
+
+Performance Tracking（性能跟踪）
+Monitor progress over time. Set benchmarks and track improvements in application efficiency.
+（随着时间的推移监测进展。设置基准并跟踪应用程序效率的改进。）
+
+
+Continuous Optimization（持续优化）
+Use insights to fine-tune applications. Ensure peak performance and user satisfaction.
+（利用洞察来微调应用程序。确保峰值性能和用户满意度。）
+
+
+# How to onboarding
+Raise tickets with APPD support to onboard and get started with APPD.
+
+The technical lead communicates with the project manager about the requirements and confirms the functions to be implemented on A and the detailed information of the API to be deployed.
+技术负责人与项目经理就需求进行沟通，确认在A上实现的功能和部署API的详细信息。
+
+auto send welcome email 
+1. A will auto trigger onboarding pipeline. 
+2. create a team github repository. 
+3. send welcome mail to team members. 
+
+
+
 
 
 以下是按照段落对应翻译的内容：
