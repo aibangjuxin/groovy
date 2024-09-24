@@ -37,7 +37,76 @@ auto send welcome email
 2. create a team github repository. 
 3. send welcome mail to team members. 
 
+# About tier and node 
 
+## Tier和Node的概念
+
+在AppDynamics中:
+
+- **Tier**是由具有相同功能的一个或多个节点组成的单元[1][5]。Tier反映了应用程序的逻辑架构。
+- **Node**是应用程序的一个实例[1][2]。每个节点都属于一个Tier。
+
+## 为用户自定义Tier和Node的好处
+
+1. **更好地反映应用程序的逻辑架构**。每个用户团队可以根据自己的需求定义合适的Tier和Node[1][5]。
+2. **更细粒度的监控和故障排查**。每个用户团队可以针对自己的Tier和Node进行监控和分析[1][6]。
+3. **更灵活的配置和管理**。每个用户团队可以独立地配置和管理自己的Tier和Node[4][6]。
+
+## 默认情况下的限制
+
+AppDynamics没有对单个Tier或Node设置硬性配额限制[1][2][5]。但是:
+
+- 不同的许可证类型可能会对监控的节点数量有所限制。
+- 过多的Tier和Node可能会影响性能和可用性。
+
+因此,建议根据实际需求合理地设置Tier和Node,避免过度配置。如果需要监控大量节点,可以考虑使用集群代理(Cluster Agent)等方式[1]。
+
+总之,为用户自定义Tier和Node可以带来更好的监控体验,但需要根据实际情况合理配置,避免资源浪费。
+
+Citations:
+[1] https://stackoverflow.com/questions/69104331/how-to-decide-the-node-and-tiers-in-appdynamics
+[2] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/install-app-server-agents/node-js-agent
+[3] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/install-app-server-agents/agent-installer/manage-tier-naming-rules
+[4] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/tiers-and-nodes/move-and-rename-nodes
+[5] https://docs.appdynamics.com/22.6/en/application-monitoring/tiers-and-nodes
+[6] https://community.appdynamics.com/t5/Infrastructure-Server-Network-Database/What-are-tiers-and-nodes/td-p/39407
+[7] https://docs.appdynamics.com/display/PRMY23/Name%2B.NET%2BNodes
+[8] https://www.youtube.com/watch?v=Lh-2eFdM2z4
+
+
+
+在AppDynamics中，**Tier Name**和**Tier Node**分别代表应用层的不同概念：
+
+1. **Tier Name**：它表示应用程序逻辑上的一个分层，比如前端、后端、数据库层等。每个Tier包含若干个服务节点（Node），用于监控和组织不同的业务逻辑。
+   
+2. **Tier Node**：Node是在特定Tier中的实际实例，通常代表实际运行的服务器或服务。Tier Name和Tier Node一起帮助你组织、监控和分析应用程序的性能。
+
+### 允许自定义Tier Name和Tier Node的好处
+你现在想让特定用户使用自定义的Tier Name和Tier Node，有以下几点好处：
+
+1. **独立性和可见性**：
+   - 各个用户可以拥有自己独立的Tier Name和Tier Node，便于区分不同团队或服务的性能数据。这样可以更好地隔离不同用户的监控信息，防止混淆。
+   
+2. **细粒度监控**：
+   - 每个用户的性能监控可以独立进行，帮助更精确地分析和调试性能问题。例如，用户可以只看到自己应用的性能情况，而不会混杂其他团队的数据。
+
+3. **更好的优化和调优**：
+   - 使用独立的Tier Name和Tier Node后，每个团队可以根据自身的需求进行个性化的监控配置，例如设置特定的警报阈值或分析规则，进行针对性优化。
+
+### Quota限制
+默认情况下，AppDynamics并没有硬性的Tier Name或Tier Node数量限制，但在以下几个方面可能会受到影响：
+
+1. **许可和资源使用**：
+   - 你的AppDynamics许可证可能会限制可以创建的Tier或Node的数量，具体取决于购买的License类型。如果节点数量超出许可范围，可能需要购买更多的License。
+
+2. **性能和存储资源**：
+   - 如果在一个Tier Name或Tier Node下有大量的节点或大量的数据收集，AppDynamics可能会增加服务器的负载，影响系统性能。因此，管理好节点的数量和监控范围也很重要。
+
+3. **可视化与管理复杂性**：
+   - 共享同一个Tier Name和Tier Node的情况下，数据可能会变得复杂且难以分析。创建过多的节点也会导致监控页面的可读性下降。因此，合理规划每个Tier下的节点数量可以减轻管理和分析上的负担。
+
+### 总结
+允许特定用户使用自定义Tier Name和Tier Node可以增强独立性、监控的精确性，同时防止混淆数据，便于用户或团队专注于自己应用的性能调优。不过需要注意的是，AppDynamics的许可、资源限制以及监控复杂性可能会影响系统的扩展和稳定性。
 
 
 
