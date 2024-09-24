@@ -39,6 +39,123 @@ auto send welcome email
 
 # About tier and node 
 
+
+
+在AppDynamics中，**Tier Name**的理解可以从以下几个方面进行阐述：
+
+## Tier Name 的定义
+
+- **Tier Name**是应用程序架构中的一个逻辑层次，通常由一组具有相似功能的节点（Node）组成。每个Tier代表应用程序的一个特定部分，例如前端服务、后端服务或数据库服务。
+
+## Tier Name 的作用
+
+1. **组织结构**：Tier Name帮助组织和分类应用程序的不同部分，使得监控和管理更为清晰。例如，一个电商平台可以有多个Tier，如`WebTier`、`ServiceTier`和`DatabaseTier`。
+
+2. **性能监控**：通过将相似功能的节点分组到同一个Tier中，AppDynamics能够更有效地收集和分析数据，提供性能指标（如响应时间、错误率等）。
+
+3. **流量管理**：在应用程序的流量图中，Tier之间的流动可以清晰地显示出各个部分之间的交互关系，帮助开发和运维团队理解系统架构。
+
+## 自定义 Tier Name 的好处
+
+- **灵活性**：用户可以根据自己的业务需求自定义Tier Name，以便更好地反映业务逻辑。
+- **故障排查**：当某个Tier出现问题时，可以快速定位到具体的节点，从而提高故障排查效率。
+- **可维护性**：自定义名称使得团队成员能够快速识别和理解不同组件的功能，降低维护成本。
+
+## 默认情况下的限制
+
+在AppDynamics中，虽然没有对单个Tier Name设置硬性配额限制，但需要注意以下几点：
+
+- **许可证限制**：不同的许可证类型可能会限制可监控的节点数量。
+- **性能考虑**：过多或过于复杂的Tier结构可能会影响系统性能，因此建议合理规划。
+
+总之，理解和使用Tier Name是有效管理和监控应用程序性能的重要组成部分。通过合理配置，可以提升系统的可视化效果和故障处理能力。
+
+Citations:
+[1] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/tiers-and-nodes
+[2] https://www.wwt.com/article/appdynamics-implementation-reference-guide
+[3] https://stackoverflow.com/questions/69104331/how-to-decide-the-node-and-tiers-in-appdynamics
+[4] https://github.com/Appdynamics/appdynamics-openshift-quickstart/blob/master/AppServerAgent/conf/controller-info.xml
+[5] https://community.appdynamics.com/t5/Infrastructure-Server-Network-Database/What-are-tiers-and-nodes/td-p/39407
+[6] https://stackoverflow.com/questions/72967882/how-to-add-a-java-tier-in-appdynamics
+[7] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/install-app-server-agents/agent-installer/manage-tier-naming-rules
+[8] https://docs.appdynamics.com/appd/22.x/22.3/ja/application-monitoring/install-app-server-agents/net-agent/install-the-net-agent-for-windows/name-net-tiers
+
+在AppDynamics中，**Tier Name**和**Application Name**的概念如下：
+
+## Tier Name 和 Application Name 的定义
+
+- **Application Name**：这是指应用程序的逻辑名称，通常用于标识一个完整的业务应用程序。例如，一个电商平台可以命名为“ACME ECommerce”。当你在Agent配置中指定一个Application Name时，如果该名称尚不存在，AppDynamics会自动创建它[2]。
+
+- **Tier Name**：这是指应用程序中的一个逻辑层次，通常由多个具有相同功能的节点组成。每个Tier可以包含多个Node（实例），例如，一个电商平台的前端可以是一个Tier，而后端服务可以是另一个Tier[5]。
+
+## 自定义Tier Name和Application Name的好处
+
+1. **精细化管理**：为每个用户团队自定义Tier和Application名称，可以更好地反映其特定需求和架构，使得监控和管理更加清晰。
+
+2. **隔离监控数据**：不同团队可以独立查看和分析自己的性能数据，避免数据混淆，提高故障排查效率。
+
+3. **灵活配置**：用户团队可以根据自身的业务逻辑和技术栈自由配置，增加了系统的灵活性。
+
+4. **增强可维护性**：自定义名称有助于快速识别和理解不同组件的功能，降低维护成本。
+
+## 默认情况下的Quota限制
+
+在AppDynamics中，默认情况下并没有对单个Tier或Application设置硬性配额限制。然而：
+
+- 不同的许可证类型可能会限制可监控的节点数量。
+- 过多的Tier和Node可能会影响系统性能，因此建议合理规划和配置。
+
+总之，自定义Tier Name和Application Name能够提升管理效率和监控效果，同时需要注意合理配置以避免性能问题。
+
+Citations:
+[1] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/tiers-and-nodes
+[2] https://github.com/Appdynamics/appdynamics-openshift-quickstart/blob/master/AppServerAgent/conf/controller-info.xml
+[3] https://stackoverflow.com/questions/69104331/how-to-decide-the-node-and-tiers-in-appdynamics
+[4] https://stackoverflow.com/questions/72967882/how-to-add-a-java-tier-in-appdynamics
+[5] https://community.appdynamics.com/t5/Infrastructure-Server-Network-Database/What-are-tiers-and-nodes/td-p/39407
+[6] https://docs.appdynamics.com/appd/22.x/22.3/ja/application-monitoring/install-app-server-agents/net-agent/install-the-net-agent-for-windows/name-net-tiers
+[7] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/install-app-server-agents/node-js-agent
+[8] https://docs.appdynamics.com/appd/24.x/latest/en/application-monitoring/install-app-server-agents/agent-installer/manage-tier-naming-rules
+
+
+是的，您理解得很正确！在AppDynamics中，一个**Tier Name**下可以包含多个**Application Name**。以下是更详细的解释：
+
+## Tier Name 和 Application Name 的关系
+
+- **Tier Name**：代表应用程序的一个逻辑层次，通常由多个功能相似或相关的节点组成。一个Tier可以看作是应用程序的某一部分，负责特定的任务或功能。
+
+- **Application Name**：代表一个完整的应用程序，可以包括多个功能模块或服务。每个Application可以在不同的Tiers中运行。
+
+### 示例
+
+假设您有一个电商平台，您可以设置如下结构：
+
+- **Tier Name**：`WebTier`
+  - **Application Names**：
+    - `UserService`
+    - `ProductService`
+    - `OrderService`
+
+在这个例子中，`WebTier`包含了多个不同的应用程序（`UserService`、`ProductService`和`OrderService`），它们共同构成了电商平台的一部分。
+
+## 自定义的好处
+
+1. **组织结构清晰**：通过将多个Application Names组织在同一个Tier下，可以更好地反映应用程序架构，使得监控和管理更加直观。
+
+2. **便于故障排查**：当某个Tier出现问题时，可以快速定位到具体的Application，从而提高故障排查效率。
+
+3. **灵活性和扩展性**：随着业务的发展，可以根据需要添加新的Application Names到现有的Tier中，而不需要重新设计整个架构。
+
+## 注意事项
+
+- 虽然一个Tier可以有多个Application，但建议保持合理的层次结构，以避免监控数据过于复杂。
+- 确保每个Application Name能够清晰地反映其功能，以便团队成员能够快速理解和使用。
+
+通过合理配置Tier和Application，您可以更有效地管理和监控您的平台应用。
+
+
+
+
 ## Tier和Node的概念
 
 在AppDynamics中:
