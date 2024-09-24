@@ -1,4 +1,52 @@
 # one page 
+
+APPD is an advanced application performance monitoring (APM) tool. It tracks and analyzes application performance in real-time.
+（APPD是一种先进的应用程序性能监测（APM）工具。它实时跟踪和分析应用程序性能。）
+
+why Customization
+in Appdynamics ,key concept of call capture is using business transaction (BT) but there is a 200BT per Appd Application limitation
+
+- AppDynamics automatically discovers common frameworks and entry points in applications and creates them as Business Transactions (BTs).
+- If there are too many BTs in the application, it can lead to performance issues and configuration limitations.
+- Therefore, AppDynamics recommends adopting the "less is more" approach, focusing only on the most critical services.
+
+在Appdynamics中，调用捕获的关键概念是使用业务事务(BT)，但每个应用程序有200BT的限制
+在AppDynamics中，每个应用程序最多可以有200个Business Transaction(BT)。这是因为:
+- AppDynamics会自动发现应用程序中的常见框架和入口点，并将其创建为BT
+- 如果应用程序有太多的BT，可能会导致性能问题和配置限制
+- 因此AppDynamics建议采用"越少越好"的理念，只关注最关键的服务
+
+
+1. **Business Isolation and Independence**
+   - By customizing the **Application Name** and **Tier Name**,
+     - each user or team can have a dedicated namespace, avoiding data conflicts between different businesses.
+     - **Application Name**和**Tier Name**自定义后，可以为每个用户或团队提供独立的命名空间，避免不同业务之间的数据冲突。
+     - Customizing the **Application Name** and **Tier Name** allows for a better mapping of specific business processes
+     - 自定义**Application Name**和**Tier Name**能更好地映射用户具体的业务流程
+     - if future monitoring needs arise, naming rules can be adjusted without affecting existing configurations
+     - 未来若平台或用户有新的监控需求，可以方便地调整命名规则，不影响现有监控配置
+   
+2. **Customized Monitoring Views**
+   - Users can create personalized monitoring views by customizing 
+     - the application and Tier names. This allows users to better organize by business logic, 
+     - focusing on the performance and issues of their application, which makes optimization efforts more efficient.
+   - 每个用户通过自定义应用名称和Tier名称，可以构建专属的监控视图。
+   - 这样用户能更好地按业务逻辑分层，聚焦自己应用的性能和问题，
+   - 优化调优变得更高效。
+
+3. Issue Resolution and Troubleshootin
+   - If all users share the same application or Tier names, locating performance issues or faults becomes more challenging. By customizing, users can quickly identify and isolate problems related to their applications without filtering through irrelevant data.
+   - 如果所有用户都使用共享的应用名称或Tier名称，故障或性能问题的定位将更加困难。
+     - 通过自定义，用户能快速发现并隔离与自己相关的应用问题，而无需在大量无关数据中筛选。
+   - This helps speed up problem resolution and reduces response times at the platform level, 
+     - especially in large-scale multi-user environments.
+   - 这有助于提升问题解决速度，减少平台层面的响应时间，尤其在大规模多用户环境下非常重要。
+4. Enhanced reporting and analysis
+   - users can generate reports that are more relevant to their business
+   - 通过自定义应用和Tier的命名，用户能更好地生成与自己业务相关的报告
+
+
+
 Definition（定义）
 APPD is an advanced application performance monitoring (APM) tool. It tracks and analyzes application performance in real-time.
 （APPD是一种先进的应用程序性能监测（APM）工具。它实时跟踪和分析应用程序性能。）
