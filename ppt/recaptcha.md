@@ -19,17 +19,13 @@ reCAPTCHA已经从基于文本的挑战发展到更复杂、用户友好的方�
 
 
 The Benefits of reCAPTCHA（reCAPTCHA的好处）
+
+Enhanced Security（增强安全性）
 reCAPTCHA effectively prevents spam and malicious activities. It adds a robust layer of protection to your API.（
 reCAPTCHA有效地防止垃圾邮件和恶意活动。它为您的API添加了强大的保护层。）
 
 
-Enhanced Security（增强安全性）
-
-reCAPTCHA is compatible with various tech stacks. It's easy to implement in both front-end and back-end systems.
-（reCAPTCHA与各种技术堆栈兼容。它在前端和后端系统中都易于实现。）
-
 User-Friendly Experience（用户友好体验）
-
 The Enterprise version offers a smooth, unobtrusive user experience. It doesn't interrupt the user's workflow.
 （企业版提供流畅、不干扰的用户体验。它不会中断用户的工作流程。）
 
