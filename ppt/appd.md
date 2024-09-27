@@ -42,7 +42,7 @@ in Appdynamics ,key concept of call capture is using business transaction (BT) b
      - especially in large-scale multi-user environments.
    - 这有助于提升问题解决速度，减少平台层面的响应时间，尤其在大规模多用户环境下非常重要。
 4. Enhanced reporting and analysis
-   - users can generate reports that are more relevant to their business
+- users can generate reports that are more relevant to their business
    - 通过自定义应用和Tier的命名，用户能更好地生成与自己业务相关的报告
 
 
