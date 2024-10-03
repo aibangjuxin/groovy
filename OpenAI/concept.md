@@ -101,4 +101,47 @@ classDiagram
 
 
 
+AI模型中的这些定义主要是与语言生成、预测和评估相关的。以下是一些定义的详细解释：
 
+| 定义 | 简要描述 |
+| --- | --- |
+| **temperature** | 模型输出的随机性程度，越小，输出越有结构，越大，输出越随机。 |
+| **n_predict** | 模型预测的输出长度 |
+| **top_k** | 模型输出的前k个选项，通常用于选择最可能的输出 |
+| **top_p** | 模型输出的前p%选项，通常用于选择最可能的输出 |
+| **tfs_z** | 模型输出的概率分布，通常用于评估模型的准确性 |
+| **typical_p** | 模型输出的典型概率分布，通常用于评估模型的准确性 |
+| **penalty_last_n** | 模型输出的最后n个词的重复 Penalty |
+| **penalty_repeat** | 模型输出的重复 Penalty |
+| **penalty_present** | 模型输出的缺失 Penalty |
+| **mirostat** | 模型输出的微调状态 |
+| **BOS** | Begin Of Sequence，序列开始符 |
+| **EOS** | End Of Sequence，序列结束符 |
+
+这些定义主要是用于评估和优化语言生成模型的性能。例如，`temperature` 和 `top_k` 是用于控制模型输出的结构和随机性的参数，`tfs_z` 和 `typical_p` 是用于评估模型准确性的指标。
+
+以下是一些常见的评估指标：
+
+| 指标 | 描述 |
+| --- | --- |
+| **BLEU** | Bleu评分，用于评估翻译的准确性 |
+| **ROUGE** | ROUGE评分，用于评估翻译的准确性 |
+| **METEOR** | METEOR评分，用于评估翻译的准确性 |
+| **CIDEr** | CIDEr评分，用于评估翻译的准确性 |
+
+这些评估指标可以帮助我们评估语言生成模型的性能，并进行优化和微调。
+
+如果你有任何具体的问题或需要更多信息，请 feel free to ask! 😊
+
+**参考资料**
+
+* "Attention is All You Need" (2017) - Vaswani et al.
+* "BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding" (2019) - Devlin et al.
+* "Language Models are Unsupervised Multitask Learners" (2019) - Humeau et al.
+
+**注意**
+
+* 这些定义和指标主要是用于语言生成模型，可能与其他类型的 AI 模型相关。
+* 这些定义和指标可能会随着时间的推移而变化。 🚀
+
+希望这能帮助你了解 AI 模型中的这些定义！ 😊<|eot_id|>
