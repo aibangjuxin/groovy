@@ -196,3 +196,68 @@ flowchart TD
 
 ### 总结：
 不同类型的扫描适用于软件开发生命周期的不同阶段。SAST 和 FOSS 更侧重于开发和构建阶段的静态代码安全，而 DAST 和 MAST 更适合在应用程序的测试或运行阶段检测动态行为中的漏洞。CONT 扫描则贯穿整个 CI/CD 流水线，确保持续的安全监控。
+
+
+cyberflows-cli 是一个用于与 Cyberflows 系统交互的命令行工具，通常用于分析网络流量并生成报告。以下是一些常见的命令和使用示例：
+
+基本命令参考
+
+	1.	显示帮助信息
+
+cyberflows-cli --help
+
+
+	2.	显示版本信息
+
+cyberflows-cli --version
+
+
+	3.	分析网络流量数据
+
+cyberflows-cli analyze --input <input_file> --output <output_file>
+
+	•	--input: 输入的网络流量文件（如 pcap 文件）。
+	•	--output: 生成的分析报告文件路径。
+
+	4.	生成报告
+
+cyberflows-cli report --input <analyzed_file> --format <format>
+
+	•	--input: 经过分析的文件。
+	•	--format: 指定报告的格式（如 pdf、html 等）。
+
+	5.	自定义 pipeline
+
+cyberflows-cli pipeline --config <pipeline_config>
+
+	•	--config: 定义处理流程的配置文件，描述数据分析的各个阶段。
+
+	6.	指定时间范围
+
+cyberflows-cli analyze --input <input_file> --output <output_file> --start <start_time> --end <end_time>
+
+	•	--start: 分析数据的开始时间。
+	•	--end: 分析数据的结束时间。
+
+示例 1：分析并生成 PDF 报告
+
+cyberflows-cli analyze --input traffic.pcap --output analyzed_data.json
+cyberflows-cli report --input analyzed_data.json --format pdf --output network_report.pdf
+
+	•	该示例首先分析 traffic.pcap 文件，生成一个 analyzed_data.json，然后基于此分析文件生成 PDF 格式的网络流量报告。
+
+示例 2：通过 pipeline 进行分析
+
+cyberflows-cli pipeline --config pipeline_config.yml --input traffic.pcap --output final_report.html
+
+	•	该命令使用 pipeline_config.yml 来定义数据处理的步骤，并生成一个 HTML 格式的最终报告。
+
+示例 3：在特定时间段内分析流量
+
+cyberflows-cli analyze --input traffic.pcap --output filtered_traffic.json --start "2024-01-01 00:00:00" --end "2024-01-01 12:00:00"
+
+	•	该命令分析 traffic.pcap 文件中的特定时间段（2024年1月1日00:00到12:00）并生成一个过滤后的流量文件。
+
+这些命令和示例应能帮助你更好地理解和使用 cyberflows-cli。你可以根据需求进一步定制或扩展配置文件和参数。
+
+	
