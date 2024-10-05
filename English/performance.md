@@ -199,3 +199,46 @@ Ja:
 - During the development process, he also had a certain understanding of the overall architecture and Infra, improved his Infra level, and the work speed was greatly improved.
 - 也因为技术点的一些GAP. 导致我们数据的准确性和理解上有一些偏差.
 - Because of some GAP in technical points, there are some deviations in the accuracy and understanding of our data.
+
+
+
+As we approach the end of the evaluation period, I encourage each of you to take some time to reflect on your contributions and growth over the past months. Please prepare your self-assessment, highlighting your achievements, challenges, and areas for improvement. This is an opportunity to showcase your hard work and set goals for the future. Once completed, kindly send your self-assessme to your Pod lead via email. Your insights are valuable in shaping our team's development and success. Thank you for your dedication!
+[Ask For Action]
+1. Self-assessment via email 
+2. Feedback from peers, partners, clients, or your lead — anyone who can provide valuable insights.
+Recognize the urgency and the limited time available. Please do your best to accommodate this request.
+Thanks
+
+
+随着评估期接近尾声，我鼓励你们每个人花些时间反思过去几个月的贡献和成长。请准备好自我评估，突出您的成就、挑战和需要改进的领域。这是一个展示您辛勤工作并为未来设定目标的机会。完成后，请通过电子邮件将您的自我评估发送给您的 Pod 负责人。您的见解对于塑造我们团队的发展和成功非常有价值。感谢您的付出！
+[行动要求]
+1. 通过电子邮件进行自我评估
+2. 来自同事、合作伙伴、客户或您的领导的反馈——任何能够提供有价值见解的人。
+认识到时间的紧迫性和有限性。请尽力满足此请求。
+谢谢 
+
+1 感谢领导的协调,保持了团队的稳定性,让我们每个人都有充足的时间来思考和进步
+  在专注自己的领域的同时,能够进行一部分的扩展
+  Thank you for the coordination of the leadership, which maintained the stability of the team and allowed each of us to have enough time to think and make progress
+ While focusing on their own field, they are able to expand in part
+
+ Thanks to the coordination of the leadership, maintaining the stability of the team, so that each of us have enough time to think and progress.
+  We are able to focus on our own areas while expanding some of them.
+  
+    poc 
+    gke ingress 
+    gke gateway 
+    nginx controller 
+    Release gke ingress 
+    
+    poc multi cluster 
+    release multi cluster 
+    
+    
+    dashboard update and enhancement && quota alert 
+
+
+对整个工作流有了更多的熟悉,从PED到PMU到pipeline有了更多的一些理解.常规操作和POC的时候能从更多的角度去思考问题.
+
+
+需要细化对PMU和Firestore的理解.
