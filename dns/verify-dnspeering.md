@@ -1,4 +1,5 @@
-- dns peering verify 
+- dns peering verify
+
 ```bash
 gcloud dns managed-zones list --format='[box](dnsName, creationTime:sort=1, name, privateVisibilityConfig.networks.networkUrl.basename(),description)'
 
@@ -30,7 +31,7 @@ gcloud dns managed-zones list --format='csv[no-heading](dnsName, creationTime, n
 #!/bin/bash
 
 # Usage: ./dns-peering.sh -e ENVIRONMENT
-# ENVIRONMENT is the GCP environment like dev-uk, prod-us, etc.
+# ENVIRONMENT is the GCP environment like lex-eg, prod-us, etc.
 
 # 定义要检查的新 DNS Peering zones
 PEERING_ZONES=("peering-zone1" "peering-zone2" "peering-zone3" "peering-zone4" "peering-zone5")
@@ -50,7 +51,7 @@ done
 
 # 检查是否提供了环境参数
 if [ -z "$ENVIRONMENT" ]; then
-  echo "请指定环境，例如：-e dev-uk"
+  echo "请指定环境，例如：-e lex-eg"
   exit 1
 fi
 
@@ -81,5 +82,38 @@ for zone in "${PEERING_ZONES[@]}"; do
 done
 
 ```
+
 ```
+
+```
+
+bolt.new
+
+```bash
+#!/bin/bash
+
+# 切换到指定环境
+./dns-peering.sh -e lex-eg
+
+# 获取所有 DNS zone 并过滤出 peering zone
+gcloud dns managed-zones list --format='table(dnsName,creationTime,name,privateVisibilityConfig.networks.networkUrl.basename(),description)' | grep peering > peering_zones.txt
+
+# 显示结果
+echo "DNS Peering Zones:"
+cat peering_zones.txt
+
+# 可选：验证新增的 DNS peering zone
+# 假设您有一个名为 expected_zones.txt 的文件，包含所有预期的 DNS peering zone
+if [ -f expected_zones.txt ]; then
+    echo "Verifying new DNS peering zones..."
+    while read -r zone; do
+        if grep -q "$zone" peering_zones.txt; then
+            echo "✅ $zone found"
+        else
+            echo "❌ $zone not found"
+        fi
+    done < expected_zones.txt
+else
+    echo "No expected_zones.txt file found for verification."
+fi
 ```
