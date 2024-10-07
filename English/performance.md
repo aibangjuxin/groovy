@@ -242,3 +242,20 @@ Thanks
 
 
 需要细化对PMU和Firestore的理解.
+
+
+Half-Year Work Review
+
+I. Achievements
+In the past six months, I have accomplished several important tasks. I successfully completed various Proof of Concepts (POCs) and Releases. This has not only contributed to the progress of our projects but also enhanced my professional capabilities.
+
+II. Growth
+Personally, I have led the team to understand a large part of the PED workflow and Pipeline-related processes. I have also gained a general understanding of Dashboards and learned some SQL knowledge points. This has broadened my knowledge base and improved my leadership skills.
+
+III. Insights and Areas for Improvement
+Reflecting on my work, I realize that I need to think more carefully and find better ways to solve problems in future tasks. I should pay more attention to details and be more proactive in seeking solutions.
+
+IV. Hopes for the Coming Year
+In the coming year, I hope to conduct in-depth studies on PMU and Pipeline. I also aim to further deepen my understanding of SQL statements. By doing so, I can contribute more effectively to our projects and enhance my professional level.
+
+Overall, these six months have been a valuable experience for me. I am looking forward to making greater progress in the coming year.
