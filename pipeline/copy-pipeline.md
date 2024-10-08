@@ -26,7 +26,7 @@ A就是需要cage scan 的 B就是不需要的
 	•	如果用户属于 Org B（不需要 cage scan），则跳过该功能。
 
 示例脚本：
-
+```bash
 ORG=$1  # 接收传入的组织标识
 
 if [ "$ORG" = "A" ]; then
@@ -36,7 +36,7 @@ else
     echo "Copying pipeline without cage scan..."
     cp template_without_cage_scan.yaml destination_pipeline.yaml
 fi
-
+```
 2. 使用 Feature Flags（功能开关）
 
 如果希望保持一个统一的模板而不分成多个版本，可以使用功能开关（Feature Flags）技术。
@@ -52,7 +52,7 @@ fi
 	•	在不同 Org 的配置文件中，设置该变量为 true 或 false。
 
 模板示例：
-
+```bash
 pipeline:
   steps:
     - step: build
@@ -60,18 +60,18 @@ pipeline:
     - step: cage_scan
       name: Cage Scan Step
       when: "org_needs_cage_scan == true"  # 通过变量控制是否执行
-
+```
 配置文件示例：
 
 	•	Org A 的配置文件（需要 cage scan）：
-
+```
 org_needs_cage_scan: true
-
+```
 
 	•	Org B 的配置文件（不需要 cage scan）：
-
+```
 org_needs_cage_scan: false
-
+```
 
 
 拷贝时，系统根据用户所在的 Org 加载对应的配置文件，动态启用或禁用 cage scan 功能。
@@ -91,7 +91,7 @@ org_needs_cage_scan: false
 	2.	在用户拷贝时，根据 Org 动态组合生成最终的 Pipeline 配置文件。
 
 示例代码：
-
+```bash
 ORG=$1
 
 if [ "$ORG" = "A" ]; then
@@ -99,7 +99,7 @@ if [ "$ORG" = "A" ]; then
 else
     cat template_part1.yaml template_without_cage_scan.yaml template_part2.yaml > final_pipeline.yaml
 fi
-
+```
 这种方式可以确保在拷贝时灵活生成满足不同团队需求的 Pipeline 文件。
 
 4. 使用 API 或 UI 层面处理
