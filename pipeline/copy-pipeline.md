@@ -119,3 +119,49 @@ fi
 	4.	API/UI 选择：通过前端或接口，允许用户根据 Org 选择是否拷贝 cage scan。
 
 选择合适的方案，取决于你们系统的架构和操作流程。
+
+我理解您的问题是关于Pipeline复制时如何根据不同团队的需求灵活处理某些功能模块(如cage scan)。这是一个常见的配置管理问题,我们可以考虑以下几种可能的解决方案:
+
+1. 条件性复制​​​​​​​​​​​​​​​​
+
+这个脚本在复制Pipeline时会检查目标组织的类型,并据此决定是否包含cage scan功能。
+
+```groovy
+def copy_pipeline(template, target_org):
+    pipeline_copy = template.copy()
+    
+    if target_org == 'A':
+        # 保留cage scan功能
+        pass
+    elif target_org == 'B':
+        # 移除cage scan相关配置
+        pipeline_copy.remove('cage_scan_config')
+    else:
+        raise ValueError("未知的组织类型")
+    
+    return pipeline_copy
+
+# 使用示例
+template_pipeline = load_template_pipeline()
+org_type = get_org_type(user)  # 假设有一个函数来获取用户所属的组织类型
+new_pipeline = copy_pipeline(template_pipeline, org_type)
+save_pipeline(new_pipeline)
+```
+
+2. 模块化设计
+
+将Pipeline模板设计成模块化的结构,cage scan作为一个可选模块。在复制时,根据组织类型决定是否包含这个模块。
+
+3. 动态配置
+
+在Pipeline中加入动态配置项,允许在运行时根据组织类型启用或禁用cage scan功能。这样可以保持Pipeline结构的一致性,同时提供灵活性。
+
+4. 多模板方案
+
+为A和B组织分别创建不同的模板。这样可以避免在复制时进行复杂的逻辑判断,但会增加模板维护的工作量。
+
+5. 权限控制
+
+在Pipeline中保留cage scan功能,但通过权限控制来限制B组织用户访问或使用该功能。
+
+这些方案各有优缺点,您可以根据具体情况选择最适合的方案。如果您想进一步讨论某个特定方案或需要更详细的实现建议,请告诉我。​​​​​​​​​​​​​​​​
