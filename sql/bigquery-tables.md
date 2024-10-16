@@ -23,3 +23,14 @@
 
 - show table schema
 - `select column_name` from `project.INFORMATION_SCHEMA.COLUMNS where table_name ='abc'`
+
+```sql
+select column_name,
+       data_type
+FROM
+  `project.dataset.INFORMATION_SCHEMA.COLUMNS`
+WHERE
+  table= 'v4';
+```
+- using bq
+bq show --schema --format=prettyjson project:dataset.v4
