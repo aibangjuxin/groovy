@@ -34,3 +34,14 @@ WHERE
 ```
 - using bq
 bq show --schema --format=prettyjson project:dataset.v4
+
+
+```sql
+SELECT
+  column_name,
+  data_type
+FROM
+  `project.dataset.INFORMATION_SCHEMA.COLUMNS`
+WHERE
+  table_name = 'v4';
+```
