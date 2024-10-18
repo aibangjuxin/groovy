@@ -31,15 +31,16 @@
   - [5. 清理](#5-清理)
   - [其他信息](#其他信息-1)
 
-## Q 
+## Q
+
 帮我分析和总结下面2个文章，并总结其实现的是什么? 我现在的需求是统计GKE 里面的一些Cost情况.想要精准到具体运行的Deployment或者对应的Pod的费用
 
 - GKE 费用分配 我关注的点
-  - https://cloud.google.com/kubernetes-engine/docs/how-to/cost-allocations?hl=zh-cn
+  - <https://cloud.google.com/kubernetes-engine/docs/how-to/cost-allocations?hl=zh-cn>
   - gcloud container clusters update CLUSTER_NAME \
     --enable-cost-allocation
 - 集群用量计量
-  - https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-usage-metering?hl=zh-cn
+  - <https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-usage-metering?hl=zh-cn>
 
 ## GKE 费用分析和精准统计
 
@@ -145,7 +146,7 @@ Hope this information helps you!
 
 ## 使用 GKE 费用分配功能统计 Deployment 和 Pod 级别费用的完整步骤
 
-根据您提供的链接 https://cloud.google.com/kubernetes-engine/docs/how-to/cost-allocations?hl=zh-cn ，以下是启用 GKE 费用分配功能并统计 Deployment 和 Pod 级别费用的详细步骤：
+根据您提供的链接 <https://cloud.google.com/kubernetes-engine/docs/how-to/cost-allocations?hl=zh-cn> ，以下是启用 GKE 费用分配功能并统计 Deployment 和 Pod 级别费用的详细步骤：
 
 ### 1. 准备工作
 
@@ -423,3 +424,144 @@ gcloud container clusters update my-cluster \
 3. 自动管理：GKE 会处理表的创建和架构更新，确保与最新的数据格式兼容。
 
 如果您需要自定义表名或使用现有表，您可能需要通过其他方式（如设置 Cloud Billing 导出）来实现，但对于大多数使用场景，让 GKE 自动管理这些表是最简单和最可靠的方法。
+
+# Q
+
+参考这个文章
+<https://cloud.google.com/kubernetes-engine/docs/how-to/cost-allocations?hl=zh-cn我已经enable-cost-allocation>
+且看到bigquery里面生成了2个表
+gke_cluster_resource_usage
+gke_cluster_resource_consumption
+文章里面提到了过滤 GKE 费用数据
+我没有理解下面这个数据表是哪里的?是不是需要我手动创建?
+FROM `project.dataset.gcp_billing_export_resource_v1_XXXXXX_XXXXXX_XXXXXX
+您提出了一个很好的问题。让我为您解释一下这个情况。
+
+您提到的 `project.dataset.gcp_billing_export_resource_v1_XXXXXX_XXXXXX_XXXXXX` 表实际上是指 Google Cloud 的计费导出数据表，而不是 GKE 资源使用计量所创建的表。这是两个不同但相关的数据源：
+
+1. GKE 资源使用计量表：
+
+   - `gke_cluster_resource_usage`
+   - `gke_cluster_resource_consumption`
+     这些是您已经在 BigQuery 中看到的表，由启用 GKE 资源使用计量功能自动创建。
+
+2. 计费导出表：
+   - `gcp_billing_export_resource_v1_XXXXXX_XXXXXX_XXXXXX`
+     这个表需要单独设置计费导出功能才会创建。
+
+关于计费导出表：
+
+1. 创建过程：这个表不是自动创建的，您需要在 Google Cloud Console 中手动设置计费导出。
+
+2. 设置方法：
+
+   - 转到 Cloud Console 中的"计费"部分
+   - 选择"计费导出"
+   - 选择"BigQuery 导出"
+   - 设置项目、数据集和表前缀
+
+3. 表名格式：设置完成后，Google Cloud 会自动创建类似 `gcp_billing_export_resource_v1_XXXXXX_XXXXXX_XXXXXX` 的表。XXXXXX 部分通常是随机生成的字符串。
+
+4. 数据内容：这个表包含了您 Google Cloud 项目的详细计费信息，包括所有服务（不仅仅是 GKE）的费用。
+
+5. 用途：结合 GKE 资源使用计量数据和计费导出数据，您可以进行更详细的成本分析和分配。
+
+如果您想使用文章中提到的查询来过滤 GKE 费用数据，您需要：
+
+1. 设置计费导出到 BigQuery（如果还没有设置）
+2. 找到正确的计费导出表名（它会类似于 `gcp_billing_export_resource_v1_XXXXXX_XXXXXX_XXXXXX`）
+3. 在查询中使用这个表名
+
+您是否需要我详细解释如何设置计费导出，或者如何找到正确的计费导出表名？或者您对如何结合这两种数据源进行分析有其他问题吗？
+
+您的想法非常正确。在企业环境中，这种集中式的成本管理和报告方法确实很常见。让我详细解释一下这种方案及其实施步骤。
+
+首先，您的观察是正确的。在大型企业中，通常会有一个集中的计费项目来管理所有 Google Cloud 资源的成本。这样做有几个好处：
+
+1. 集中管理：便于财务部门统一管理和监控成本。
+2. 安全性：限制对敏感计费信息的访问。
+3. 一致性：确保所有部门使用相同的数据源进行成本分析。
+
+要在您自己的项目中使用这些数据，您可以按照以下步骤操作：
+
+1. 获取访问权限：
+
+   - 请求集中计费项目的管理员授予您对计费导出表的读取权限。
+
+2. 创建跨项目查询：
+
+   - 在您的项目中编写一个查询，引用集中计费项目中的表。
+
+3. 创建视图：
+
+   - 基于这个查询在您的项目中创建一个视图。
+
+4. 使用视图进行分析：
+   - 将这个视图与您的 GKE 资源使用数据结合使用。
+
+下面是一个示例，展示如何实现这个过程：
+
+```sql
+-- 步骤 1: 创建跨项目查询
+-- 替换 'central-billing-project' 为实际的集中计费项目 ID
+-- 替换 'billing_dataset' 和 'gcp_billing_export_v1_XXXXXX_XXXXXX_XXXXXX' 为实际的数据集和表名
+CREATE OR REPLACE VIEW `your-project.your_dataset.gke_billing_data` AS
+SELECT
+    invoice.month as billing_month,
+    project.id as project_id,
+    project.name as project_name,
+    service.description as service_description,
+    sku.description as sku_description,
+    usage_start_time,
+    usage_end_time,
+    usage.amount as usage_amount,
+    usage.unit as usage_unit,
+    cost,
+    credits,
+    currency,
+    location.location as gcp_region,
+    TO_JSON(labels) as resource_labels
+FROM
+    `central-billing-project.billing_dataset.gcp_billing_export_v1_XXXXXX_XXXXXX_XXXXXX`
+WHERE
+    service.description = 'Kubernetes Engine'
+    AND usage_start_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 30 DAY);
+
+-- 步骤 2: 使用视图进行分析（示例查询）
+SELECT
+    b.project_name,
+    b.sku_description,
+    SUM(b.cost) as total_cost,
+    AVG(r.cpu_usage) as avg_cpu_usage,
+    AVG(r.memory_usage) as avg_memory_usage
+FROM
+    `your-project.your_dataset.gke_billing_data` b
+JOIN
+    `your-project.your_dataset.gke_cluster_resource_usage` r
+ON
+    b.project_id = r.project
+    AND DATE(b.usage_start_time) = DATE(r.start_time)
+WHERE
+    b.billing_month = FORMAT_DATE('%Y%m', CURRENT_DATE())
+GROUP BY
+    b.project_name, b.sku_description
+ORDER BY
+    total_cost DESC
+LIMIT 10;
+
+```
+
+这个示例展示了如何：
+
+1. 创建一个视图，从集中计费项目中提取 GKE 相关的计费数据。
+2. 使用这个视图与您的 GKE 资源使用数据进行联合查询，以获得成本和资源使用的综合分析。
+
+实施这个方案时，需要注意以下几点：
+
+1. 权限：确保您有足够的权限来创建视图和访问跨项目数据。
+2. 性能：跨项目查询可能会影响性能，考虑使用适当的分区和聚集来优化。
+3. 成本：请注意，跨项目查询可能会产生额外的 BigQuery 处理成本。
+4. 数据刷新：计费数据通常每天更新一次，根据需要调整查询的时间范围。
+5. 安全性：确保只有必要的人员能够访问这个视图，因为它包含敏感的计费信息。
+
+您是否需要我进一步解释这个方案的任何部分，或者您对如何根据您的具体需求调整这个方案有什么想法吗？
