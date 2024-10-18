@@ -244,3 +244,70 @@ HAVING
 ```
 
 这些例子可以帮助你合理分析数据中的各种使用和成本信息，并根据需要调整查询。
+
+通过 GKE 资源使用计量和 BigQuery 集成,我们确实可以获取到更详细的资源消耗信息。让我为您解释如何提取特定 API 的内存和 CPU 消耗,以及其他有用的信息。
+
+
+
+```sql
+-- 查询特定 API 的 CPU 和内存使用情况
+SELECT
+    cluster_name,
+    namespace,
+    resource_name,
+    ARRAY_AGG(STRUCT(label.key, label.value) ORDER BY label.key) AS labels,
+    start_time,
+    end_time,
+    SUM(CASE WHEN sku_id LIKE '%cpu%' THEN usage.amount ELSE 0 END) AS cpu_usage,
+    SUM(CASE WHEN sku_id LIKE '%memory%' THEN usage.amount ELSE 0 END) AS memory_usage,
+    ANY_VALUE(CASE WHEN sku_id LIKE '%cpu%' THEN usage.unit END) AS cpu_unit,
+    ANY_VALUE(CASE WHEN sku_id LIKE '%memory%' THEN usage.unit END) AS memory_unit
+FROM
+    `project.lexcostallocation.gke_cluster_resource_usage`
+WHERE
+    cluster_name = "cluster-name"
+    AND namespace = "namespace"
+    AND EXISTS (
+        SELECT 1
+        FROM UNNEST(labels) AS label
+        WHERE label.key = "app" AND label.value = "api_name"
+    )
+    AND start_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)
+GROUP BY
+    cluster_name, namespace, resource_name, start_time, end_time
+ORDER BY
+    start_time DESC
+LIMIT 100
+
+```
+
+这个查询可以帮助您获取更详细的资源使用信息。让我解释一下这个查询的主要部分：
+
+1. 我们使用 `SUM` 和 `CASE` 语句来分别计算 CPU 和内存的使用量。
+
+2. `sku_id LIKE '%cpu%'` 和 `sku_id LIKE '%memory%'` 用于区分 CPU 和内存资源。
+
+3. 我们使用 `GROUP BY` 来按照集群名称、命名空间、资源名称和时间段进行分组。
+
+4. `ARRAY_AGG` 用于将所有标签聚合到一个数组中。
+
+5. 我们添加了一个时间过滤条件 `start_time >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 7 DAY)` 来只获取最近 7 天的数据。
+
+6. 结果按照开始时间降序排列,并限制返回 100 条记录。
+
+通过这个查询,您可以获得以下信息:
+
+1. 特定 API (由标签 `app="api_name"` 标识) 的 CPU 和内存使用量。
+2. 使用量的单位 (通常 CPU 为 vCPU-seconds,内存为 byte-seconds)。
+3. 资源使用的时间范围 (start_time 和 end_time)。
+4. 相关的集群名称、命名空间和资源名称。
+5. 所有与该资源相关的标签。
+
+如果您想获取更多信息,可以考虑以下几点:
+
+1. 网络使用情况: 在查询中加入网络相关的 `sku_id`。
+2. 存储使用情况: 如果有持久卷,可以查找存储相关的 `sku_id`。
+3. 成本信息: 如果有成本数据,可以加入成本相关的字段。
+4. 长期趋势: 扩大时间范围,使用时间聚合函数来查看资源使用的趋势。
+
+您是否需要我进一步解释查询的任何部分,或者您想了解如何获取其他类型的信息?
