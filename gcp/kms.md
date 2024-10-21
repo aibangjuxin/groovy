@@ -201,3 +201,66 @@ bq show --format=prettyjson PROJECT_ID:DATASET_ID | jq '.defaultEncryptionConfig
 总的来说,为了确保一致性和安全性,建议您在项目级别设置默认的CMEK加密密钥,并在需要特殊处理的情况下在数据集或表级别进行覆盖。
 
 如果您需要更详细的信息或有任何其他问题,请随时告诉我。
+
+您的观察和推理非常准确。这种情况确实表明在更高级别（可能是项目级别或组织级别）设置了默认的客户管理密钥（Customer-Managed Key, CMK）。让我们深入分析一下这种情况：
+
+```mermaid
+graph TD
+    A[Organization Level] -->|Inherits| B[Folder Level]
+    B -->|Inherits| C[Project Level]
+    C -->|Inherits| D[Dataset Level]
+    D -->|Inherits| E[Table Level]
+
+    A -->|Can set default CMK| C
+    B -->|Can set default CMK| C
+    C -->|Can set default CMK| D
+    D -->|Can set default CMK| E
+
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#ccf,stroke:#333,stroke-width:2px
+    style C fill:#cfc,stroke:#333,stroke-width:2px
+    style D fill:#fcc,stroke:#333,stroke-width:2px
+    style E fill:#cff,stroke:#333,stroke-width:2px
+
+```
+
+根据您的描述，我们可以得出以下结论：
+
+1. 项目级别的默认加密：
+   很可能在项目级别设置了默认的客户管理密钥（CMK）。这就是为什么在创建表时会自动应用 KMS 密钥，即使在创建数据集时没有明确指定。
+
+2. 加密继承机制：
+   在 GCP 中，加密设置遵循一个继承机制，如上图所示。如果没有在较低级别指定加密设置，它会从上一级继承设置。
+
+3. 验证项目级设置：
+   要确认这一点，您可以尝试以下命令：
+
+   ```
+   bq show --format=prettyjson PROJECT_ID | jq '.defaultEncryptionConfiguration'
+   ```
+
+   这可能会显示项目级别的默认加密配置。
+
+4. 组织策略影响：
+   如果项目级别没有显示默认加密配置，那么很可能是组织级别或文件夹级别的策略在起作用。
+
+5. 行为解释：
+
+   - 当您创建数据集而不指定 CMK 时，数据集本身不会显示默认的 CMK。
+   - 但当您在该数据集中创建表时，会应用项目级别（或更高级别）的默认 CMK。
+
+6. 建议的下一步：
+
+   - 与您的组织管理员或云管理团队确认组织的加密策略。
+   - 检查项目的 IAM 策略，寻找与 KMS 相关的设置。
+   - 如果有权限，查看组织级别的策略设置。
+
+7. 灵活性：
+   即使存在默认的 CMK，您仍然可以在创建特定数据集或表时覆盖这些设置，前提是您有适当的权限。
+
+8. 安全性考虑：
+   这种设置方式通常是为了确保组织内所有资源的一致性和安全性，即使个别用户在创建资源时忘记指定加密设置。
+
+总的来说，您的推测很可能是正确的。这种行为表明在更高级别（可能是项目级或组织级）确实设置了默认的 KMS 密钥。这是一种常见且推荐的做法，可以确保所有数据都得到适当的加密保护。
+
+如果您需要更详细地了解这些设置或者需要进行任何更改，我建议您与您的 IT 或云管理团队合作，他们应该能够提供更多关于您组织特定加密策略的信息。
