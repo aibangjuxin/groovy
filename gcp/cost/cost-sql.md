@@ -247,8 +247,6 @@ HAVING
 
 通过 GKE 资源使用计量和 BigQuery 集成,我们确实可以获取到更详细的资源消耗信息。让我为您解释如何提取特定 API 的内存和 CPU 消耗,以及其他有用的信息。
 
-
-
 ```sql
 -- 查询特定 API 的 CPU 和内存使用情况
 SELECT
@@ -311,3 +309,126 @@ LIMIT 100
 4. 长期趋势: 扩大时间范围,使用时间聚合函数来查看资源使用的趋势。
 
 您是否需要我进一步解释查询的任何部分,或者您想了解如何获取其他类型的信息?
+
+# about usage
+
+- sql
+
+```sql
+SELECT
+  label.key AS label_key,
+  label.value AS label_value,
+  SUM(usage.amount) AS total_usage,
+  usage.unit
+FROM
+  `project.lexcostallocation.gke_cluster_resource_usage`,
+  UNNEST(labels) AS label
+WHERE
+  label.key = "team" and label.value = "my-test-teams"
+GROUP BY
+  label_key, label_value, usage.unit
+```
+
+我理解您想深入了解这个 SQL 查询背后的业务逻辑和它统计的具体信息。让我为您详细分析一下:
+
+<https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-usage-metering?hl=zh->> [!CAUTION]
+
+GKE 用量计量单位必须通过以下方式进行解释：
+
+CPU usage.unit 为秒，这是 Pod 请求或利用的总 CPU 时间。例如，如果我们有两个 Pod，其中每个 Pod 请求 30 个 CPU 并运行 15 分钟，则请求表的汇总量为 54000 秒（2 个 Pod _30 个 CPU_ 15 分钟 _60 秒 / 分钟）。
+内存 usage.unit 是字节秒，这是 Pod 在一段时间内请求或利用的内存累积量。例如，如果我们有两个 Pod，其中每个 Pod 请求 30 GiB 并运行 15 分钟，则请求表的汇总量为 5.798+13 字节秒（2 个 Pod_ 30 GiB _15 分钟_ 60 秒/分钟 \* 1073741824 字节/GiB）。
+
+您的观察非常敏锐，这确实是一个重要的补充信息。让我们根据您提供的新信息再次更新我们的分析。
+
+# GKE 集群资源使用分析（全面更新版）
+
+基于您对 `project.lexcostallocation.GKE_cluster_resource_usage` 表的直接观察，我们可以提供一个更全面和准确的分析。
+
+## 资源类型解析（最终版）
+
+1. **CPU 使用** (seconds):
+
+   - `resource_name`: cpu
+   - `usage.unit`: 秒
+   - 表示 Pod 请求或利用的总 CPU 时间。
+   - 例子：如果有两个 Pod，每个 Pod 请求 30 个 CPU 并运行 15 分钟，则总量为 54000 秒（2 _30_ 15 \* 60）。
+
+2. **内存使用** (byte-seconds):
+
+   - `resource_name`: memory
+   - `usage.unit`: 字节秒
+   - 表示 Pod 在一段时间内请求或利用的内存累积量。
+   - 例子：如果有两个 Pod，每个 Pod 请求 30 GiB 并运行 15 分钟，则总量为 5.798e+13 字节秒（2 _30_ 15 _60_ 1073741824）。
+
+3. **网络出口流量** (bytes):
+   - `resource_name`: networkEgress
+   - `usage.unit`: 字节
+   - 表示从集群出口的网络流量总量。
+
+## SQL 查询解析
+
+```sql
+SELECT
+  label.key AS label_key,
+  label.value AS label_value,
+  SUM(usage.amount) AS total_usage,
+  usage.unit
+FROM
+  `project.lexcostallocation.gke_cluster_resource_usage`,
+  UNNEST(labels) AS label
+WHERE
+  label.key = "team" and label.value = "my-test-teams"
+GROUP BY
+  label_key, label_value, usage.unit
+```
+
+这个查询的功能：
+
+1. 从 `gke_cluster_resource_usage` 表中选择数据。
+2. 筛选特定团队（"my-test-teams"）的资源使用情况。
+3. 汇总每种资源类型的总使用量。
+4. 按标签和使用单位进行分组。
+
+## 业务逻辑深度解析
+
+1. **多维度资源跟踪**:
+
+   - 查询同时跟踪 CPU、内存和网络出口流量，提供全面的资源使用视图。
+
+2. **精确的成本分配**:
+
+   - 通过标签筛选，可以精确计算特定团队在不同资源类型上的使用量，有助于更准确的成本分配。
+
+3. **性能和效率分析**:
+
+   - 结合 CPU（计算能力）、内存（数据处理能力）和网络流量（数据传输），可以全面分析应用性能和资源效率。
+
+4. **容量规划**:
+
+   - 通过分析这三种核心资源的使用模式，可以更准确地预测未来的资源需求和进行扩展规划。
+
+5. **优化机会识别**:
+
+   - 比较 CPU、内存和网络使用情况，可以识别潜在的瓶颈或过度配置的资源。
+
+6. **计费模型支持**:
+
+   - 不同的资源使用不同的计量单位（秒、字节秒、字节），支持复杂的计费模型实现。
+
+7. **合规性和治理**:
+   - 详细的资源使用数据有助于确保资源使用符合组织政策，并支持审计需求。
+
+感谢您提供这个重要的补充信息。您的观察极大地增强了我们的分析准确性。让我总结一下关键点：
+
+1. **CPU 使用**：以秒为单位，表示 CPU 时间。
+2. **内存使用**：以字节秒为单位，表示内存随时间的累积使用量。
+3. **网络出口流量**：以字节为单位，测量从集群发出的网络流量。
+
+这个完整的分析现在涵盖了 GKE 集群的三个主要资源维度：计算（CPU）、存储（内存）和网络（出口流量）。这种全面的视图使得：
+
+- 资源使用分析更加全面和准确。
+- 成本分配可以基于更详细的资源使用数据。
+- 性能优化可以考虑到计算、内存和网络使用之间的平衡。
+- 容量规划可以更精确地预测各种资源的需求。
+
+您的 SQL 查询现在可以被理解为一个强大的工具，用于全面分析特定团队（"my-test-teams"）在这三个关键资源维度上的使用情况。
