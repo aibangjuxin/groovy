@@ -72,3 +72,97 @@ WHERE created_date = CURRENT_DATE();
 - 使用缓存功能
 
 你觉得这些方案中，哪一个最适合你的使用场景？我可以针对具体方案提供更详细的实施建议。​​​​​​​​​​​​​​​​
+
+
+这个理解不太准确。让我来解释一下BigQuery的计费机制：
+
+BigQuery的费用主要分为两大类：
+
+1. 查询费用（Query pricing）：
+- 是基于扫描的数据量来计费，而不是查询时间
+- 按照每TB数据扫描量收费（比如美国地区是每TB $5）
+- 即使查询相同的数据，每次都会产生费用
+- 缓存的查询结果不会重复收费
+
+2. 存储费用（Storage pricing）：
+- 活跃存储（Active storage）：90天内访问过的数据
+- 长期存储（Long-term storage）：90天以上未访问的数据
+- 按照实际存储的数据量计费
+
+优化成本的最佳实践：
+
+1. 减少扫描的数据量：
+```sql
+-- 不好的做法
+SELECT * FROM `project.dataset.table`;
+
+-- 好的做法
+SELECT specific_columns 
+FROM `project.dataset.table`
+WHERE date_column > '2024-01-01';
+```
+
+2. 使用分区表减少扫描范围：
+```sql
+-- 创建分区表
+CREATE TABLE `project.dataset.partitioned_table`
+PARTITION BY DATE(timestamp_column)
+AS SELECT * FROM `project.dataset.original_table`;
+
+-- 查询特定分区
+SELECT *
+FROM `project.dataset.partitioned_table`
+WHERE DATE(timestamp_column) = '2024-03-01';
+```
+
+3. 利用查询缓存：
+- BigQuery会自动缓存查询结果24小时
+- 完全相同的查询不会产生新的费用
+- 注意：如果数据有更新，缓存会失效
+
+4. 预先计算和聚合：
+```sql
+-- 创建汇总表
+CREATE OR REPLACE TABLE `project.dataset.daily_summary`
+AS
+SELECT 
+  DATE(timestamp_column) as date,
+  COUNT(*) as count,
+  SUM(value) as total
+FROM `project.dataset.large_table`
+GROUP BY DATE(timestamp_column);
+```
+
+5. 使用预估查询：
+```sql
+-- 在执行前预估查询成本
+#dry_run
+SELECT * 
+FROM `project.dataset.large_table`
+WHERE date_column > '2024-01-01';
+```
+
+6. 设置成本控制：
+```sql
+-- 设置查询字节限制
+SET @@query_max_bytes_billed = 1000000000;  -- 1GB limit
+```
+
+建议的查询优化流程：
+
+1. 开发阶段：
+- 使用LIMIT子句测试查询
+- 使用预估查询了解数据扫描量
+- 检查执行计划（EXPLAIN）
+
+2. 生产阶段：
+- 使用分区和聚合表
+- 设置适当的费用限制
+- 监控查询成本
+
+3. 长期优化：
+- 定期审查查询模式
+- 优化数据模型
+- 考虑使用BI工具的缓存层
+
+你现在的查询模式是怎样的？我可以帮你具体分析如何优化查询来降低成本。​​​​​​​​​​​​​​​​
