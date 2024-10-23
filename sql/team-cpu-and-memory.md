@@ -234,3 +234,124 @@ GROUP BY
 	3.	分离内存和 CPU 计算：memory_total_mi 和 cpu_total 的计算提取到 preprocessed_data 子查询中，减少在最终查询中的复杂性。
 
 通过这些优化，查询的执行效率应该有所提升，尤其是在数据量较大时。
+
+
+
+
+# claude 
+我来帮你改造这个SQL语句，使其能够动态计算最近12个月的数据并适合输出到Data Studio。​​​​​​​​​​​​​​​​
+
+```sql
+-- 1. 首先定义时间范围，动态计算最近12个月
+WITH date_range AS (
+  SELECT 
+    TIMESTAMP_SUB(TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH), INTERVAL 11 MONTH) as start_date,
+    TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH) as end_date
+),
+-- 2. 生成月份序列，确保每个月都有数据
+months AS (
+  SELECT month
+  FROM UNNEST(GENERATE_ARRAY(0, 11)) month
+),
+month_dates AS (
+  SELECT
+    TIMESTAMP_SUB(TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH), INTERVAL month MONTH) as month_start,
+    FORMAT_TIMESTAMP('%Y-%m', TIMESTAMP_SUB(TIMESTAMP_TRUNC(CURRENT_TIMESTAMP(), MONTH), INTERVAL month MONTH)) as month_label
+  FROM months
+),
+-- 3. 标准化内存计算
+normalized_memory AS (
+  SELECT 
+    teamName,
+    FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime)) as month,
+    api.pod_count,
+    api.cpu_limit,
+    CASE
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Gi') 
+        THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Gi', '') AS FLOAT64) * 1024
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Mi') 
+        THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Mi', '') AS FLOAT64)
+      ELSE 0
+    END AS memory_mi
+  FROM `project.aibang.api_data.team_level_api_dev_historical_data` d,
+  UNNEST(d.apis) AS api
+  WHERE PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime) 
+    BETWEEN (SELECT start_date FROM date_range) 
+    AND (SELECT end_date FROM date_range)
+),
+-- 4. 计算每月的备份次数
+monthly_backup_counts AS (
+  SELECT
+    teamName,
+    FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime)) as month,
+    COUNT(DISTINCT DATE(PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime))) AS backup_count
+  FROM `project.aibang.api_data.team_level_api_dev_historical_data`
+  WHERE PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime) 
+    BETWEEN (SELECT start_date FROM date_range) 
+    AND (SELECT end_date FROM date_range)
+  GROUP BY teamName, month
+)
+-- 5. 主查询，生成适合Data Studio的输出格式
+SELECT
+  n.teamName,
+  md.month_label as month,  -- 使用格式化的月份标签
+  COALESCE(t.backup_count, 0) as backup_count,
+  ROUND(SUM(n.memory_mi * n.pod_count), 2) AS memory_total_mi,
+  ROUND(SUM(CAST(n.cpu_limit AS FLOAT64) * n.pod_count), 2) AS cpu_total,
+  ROUND(SUM(n.memory_mi * n.pod_count) / NULLIF(t.backup_count, 0), 2) AS avg_memory_per_day_mi,
+  ROUND(SUM(CAST(n.cpu_limit AS FLOAT64) * n.pod_count) / NULLIF(t.backup_count, 0), 2) AS avg_cpu_per_day
+FROM month_dates md
+CROSS JOIN (SELECT DISTINCT teamName FROM normalized_memory) teams
+LEFT JOIN normalized_memory n ON n.month = md.month_label AND n.teamName = teams.teamName
+LEFT JOIN monthly_backup_counts t ON t.month = md.month_label AND t.teamName = teams.teamName
+GROUP BY 
+  n.teamName,
+  md.month_label,
+  t.backup_count
+ORDER BY 
+  n.teamName,
+  md.month_label DESC;
+```
+
+这个改进版本的查询有以下主要特点：
+
+1. **动态时间范围**：
+   - 自动计算最近12个月的时间范围
+   - 使用 CURRENT_TIMESTAMP() 获取当前时间
+   - 可以自动更新，无需手动修改日期
+
+2. **完整月份数据**：
+   - 使用 GENERATE_ARRAY 生成月份序列
+   - 确保即使没有数据的月份也会显示
+   - 适合在 Data Studio 中创建时间序列图表
+
+3. **数据展示优化**：
+   - 格式化月份标签，便于在 Data Studio 中展示
+   - 使用 ROUND 函数控制数字精度
+   - 添加 COALESCE 处理空值情况
+   - 使用 NULLIF 避免除零错误
+
+4. **适合 Data Studio 的改进**：
+   - 保证数据连续性，便于创建趋势图
+   - 提供清晰的时间标签
+   - 结果按团队和时间排序
+   - 数值进行了合理的四舍五入
+
+要在 Data Studio 中使用这个查询：
+
+1. 创建新的数据源时，直接使用这个查询
+2. 在图表中可以使用：
+   - teamName 作为维度
+   - month 作为时间维度
+   - 其他数值列作为指标
+3. 可以创建的图表类型：
+   - 时间序列图显示趋势
+   - 条形图比较不同团队
+   - 数据表格展示详细数据
+   - 计分卡显示关键指标
+
+需要注意的是：
+- 查询结果会包含所有月份，即使某些月份没有数据
+- 确保 Data Studio 中的刷新频率设置合适
+- 考虑添加适当的过滤器和控件
+
