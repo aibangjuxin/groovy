@@ -81,4 +81,89 @@ GROUP BY
 * `avg_memory_per_day_mi`: 每天的平均内存使用量 (MiB)。
 * `avg_cpu_per_day`: 每天的平均CPU使用量。
 
+# claude 
 
+```sql
+-- 1. 优化时间处理，预先转换时间格式
+WITH date_range AS (
+  SELECT 
+    TIMESTAMP('2024-09-01 00:00:00') as start_date,
+    TIMESTAMP('2024-09-30 23:59:59') as end_date
+),
+-- 2. 提取并标准化内存单位计算
+normalized_memory AS (
+  SELECT 
+    teamName,
+    backupTime,
+    api.pod_count,
+    api.cpu_limit,
+    CASE
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Gi') 
+        THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Gi', '') AS FLOAT64) * 1024
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Mi') 
+        THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Mi', '') AS FLOAT64)
+      ELSE 0
+    END AS memory_mi
+  FROM `project.aibang.api_data.team_level_api_dev_historical_data` d,
+  UNNEST(d.apis) AS api
+  WHERE PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime) 
+    BETWEEN (SELECT start_date FROM date_range) 
+    AND (SELECT end_date FROM date_range)
+),
+-- 3. 计算团队备份次数
+team_backup_counts AS (
+  SELECT
+    teamName,
+    COUNT(DISTINCT DATE(PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime))) AS backup_count
+  FROM `project.aibang.api_data.team_level_api_dev_historical_data`
+  WHERE PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime) 
+    BETWEEN (SELECT start_date FROM date_range) 
+    AND (SELECT end_date FROM date_range)
+  GROUP BY teamName
+)
+-- 4. 主查询
+SELECT
+  n.teamName,
+  t.backup_count,
+  SUM(n.memory_mi * n.pod_count) AS memory_total_mi,
+  SUM(CAST(n.cpu_limit AS FLOAT64) * n.pod_count) AS cpu_total,
+  SUM(n.memory_mi * n.pod_count) / t.backup_count AS avg_memory_per_day_mi,
+  SUM(CAST(n.cpu_limit AS FLOAT64) * n.pod_count) / t.backup_count AS avg_cpu_per_day
+FROM normalized_memory n
+JOIN team_backup_counts t ON n.teamName = t.teamName
+GROUP BY n.teamName, t.backup_count;
+```
+
+我来帮你分析这段SQL并提供一些优化建议。这是一个用于计算团队资源使用情况的查询，主要包含内存和CPU的统计。​​​​​​​​​​​​​​​​
+
+我对SQL进行了以下几个主要优化：
+
+1. **时间处理优化**：
+   - 创建了`date_range` CTE来存储日期范围，避免重复写时间条件
+   - 将时间条件判断统一到一个地方，减少重复计算
+
+2. **内存计算优化**：
+   - 创建`normalized_memory` CTE来预先处理内存单位转换
+   - 将复杂的CASE表达式只计算一次，避免在主查询中重复计算
+   - 提前进行单位标准化，简化后续计算
+
+3. **Join优化**：
+   - 移除了不必要的JOIN UNNEST结构，将其整合到normalized_memory CTE中
+   - 减少了数据处理的中间步骤
+
+4. **查询结构优化**：
+   - 使用更清晰的CTE结构，提高代码可读性和维护性
+   - 将复杂计算分解成多个步骤，便于优化器进行优化
+
+5. **其他建议**：
+   - 建议在teamName和backupTime列上创建索引
+   - 考虑在经常查询的时间范围上创建分区表
+   - 如果可能，将内存单位统一存储，避免运行时转换
+
+这些优化主要从以下几个方面提升查询性能：
+- 减少重复计算
+- 优化数据处理流程
+- 提高查询可读性和可维护性
+- 便于查询优化器进行优化
+
+你觉得这些优化建议如何？是否还有其他特定的性能需求需要考虑？​​​​​​​​​​​​​​​​
