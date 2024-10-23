@@ -166,4 +166,71 @@ GROUP BY n.teamName, t.backup_count;
 - 提高查询可读性和可维护性
 - 便于查询优化器进行优化
 
-你觉得这些优化建议如何？是否还有其他特定的性能需求需要考虑？​​​​​​​​​​​​​​​​
+# chatgpt
+
+这个 SQL 查询的主要问题是使用了多次 PARSE_TIMESTAMP 和 REGEXP 函数，它们对性能的影响较大。另外，WITH 子句的逻辑可能导致中间结果的冗余计算。以下是几个优化点：
+
+优化点 1：减少 PARSE_TIMESTAMP 的使用
+
+PARSE_TIMESTAMP 的使用在 WHERE 子句和 team_backup_counts 子查询中多次重复，建议可以将其提前转换，避免重复解析。可以在最外层使用预处理好的 TIMESTAMP 字段。
+
+优化点 2：减少正则表达式的使用
+
+在内存计算时使用了 REGEXP_CONTAINS 和 REGEXP_REPLACE 来解析 memory_limit，这是一个开销比较大的操作。建议使用条件判断并提前将内存单位转为标准的单位格式存储（例如始终存储为 MiB），这样可以减少正则表达式的开销。
+
+优化点 3：合并相似计算
+
+SUM 中的 CASE 逻辑重复了两次，导致相同的计算逻辑执行多次，可以通过引入一个 WITH 子句来避免。
+
+优化方案：
+```sql
+WITH team_backup_counts AS (
+  SELECT
+    teamName,
+    COUNT(DISTINCT DATE(PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime))) AS backup_count
+  FROM
+    `project.aibang.api_data.team_level_api_dev_historical_data`
+  WHERE
+    PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime) BETWEEN TIMESTAMP('2024-09-01 00:00:00') AND TIMESTAMP('2024-09-30 23:59:59')
+  GROUP BY
+    teamName
+),
+preprocessed_data AS (
+  SELECT
+    d.teamName,
+    t.backup_count,
+    CASE
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Gi') THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Gi', '') AS FLOAT64) * 1024
+      WHEN REGEXP_CONTAINS(api.memory_limit, r'Mi') THEN CAST(REGEXP_REPLACE(api.memory_limit, r'Mi', '') AS FLOAT64)
+      ELSE 0
+    END * api.pod_count AS memory_total_mi,
+    CAST(api.cpu_limit AS FLOAT64) * api.pod_count AS cpu_total
+  FROM
+    `project.aibang.api_data.team_level_api_dev_historical_data` AS d
+  JOIN UNNEST(d.apis) AS api
+  JOIN team_backup_counts AS t ON d.teamName = t.teamName
+  WHERE
+    PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', d.backupTime) BETWEEN TIMESTAMP('2024-09-01 00:00:00') AND TIMESTAMP('2024-09-30 23:59:59')
+)
+SELECT
+  teamName,
+  t.backup_count,
+  SUM(memory_total_mi) AS memory_total_mi,
+  SUM(cpu_total) AS cpu_total,
+  SUM(memory_total_mi) / t.backup_count AS avg_memory_per_day_mi,
+  SUM(cpu_total) / t.backup_count AS avg_cpu_per_day
+FROM
+  preprocessed_data AS pd
+JOIN
+  team_backup_counts AS t ON pd.teamName = t.teamName
+GROUP BY
+  t.teamName,
+  t.backup_count
+```
+优化解释：
+
+	1.	减少重复的 PARSE_TIMESTAMP 调用：通过将 PARSE_TIMESTAMP 移动到 preprocessed_data 的子查询中，仅解析一次 backupTime，减少开销。
+	2.	合并相同逻辑：将内存计算和 CPU 计算的 CASE 语句放入 preprocessed_data 子查询，避免重复的计算。
+	3.	分离内存和 CPU 计算：memory_total_mi 和 cpu_total 的计算提取到 preprocessed_data 子查询中，减少在最终查询中的复杂性。
+
+通过这些优化，查询的执行效率应该有所提升，尤其是在数据量较大时。
