@@ -1,3 +1,4 @@
+
 ```sql
 WITH team_backup_counts AS (
   SELECT
