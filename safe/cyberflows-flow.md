@@ -245,3 +245,57 @@ flowchart TD
    - 显示了暂停-继续的循环操作
 
 你觉得这个流程图是否更清晰地展示了DAST扫描的完整过程？如果需要调整某些环节或添加其他分支，请告诉我。
+
+我明白了，您想要将之前简洁的SVG流程用Mermaid flowchart重新表达。我来将那个较为直观的版本转换过来。
+
+```mermaid
+flowchart LR
+    subgraph 配置阶段
+        A[1.创建扫描配置\n设置扫描目标URL] -->
+        B[2.配置扫描参数\n认证设置\n扫描策略选择] -->
+        C[3.触发扫描\n启动自动扫描]
+    end
+
+    subgraph 执行阶段
+        C -->
+        D[4.扫描执行中\n进度监控\n实时状态查看] -->
+        E[5.扫描完成]
+    end
+
+    subgraph 报告阶段
+        E -->
+        F[6.查看扫描报告\n漏洞详情\n严重程度分析] -->
+        G[7.扫描历史记录\n历史报告查看\n扫描结果对比]
+    end
+
+    classDef configPhase fill:#4a90e2,stroke:#333,stroke-width:2px,color:white;
+    classDef execPhase fill:#50c878,stroke:#333,stroke-width:2px,color:white;
+    classDef reportPhase fill:#f5a623,stroke:#333,stroke-width:2px,color:white;
+
+    class A,B,C configPhase;
+    class D,E execPhase;
+    class F,G reportPhase;
+
+```
+
+这个版本保持了原SVG图的简洁性，同时具有以下特点：
+
+1. 保持水平流程展示，从左到右直观易读
+
+2. 使用相同的颜色方案：
+
+   - 蓝色表示配置阶段
+   - 绿色表示执行阶段
+   - 橙色表示报告阶段
+
+3. 通过subgraph将流程分为三个主要阶段：
+
+   - 配置阶段
+   - 执行阶段
+   - 报告阶段
+
+4. 每个节点都保持了原有的编号和关键信息
+
+5. 流程更加线性和清晰，易于理解和跟踪
+
+这个版本是否更符合您的预期？如果需要调整任何部分，请告诉我。
