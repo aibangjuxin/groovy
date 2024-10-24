@@ -22,28 +22,30 @@ table_name = 'team_level_api_dev_historical_data';
 
 JSON 输出
 
+```json
 [
-{
-"column_name": "backupTime",
-"data_type": "STRING",
-"is_nullable": "YES"
-},
-{
-"column_name": "teamName",
-"data_type": "STRING",
-"is_nullable": "YES"
-},
-{
-"column_name": "aibangOrg",
-"data_type": "STRING",
-"is_nullable": "YES"
-},
-{
-"column_name": "apis",
-"data_type": "ARRAY<STRUCT<memory_request STRING, cpu_limit STRING, env STRING, api_name STRING, region STRING, cpu_request STRING, minor_version STRING, major_version STRING, memory_limit STRING, pod_count INT64>>",
-"is_nullable": "NO"
-}
+  {
+    "column_name": "backupTime",
+    "data_type": "STRING",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "teamName",
+    "data_type": "STRING",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "aibangOrg",
+    "data_type": "STRING",
+    "is_nullable": "YES"
+  },
+  {
+    "column_name": "apis",
+    "data_type": "ARRAY<STRUCT<memory_request STRING, cpu_limit STRING, env STRING, api_name STRING, region STRING, cpu_request STRING, minor_version STRING, major_version STRING, memory_limit STRING, pod_count INT64>>",
+    "is_nullable": "NO"
+  }
 ]
+```
 
 解释:
 
