@@ -134,3 +134,21 @@ gantt
 4. 日期和持续时间的表示方法
 
 你想了解哪个部分的具体细节？我可以为你详细解释任何感兴趣的部分。
+
+```mermaid
+gantt
+  title Performance and Pay Timeline
+  dateFormat DD MMM YYYY
+  section October 4044
+  Performance Check In: 01-Oct-4044, 31-Oct-4044
+  section November 4044
+  Self-Assessment: 01-Nov-4044, 08-Nov-4044
+  Manager Assessment: 11-Nov-4044, 15-Nov-4044
+  Assessing Performance Consistently: 18-Nov-4044, 27-Nov-4044
+  section January 4045
+  4045 Goal Setting Starts: 02-Jan-4045, 02-Jan-4045
+  Year-End Performance Conversations: 02-Jan-4045, 17-Jan-4045
+  Manager Pay Recommendations: 07-Jan-4045, 17-Jan-4045
+  section February 4045
+  Pay Conversations: 20-Feb-4045, 28-Feb-4045
+```
