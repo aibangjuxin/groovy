@@ -70,3 +70,53 @@ graph TD
     H --> I[推送至 Nexus 仓库]
 ```
 希望这可以清晰展示两者的作用区别。
+
+是的，将 Docker 镜像 和 Maven 依赖 分别存储在不同的 Nexus 仓库中是完全可行的。这种分离不仅符合实际应用中的分工需求，还能增强系统管理和访问控制。具体如下：
+
+优势
+
+	1.	分离管理：Docker 镜像和 Maven 依赖各自有不同的管理需求，分开存储能更清晰地管理这些资源。
+	2.	访问控制：您可以针对不同仓库设置独立的访问权限，例如限制构建工具（如 Jenkins）只访问 Docker 镜像的 Nexus，而开发人员主要访问 Maven 依赖仓库。
+	3.	性能优化：根据使用场景优化每个 Nexus 仓库的缓存、备份和更新策略。例如，Docker 镜像可能需要较大的存储空间，而 Maven 仓库则可以更专注于依赖版本的缓存。
+	4.	灾备分离：不同仓库可以采取独立的备份和灾难恢复策略，避免单点故障的影响。
+
+实施要点
+
+	•	Docker 仓库配置：在 Nexus 中创建 Docker（Hosted）仓库，用于存储和管理构建的 Docker 镜像，并配置合适的端口号（例如 5000），便于推送和拉取镜像。
+	•	Maven 仓库配置：在 Nexus 中创建 Maven（Hosted/Proxy）仓库用于存储项目的依赖项和构建产物（如 .jar 和 .war），并指定为 Maven 项目使用的仓库地址。
+	•	构建配置示例：
+	•	Maven 构建：指定 Maven 仓库地址，构建和下载依赖。例如，在 settings.xml 中配置：
+
+<repository>
+    <id>maven-repo</id>
+    <url>http://your-nexus-server:8081/repository/maven-releases/</url>
+</repository>
+
+
+	•	Docker 构建和推送：使用 Dockerfile 构建镜像并推送至 Docker Nexus 仓库。例如：
+
+docker build -t my-java-app .
+docker tag my-java-app your-nexus-server:5000/my-java-app
+docker push your-nexus-server:5000/my-java-app
+
+
+
+关系图示
+
+以下 Mermaid 图展示了两种 Nexus 仓库的分工和数据流动：
+```mermaid
+graph TD
+    A[开发者]
+    B[Jenkins 构建服务器]
+    C[Nexus - Maven 仓库]
+    D[Nexus - Docker 仓库]
+    E[生产环境]
+
+    A -->|Maven 构建 & 下载依赖| C
+    B -->|拉取 Maven 依赖| C
+    B -->|Docker Build & Push 镜像| D
+    E -->|拉取 Docker 镜像| D
+```
+总结
+
+这种分离不仅提升管理灵活性，而且有助于控制不同资源的使用权限、优化性能。
