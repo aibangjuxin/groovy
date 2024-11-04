@@ -57,3 +57,85 @@ I -- 有限制 --> L[修改Pod Security Context]
 
 ```
 
+提取的文本内容：
+
+
+错误原因分析：
+
+核心错误是 `java.nio.file.NoSuchFileException`，表明程序找不到指定的Excel文件。错误发生在尝试更新现有Excel文件时，说明程序的逻辑是先找到文件，然后进行修改。结合错误信息中的文件路径 `src/main/resources/...`，可以推断出以下几种可能的原因：
+
+1. **文件路径错误:**  在GKE的Pod环境中，`src/main/resources` 路径可能并不存在或者程序无法访问。这个路径通常在Java项目的编译阶段会被打包到JAR文件中，而不是在文件系统中以目录形式存在。程序应该使用 `ClassLoader.getResourceAsStream()` 或类似的方法来访问JAR包内的资源文件。
+
+2. **文件未正确打包:** 编译打包过程中，Excel模板文件可能未被正确包含到JAR文件中。需要检查构建配置（例如Maven或Gradle）是否正确配置了资源文件的打包。
+
+3. **尝试修改只读文件/目录:**  即使文件存在于 `src/main/resources` 对应的JAR包内，程序也无法直接修改JAR包内的文件。程序应该先将模板文件复制到一个可写的临时目录（例如 `/tmp`），然后对复制后的文件进行修改，最后再返回给用户。
+
+
+确认功能可行性：
+
+1. **确认文件存在:**  在Pod中执行以下命令，检查JAR包中是否存在对应的Excel模板文件：
+
+    ```bash
+    kubectl exec -it <pod-name> -- jar tf <your-application.jar> | grep <template-file-name>
+    ```
+    例如，如果你的JAR文件名为 `my-app.jar`，模板文件名是 `MonitoringSummary.xlsm`，则命令为：
+    ```bash
+    kubectl exec -it <pod-name> -- jar tf my-app.jar | grep MonitoringSummary.xlsm
+    ```
+    如果命令没有输出，说明文件未打包到JAR中。
+
+2. **修改文件访问方式:** 将代码中访问Excel文件的方式修改为从JAR包中读取资源流，而不是直接访问文件路径。例如：
+
+    ```java
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("MonitoringSummary.xlsm");
+    // 使用 inputStream 读取模板文件内容
+    ```
+
+3. **使用临时文件:**  将模板文件复制到Pod的临时目录（例如`/tmp`）中，对副本进行修改，然后返回修改后的文件。
+
+4. **检查Pod日志:**  仔细检查Pod的日志，寻找更详细的错误信息和堆栈跟踪，这有助于进一步定位问题。
+
+
+通过以上步骤，可以确认在GKE中创建和修改报告的功能是否可行，并找到相应的解决方案。
+
+The extracted text content:
+
+
+Error Analysis:
+
+The core error is `java.nio.file.NoSuchFileException`, indicating that the program cannot find the specified Excel file. The error occurs when attempting to update an existing Excel file, suggesting the program's logic is to find the file first, then modify it.  Combined with the file path in the error message `src/main/resources/...`, we can infer the following possible causes:
+
+1. **Incorrect File Path:** The `src/main/resources` path likely does not exist or is inaccessible within the GKE Pod environment. This path is typically packaged into the JAR file during the Java project's compilation phase, rather than existing as a directory in the file system. The program should use `ClassLoader.getResourceAsStream()` or a similar method to access resource files within the JAR.
+
+2. **File Not Packaged Correctly:** The Excel template files may not have been included in the JAR file correctly during the build process.  You need to check if the build configuration (e.g., Maven or Gradle) has correctly configured the packaging of resource files.
+
+3. **Attempting to Modify a Read-Only File/Directory:** Even if the file exists within the JAR corresponding to `src/main/resources`, the program cannot directly modify files within a JAR.  The program should first copy the template file to a writable temporary directory (e.g., `/tmp`), modify the copied file, and then return it to the user.
+
+
+Confirming Functionality:
+
+1. **Verify File Existence:** Execute the following command within the Pod to check if the Excel template file exists within the JAR:
+
+    ```bash
+    kubectl exec -it <pod-name> -- jar tf <your-application.jar> | grep <template-file-name>
+    ```
+    For example, if your JAR file is named `my-app.jar` and the template file is named `MonitoringSummary.xlsm`, the command would be:
+    ```bash
+    kubectl exec -it <pod-name> -- jar tf my-app.jar | grep MonitoringSummary.xlsm
+    ```
+    If the command has no output, the file is not packaged in the JAR.
+
+2. **Modify File Access Method:** Change the way the code accesses the Excel file to read from the JAR's resource stream, rather than directly accessing the file path. For example:
+
+    ```java
+    InputStream inputStream = getClass().getClassLoader().getResourceAsStream("MonitoringSummary.xlsm");
+    // Use inputStream to read the template file content
+    ```
+
+3. **Use Temporary Files:** Copy the template file to the Pod's temporary directory (e.g., `/tmp`), modify the copy, and then return the modified file.
+
+4. **Check Pod Logs:** Carefully examine the Pod logs for more detailed error messages and stack traces, which can help further pinpoint the issue.
+
+
+By following these steps, you can confirm the feasibility of creating and modifying reports within GKE and find the appropriate solution.
+
