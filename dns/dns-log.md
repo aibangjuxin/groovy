@@ -9,12 +9,12 @@
 2. 使用 gcloud 命令行查看 Cloud DNS 日志
 
 通过 gcloud 命令可以直接从命令行访问 Cloud Logging 中的日志。以下命令用于查询特定 Cloud DNS 的记录更改：
-
+```bash
 gcloud logging read 'resource.type="dns_managed_zone" AND protoPayload.methodName=("dns.changes.create" OR "dns.responsePolicies.patch" OR "dns.responsePolicies.create" OR "dns.responsePolicies.delete")' \
     --project=[PROJECT_ID] \
     --format="json" \
     --limit=20
-
+```
 	•	dns.changes.create：表示 DNS 记录的创建。
 	•	dns.responsePolicies.create：表示响应策略的创建。
 	•	dns.responsePolicies.patch：表示响应策略的更新。
@@ -28,37 +28,42 @@ a. 查询某个特定 DNS 记录集的更改
 
 要查询特定 DNS 记录集（例如 example.com.）的更改记录，可以加上 protoPayload.request.resource.name 的过滤条件：
 
+```bash
 gcloud logging read 'resource.type="dns_managed_zone" AND protoPayload.methodName="dns.changes.create" AND protoPayload.request.resource.name:"example.com."' \
     --project=[PROJECT_ID] \
     --format="json"
-
+```
 b. 查询 DNS 响应策略的创建或更新操作
 
 对于响应策略（Response Policy）操作，可以过滤 dns.responsePolicies.create 和 dns.responsePolicies.patch 方法：
 
+```bash
 gcloud logging read 'resource.type="dns_managed_zone" AND (protoPayload.methodName="dns.responsePolicies.create" OR protoPayload.methodName="dns.responsePolicies.patch")' \
     --project=[PROJECT_ID] \
     --format="json"
-
+```
 c. 查询 DNS 记录的删除
 
 DNS 记录删除一般可以通过 dns.changes.create 方法过滤，但 delete 操作可以在 protoPayload.request.delete_resource_record_set 中找到。例如：
 
+```bash
 gcloud logging read 'resource.type="dns_managed_zone" AND protoPayload.methodName="dns.changes.create" AND protoPayload.request.delete_resource_record_set' \
     --project=[PROJECT_ID] \
     --format="json"
-
+```
 4. 查看 Cloud Console 中的详细变更日志
 
 如需更详细的日志信息，可以在 Cloud Console > Logging 中使用下列条件进行过滤：
 
+```bash
 resource.type="dns_managed_zone"
 protoPayload.methodName=("dns.changes.create", "dns.responsePolicies.patch", "dns.responsePolicies.create", "dns.responsePolicies.delete")
-
+```
 示例输出格式
 
 以下是命令输出的 JSON 示例：
 
+```json
 [
   {
     "insertId": "1abcde2fgh3ijk4lm5",
@@ -88,7 +93,7 @@ protoPayload.methodName=("dns.changes.create", "dns.responsePolicies.patch", "dn
   },
   ...
 ]
-
+```
 注意事项
 
 	1.	项目和权限：确保你有查看 Cloud DNS 相关 Audit Logs 的权限（通常需要 Logging Viewer 角色）。
