@@ -1,3 +1,165 @@
+
+# filter response policy 
+
+Based on the provided JSON log entry, here are some basic filter examples for Cloud Logging to target Response Policy Rule changes in your GCP project:
+
+**1. Filtering by `serviceName`:**
+
+This filter isolates all DNS Response Policy Rule activity.
+
+```gcloud
+gcloud logging read "serviceName=dns.googleapis.com"
+```
+
+**2. Filtering by `resource.labels.method`:**
+
+This filter specifically targets patch operations on Response Policy Rules.
+
+```gcloud
+gcloud logging read "resource.labels.method=dns.responsePolicyRules.patch"
+```
+
+**3. Filtering by `protoPayload.methodName`:**
+
+This option allows you to filter based on specific API methods called.  For example, to find updates:
+
+```gcloud
+gcloud logging read "protoPayload.methodName=dns.responsePolicyRules.patch"
+```
+
+For creates (if you were creating new rules):
+
+```gcloud
+gcloud logging read "protoPayload.methodName=dns.responsePolicyRules.create"
+```
+
+For deletes:
+
+```gcloud
+gcloud logging read "protoPayload.methodName=dns.responsePolicyRules.delete"
+```
+
+
+**4. Filtering by `resource.labels.project_id`:**
+
+This filter narrows down the results to a specific project.  Replace  `YOUR_PROJECT_ID` with your actual project ID.
+
+```gcloud
+gcloud logging read "resource.labels.project_id=YOUR_PROJECT_ID"
+```
+
+**5. Combining Filters:**
+
+You can combine these filters using `AND` and `OR` operators for more granular control. For example, to find all patch operations in a specific project:
+
+```gcloud
+gcloud logging read "resource.labels.method=dns.responsePolicyRules.patch AND resource.labels.project_id=YOUR_PROJECT_ID"
+```
+
+
+**6. Filtering by `protoPayload.resourceName`:**
+
+This allows you to filter by the specific resource name, which includes the policy and rule name. You'll need to adjust the resource name to match your environment.
+
+```gcloud
+gcloud logging read "protoPayload.resourceName=projects/YOUR_PROJECT_ID/responsePolicies/YOUR_POLICY_NAME/rules/YOUR_RULE_NAME"
+```
+
+**7.  Filtering by specific fields within `protoPayload.request` or `protoPayload.response`:**
+
+You can filter based on the content of the request or response. For example, if you are patching a specific field, you could filter based on its presence in  `protoPayload.request`. This requires careful inspection of the request structure.
+
+
+
+Remember to adapt these examples to your specific project and requirements.  You can test and refine these filters directly in the Cloud Logging console to ensure they capture the events you're interested in.  The console also provides a convenient interface for exploring the structure of log entries, which helps in constructing more complex filters.
+
+
+
+
+```json
+{
+  "insertId": "mdrdppry9vu",
+  "logName": "projects/****-*****-prod/logs/cloudaudit.googleapis.com%2Factivity",
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "authenticationInfo": {
+      "principalEmail": "************@notreceivingmail.abjxc.com"
+    },
+    "authorizationInfo": {
+      "granted": true,
+      "permission": "dns.responsePolicyRules.update",
+      "permissionType": "ADMIN_WRITE"
+    },
+    "resourceAttributes": {
+      "methodName": "dns.responsePolicyRules.patch",
+      "request": {
+        "@type": "type.googleapis.com/cloud.dns.api.ResponsePolicyRulesPatchRequest",
+        "project": "****-*****-prod",
+        "responsePolicyRule": "ss",
+        "responsePolicyRule": {
+          "dnsName": "search.gcp.aibang.local.com.",
+          "localData": {
+            "localData": {
+              "name": "search.gcp.aibang.local.com.",
+              "rrdata": [
+                "192.168.1.8"
+              ],
+              "ttl": 300
+            }
+          }
+        }
+      },
+      "requestMetadata": {
+        "callerIp": "114.114.114.114",
+        "destinationAttributes": {},
+        "requestAttributes": {
+          "auth": {}
+        }
+      },
+      "time": "2020-12-02T07:23:44.316429Z"
+    },
+    "resourceName": "responsePolicyRules/ss",
+    "response": {
+      "@type": "type.googleapis.com/cloud.dns.api.ResponsePolicyRulesPatchResponse",
+      "responsePolicyRule": {
+        "dnsName": "search.gcp.aibang.local.com.",
+        "localData": {
+          "localData": {
+            "name": "search.gcp.aibang.local.com.",
+            "rrdata": [
+              "192.168.64.47"
+            ],
+            "ttl": 300,
+            "type": "A"
+          }
+        }
+      },
+      "ruleName": "ss",
+      "serviceName": "dns.googleapis.com"
+    },
+    "receiveTimestamp": "2020-12-02T07:23:45.240303926Z",
+    "source": {
+      "method": "dns.responsePolicyRules.patch",
+      "project_id": "****-*****-prod"
+    },
+    "resource": {
+      "labels": {
+        "method": "dns.responsePolicyRules.patch",
+        "project_id": "****-*****-prod"
+      }
+    },
+    "severity": "NOTICE",
+    "timestamp": "2020-12-02T07:23:44.275388Z"
+}
+```
+
+### 替换信息说明
+
+- 将敏感项目名称和邮件地址替换为 `****` 和 `************`，以便隐藏真实信息。
+- 其他请求和响应的详细信息保持不变，以便于分析和审计。
+
+
+
 在 GCP 中，跟踪 DNS 记录的创建、删除、更新操作以及对特殊的响应策略（response policy）的更改，可以使用 Audit Logs 和 Cloud Logging。GCP 的 Audit Logs 包含对资源的管理操作日志记录，可以用来监控 Cloud DNS 的变更。
 
 以下是跟踪 GCP Cloud DNS 记录相关变更的步骤与示例。
