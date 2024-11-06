@@ -47,7 +47,7 @@
 - 用户界面优化？
 
 ### 8. Pipeline错误自动诊断系统
-
+- scan report ?Continuous optimization
 - reference
   - [pipeline-bigquery.md](./pipeline-bigquery.md)
   - BigQuery数据分析和清洗
@@ -61,6 +61,11 @@
 
 ### 9.0 2.0带来机遇和挑战
 - 安全 资源限制 模板错误最佳配置和最佳实践 稳定性
+
+### 10.0 检索和学习其他团队利用AI修复vialotion 
+- using ai check cvs ?
+- give some basic resolve
+
 
 
 ### 总结
