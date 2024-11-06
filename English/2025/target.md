@@ -40,9 +40,10 @@
 
 - reference:
   - ![onboarding-document.md](./onboarding-document.md)
-  -
+  - user tickets ==> create ==> generate a maybe Document ?
 - 文档整理和标准化
--
+- AI 助手
+- 用户界面优化？
 
 ### 8. Pipeline错误自动诊断系统
 
