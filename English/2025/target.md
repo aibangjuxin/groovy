@@ -39,8 +39,9 @@
 ### 7. Onboarding文档智能化系统
 
 - reference:
-  - ![onboarding-document.md](./onboarding-document.md)
-  - user tickets ==> create ==> generate a maybe Document ?
+  - [onboarding-document.md](./onboarding-document.md)
+  - user tickets ==> create ==> generate a maybe Document ? Using AI generate Document 依据就是用户的feature
+  - mail to User ==> include some Detail information ?
 - 文档整理和标准化
 - AI 助手
 - 用户界面优化？
@@ -48,7 +49,7 @@
 ### 8. Pipeline错误自动诊断系统
 
 - reference
-  - ![pipeline-bigquery.md](./pipeline-bigquery.md)
+  - [pipeline-bigquery.md](./pipeline-bigquery.md)
   - BigQuery数据分析和清洗
   - 构建错误模式识别模型
   - 错误自动诊断与推荐系统的实现
