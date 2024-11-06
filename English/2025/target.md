@@ -66,6 +66,14 @@
 - using ai check cvs ?
 - give some basic resolve
 
+### 11.0 release standard step 
+
+
+### 12.0 dashboard appd 
+- 推广成熟的监控解决方案给 比如我们已经推广的Appd 让用户自定义 自己去获取更多的数据
+- 对于比较大的用户，团队们是否可以出解决方案？或者我们去监控起来。
+- 费用的统计和细化 
+
 
 
 ### 总结
