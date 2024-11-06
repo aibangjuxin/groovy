@@ -122,7 +122,7 @@ flowchart TB
 
 - mindmap
 
-```mindmap
+```
   root((Pipeline错误诊断系统))
     (错误检测)
         [实时监控]
