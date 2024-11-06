@@ -122,7 +122,8 @@ flowchart TB
 
 - mindmap
 
-```
+```mermaid
+mindmap
   root((Pipeline错误诊断系统))
     (错误检测)
         [实时监控]
