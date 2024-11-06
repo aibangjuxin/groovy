@@ -416,7 +416,8 @@ flowchart TB
 
 Intelligent Onboarding System architecture
 
-```mindmap
+```mermaid
+mindmap
   root((智能Onboarding系统))
     (入口层)
         [Jira集成]
