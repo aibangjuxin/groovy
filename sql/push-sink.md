@@ -311,7 +311,8 @@ Markdown 支持的格式确实包括多种可视化工具，可以帮助展示�
 
 Flowchart 非常适合展示数据流或逻辑流程，特别适合多个分支、条件和循环的情况。
 
-````markdown
+- flow
+
 ```mermaid
 flowchart TD
     A[开始: 日志初始化] --> B[定义 BigQuery 表结构]
@@ -321,14 +322,12 @@ flowchart TD
     E --> F[计划任务: 每 24 小时执行一次]
     F --> G[流程结束]
 ```
-````
 
 ````
 
 ### 2. 使用 Sequence Diagram 展示调用或交互过程
 Sequence Diagram 对于展示时间顺序上的交互非常有效。适合展示系统中不同组件间的调用关系。
 
-```markdown
 ```mermaid
 sequenceDiagram
     participant Logger
@@ -343,14 +342,14 @@ sequenceDiagram
     Firestore ->> Storage: 推送数据至 GCS
     Storage ->> BigQuery: 从 GCS 加载数据
     Scheduler ->> Scheduler: 每 24 小时运行
-````
+```
 
 ````
 
 ### 3. 使用 Class Diagram 展示数据结构或类之间的关系
+
 Class Diagram 适合展示系统中不同数据结构或类的关系，例如显示一个复杂的对象模型。
 
-```markdown
 ```mermaid
 classDiagram
     class Logger {
@@ -380,14 +379,12 @@ classDiagram
     Firestore --> Storage : 导出数据到GCS
     Storage --> BigQuery : 加载数据到表
     Scheduler --> Logger : 定时任务
-````
-
-````
+```
 
 ### 4. 使用 Gantt Chart 显示流程的时间轴或任务安排
+
 Gantt Chart 可以展示任务的顺序和时间安排，适合展示任务或流程的执行时间段。
 
-```markdown
 ```mermaid
 gantt
     title 数据导入流程
@@ -402,14 +399,13 @@ gantt
     推送数据至 GCS       :active,  des4, 2024-11-05, 1d
     section Scheduler
     设置 24 小时任务间隔  :         des5, 2024-11-06, 1d
-````
+```
 
 ````
 
 ### 5. 使用 Pie Chart 展示简单的数据分布（适合展示比例或分布情况）
 Pie Chart 在 Markdown 中可以用于展示数据的比例关系，例如错误类型的分布。
 
-```markdown
 ```mermaid
 pie
     title 错误类型分布
@@ -417,14 +413,13 @@ pie
     "权限错误" : 25
     "数据格式错误" : 20
     "其他错误" : 10
-````
-
+```
 ````
 
 ### 6. Entity Relationship Diagram（ERD）展示数据表结构或实体关系
+
 ERD 用于显示表结构以及它们之间的关系，适合用来展示数据库的表间关系。
 
-```markdown
 ```mermaid
 erDiagram
     USER {
@@ -448,9 +443,4 @@ erDiagram
     USER ||--o{ POST : owns
     POST ||--o{ COMMENT : contains
     USER ||--o{ COMMENT : writes
-````
-
-```
-
-这些 Mermaid 图示都可以在 Markdown 中直接使用，能够满足不同的展示需求。选择合适的图表类型可以有效地提升流程和数据的可视化效果。
 ```
