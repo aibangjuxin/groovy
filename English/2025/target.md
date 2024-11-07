@@ -40,6 +40,7 @@
 
 - reference:
   - [onboarding-document.md](./onboarding-document.md)
+  - [如何通过AI识别用户在Onboarding过程中的上下文信息？](./how-using-ai-onboarding.md)
   - user tickets ==> create ==> generate a maybe Document ? Using AI generate Document 依据就是用户的feature
   - mail to User ==> include some Detail information ?
 - 文档整理和标准化
@@ -47,6 +48,9 @@
 - 用户界面优化？
 
 ### 8. Pipeline错误自动诊断系统
+
+- [如何利用BigQuery中的Pipeline日志数据识别高频错误和用户需求模式？](./how-using-bigquery-pipeline.md)
+-
 - scan report ?Continuous optimization
 - reference
   - [pipeline-bigquery.md](./pipeline-bigquery.md)
@@ -58,24 +62,23 @@
     - 反馈数据回流BigQuery
     - 动态更新知识库
 
-
 ### 9.0 2.0带来机遇和挑战
+
 - 安全 资源限制 模板错误最佳配置和最佳实践 稳定性
 
-### 10.0 检索和学习其他团队利用AI修复vialotion 
+### 10.0 检索和学习其他团队利用AI修复vialotion
+
 - using ai check cvs ?
 - give some basic resolve
 
-### 11.0 release standard step 
+### 11.0 release standard step
 
+### 12.0 dashboard appd
 
-### 12.0 dashboard appd 
 - 推广成熟的监控解决方案给 比如我们已经推广的Appd 让用户自定义 自己去获取更多的数据
 - 对于比较大的用户，团队们是否可以出解决方案？或者我们去监控起来。
-- 费用的统计和细化 
-- 汇总数据的加强 各个平台 各个平台的API number 
-
-
+- 费用的统计和细化
+- 汇总数据的加强 各个平台 各个平台的API number
 
 ### 总结
 
