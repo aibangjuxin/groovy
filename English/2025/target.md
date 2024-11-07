@@ -40,7 +40,9 @@
 
 - reference:
   - [onboarding-document.md](./onboarding-document.md)
+  - 如何利用AI和数据分析优化GKE平台Onboarding流程和CICD Pipeline
   - [如何通过AI识别用户在Onboarding过程中的上下文信息？](./how-using-ai-onboarding.md)
+  - Onboarding 文档智能化 ==> 在 Jira、GitHub 和 Pipeline 界面中集成智能聊天机器人或助手
   - user tickets ==> create ==> generate a maybe Document ? Using AI generate Document 依据就是用户的feature
   - mail to User ==> include some Detail information ?
 - 文档整理和标准化
