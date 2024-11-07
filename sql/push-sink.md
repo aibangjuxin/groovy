@@ -344,8 +344,6 @@ sequenceDiagram
     Scheduler ->> Scheduler: 每 24 小时运行
 ```
 
-````
-
 ### 3. 使用 Class Diagram 展示数据结构或类之间的关系
 
 Class Diagram 适合展示系统中不同数据结构或类的关系，例如显示一个复杂的对象模型。
@@ -404,6 +402,7 @@ gantt
 ````
 
 ### 5. 使用 Pie Chart 展示简单的数据分布（适合展示比例或分布情况）
+
 Pie Chart 在 Markdown 中可以用于展示数据的比例关系，例如错误类型的分布。
 
 ```mermaid
@@ -414,6 +413,7 @@ pie
     "数据格式错误" : 20
     "其他错误" : 10
 ```
+
 ````
 
 ### 6. Entity Relationship Diagram（ERD）展示数据表结构或实体关系
@@ -444,3 +444,4 @@ erDiagram
     POST ||--o{ COMMENT : contains
     USER ||--o{ COMMENT : writes
 ```
+````
