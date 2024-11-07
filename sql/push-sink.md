@@ -323,9 +323,8 @@ flowchart TD
     F --> G[流程结束]
 ```
 
-````
-
 ### 2. 使用 Sequence Diagram 展示调用或交互过程
+
 Sequence Diagram 对于展示时间顺序上的交互非常有效。适合展示系统中不同组件间的调用关系。
 
 ```mermaid
@@ -444,4 +443,7 @@ erDiagram
     POST ||--o{ COMMENT : contains
     USER ||--o{ COMMENT : writes
 ```
-````
+
+```
+
+```
