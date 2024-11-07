@@ -1,4 +1,3 @@
-
 1. **定义表结构模式**
 
 脚本首先定义了多个BigQuery表的模式,包括`gke_pods_table_schema`、`firestore_apis_table_schema`等。这些表结构将在后面加载数据到BigQuery时使用。
@@ -18,6 +17,7 @@
 5. **创建请求以推送数据**
 
 `create_request_to_push`函数是该脚本的核心部分。它执行以下操作:
+
 - 从GCS加载GKE Pod数据到BigQuery的`gke_pods`表中。
 - 对于每个Firestore项目ID,遍历指定的集合列表,将其数据导出到GCS存储桶。
 - 对于每个集合,从GCS存储桶加载数据到对应的BigQuery表中。
@@ -32,35 +32,33 @@
 
 总的来说,这个脚本的主要目的是定期从GKE集群和Firestore数据库中提取监控和元数据,并将其加载到BigQuery中,以支持数据分析和可视化。它利用GCS作为中间存储,以实现Firestore到BigQuery的数据迁移。该脚本涵盖了多个项目和环境,为数据管道提供了自动化流程。
 
-
 Defining Table Structure Schemas
- The script begins by defining several BigQuery table schemas, including gke_pods_table_schema, firestore_apis_table_schema, and others. These table structures will be used later when loading data into BigQuery.
+The script begins by defining several BigQuery table schemas, including gke_pods_table_schema, firestore_apis_table_schema, and others. These table structures will be used later when loading data into BigQuery.
 
- Construct Firestore document dictionary
- The construct_doc_dict function constructs a Python dictionary representing the key-value pair data for the document based on the Firestore collection name and the document object. This data will be used for subsequent uploads to GCS and loads into BigQuery.
+Construct Firestore document dictionary
+The construct_doc_dict function constructs a Python dictionary representing the key-value pair data for the document based on the Firestore collection name and the document object. This data will be used for subsequent uploads to GCS and loads into BigQuery.
 
- Export Firestore data to GCS
- The sink_firestore_collection_to_gcs function connects to the specified Firestore project, reads all the documents in the given collection, builds a dictionary representation of them, and uploads this data as newline-delimited JSON to a Google Cloud Storage (GCS ) in the storage bucket.
+Export Firestore data to GCS
+The sink_firestore_collection_to_gcs function connects to the specified Firestore project, reads all the documents in the given collection, builds a dictionary representation of them, and uploads this data as newline-delimited JSON to a Google Cloud Storage (GCS ) in the storage bucket.
 
- Loading data from GCS to BigQuery
- The load_table_uri_gcs function uses the BigQuery client to load data from a GCS URI into a BigQuery table. It receives the table ID, URI and table structure as input parameters.
+Loading data from GCS to BigQuery
+The load_table_uri_gcs function uses the BigQuery client to load data from a GCS URI into a BigQuery table. It receives the table ID, URI and table structure as input parameters.
 
- Create a request to push data
- The create_request_to_push function is the core part of the script. It performs the following operations.
+Create a request to push data
+The create_request_to_push function is the core part of the script. It performs the following operations.
 
- Load GKE Pod data from GCS into BigQuery's gke_pods table.
- For each Firestore item ID, iterates through the specified list of collections and exports their data to a GCS bucket.
- For each collection, load data from the GCS storage bucket into the corresponding BigQuery table.
- Creating a Timed Job
- The create_job function uses the schedule module to set up a loop that executes the create_request_to_push function every 1440 minutes (24 hours).
+Load GKE Pod data from GCS into BigQuery's gke_pods table.
+For each Firestore item ID, iterates through the specified list of collections and exports their data to a GCS bucket.
+For each collection, load data from the GCS storage bucket into the corresponding BigQuery table.
+Creating a Timed Job
+The create_job function uses the schedule module to set up a loop that executes the create_request_to_push function every 1440 minutes (24 hours).
 
- Environment Configuration
- The script configures the BigQuery item IDs, the list of Firestore item IDs and the list of collections to be processed according to the API_AIBANG_ENV and API_AIBANG_REGION environment variables. It is specialized for env-region, penv-region and env-region environments.
+Environment Configuration
+The script configures the BigQuery item IDs, the list of Firestore item IDs and the list of collections to be processed according to the API_AIBANG_ENV and API_AIBANG_REGION environment variables. It is specialized for env-region, penv-region and env-region environments.
 
- Overall, the main purpose of this script is to periodically extract monitoring and metadata from the GKE cluster and Firestore databases and load it into BigQuery to support data analysis and visualization. It utilizes GCS as an intermediate store for Firestore to BigQuery data migration. This script covers multiple projects and environments, providing an automated process for data pipelines.
+Overall, the main purpose of this script is to periodically extract monitoring and metadata from the GKE cluster and Firestore databases and load it into BigQuery to support data analysis and visualization. It utilizes GCS as an intermediate store for Firestore to BigQuery data migration. This script covers multiple projects and environments, providing an automated process for data pipelines.
 
-Translated with DeepL (https://www.deepl.com/app/?utm_source=ios&utm_medium=app&utm_campaign=share-translation)
-
+Translated with DeepL (<https://www.deepl.com/app/?utm_source=ios&utm_medium=app&utm_campaign=share-translation>)
 
 对于在GKE Pod中运行这个脚本并希望更灵活地控制调度时间的需求,有以下几种解决方案:
 
@@ -86,7 +84,6 @@ Cloud Scheduler是谷歌云平台提供的作业调度服务。它允许您创�
 
 总的来说,Kubernetes CronJob和Cloud Scheduler是最直接的解决方案,可以灵活调度您的作业。其他方案如Cloud Functions或自定义调度器也提供了更多定制化选项。您可以根据项目需求、团队偏好和现有基础设施选择最合适的方案。
 
-
 好的,如果您希望使用 Kubernetes CronJob 来替换当前脚本中的`schedule`模块,可以按照以下步骤进行改造:
 
 1. **创建 CronJob 资源清单文件**
@@ -106,13 +103,13 @@ spec:
         spec:
           restartPolicy: OnFailure
           containers:
-          - name: api-data-loader
-            image: gcr.io/your-project/api-data-loader:v1
-            env:
-            - name: API_AIBANG_ENV
-              value: dev  # 根据需要设置环境变量
-            - name: API_AIBANG_REGION
-              value: uk
+            - name: api-data-loader
+              image: gcr.io/your-project/api-data-loader:v1
+              env:
+                - name: API_AIBANG_ENV
+                  value: dev # 根据需要设置环境变量
+                - name: API_AIBANG_REGION
+                  value: uk
 ```
 
 在上面的示例中,我们定义了一个名为 `api-data-cronjob` 的 CronJob,它会根据 `schedule` 字段中的 Cron 表达式(`*/15 * * * *`)每 15 分钟运行一次作业。作业模板中定义了一个容器 `api-data-loader`,使用了您的容器镜像,并设置了所需的环境变量。
@@ -154,8 +151,6 @@ kubectl apply -f cronjob.yaml
 
 如果您需要更多指导或示例,请随时提出。我也可以为您提供一个更完整的示例资源清单文件。
 
-
-
 如果您想直接执行 `create_request_to_push` 函数而不是使用调度器，您可以简单地将其调用移至 `create_job` 函数中，并删除调度器的相关部分。以下是修改后的代码示例：
 
 ```python
@@ -174,8 +169,6 @@ if __name__ == "__main__":
 ```
 
 这个修改后的 `create_job` 函数将直接执行 `create_request_to_push` 函数，并且如果作为脚本直接运行时，会执行 `create_job` 函数。因此，您可以将此脚本作为 Cron 作业直接调用，而不需要使用调度器。0
-
-
 
 当然,我可以为您提供一个示例,说明如何从 Kubernetes API 获取 GKE 集群的相关信息并将其加入到您的脚本中。
 
@@ -258,3 +251,56 @@ def create_request_to_push():
 通过这些更改,您可以在 BigQuery 中查看和分析 GKE 集群的详细信息,包括集群名称、版本、节点数量、节点资源容量等。这些信息对于监控集群状态、规划资源分配和故障排查等任务非常有用。
 
 需要注意的是,获取集群信息的权限需要适当的 Kubernetes RBAC 配置。如果您在执行过程中遇到任何权限相关的问题,请确保脚本拥有足够的权限来访问 Kubernetes API。
+
+以下是基于 `sink.py` 脚本的 sequence diagram，展示了数据从 Firestore 到 GCS，再从 GCS 到 BigQuery 的流程，以及每个关键函数的调用：
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant app as Application
+    participant schedule as Schedule
+    participant firestore as Firestore
+    participant gcs as Google Cloud Storage (GCS)
+    participant bigquery as BigQuery
+
+    app->>log: Initialize logging
+    app->>schedule: schedule.every(1440).minutes.do(create_request_to_push)
+
+    loop Every 1440 minutes
+        schedule->>app: Trigger create_request_to_push
+        app->>gcs: load_table_uri_gcs (Load GKE pods data into BigQuery)
+
+        loop For each project_id in firestore_project_id_list
+            loop For each collection in collection_list
+                app->>firestore: stream collection documents
+                firestore-->>app: Return documents as doc_list
+                app->>app: Format doc_list to NDJSON
+                app->>gcs: Upload NDJSON data to bucket (firestore collection data)
+            end
+        end
+
+        loop For each collection in collection_list
+            app->>gcs: Read firestore collection data from GCS
+            alt If collection is capextchannels or backendservices
+                app->>bigquery: Load data into corresponding BigQuery table with schema
+            else
+                app->>bigquery: Load data into default Firestore collection BigQuery table with schema
+            end
+        end
+    end
+
+    note right of app: Script runs indefinitely
+    loop Check pending tasks
+        schedule->>app: schedule.run_pending()
+        app->>app: Wait time.sleep()
+    end
+```
+
+在这个流程中：
+
+- **initialize logging**：配置日志记录系统。
+- **create_request_to_push**：定时任务执行的主要方法，包含以下步骤：
+  - 加载 GKE Pods 数据到 BigQuery。
+  - 将 Firestore 文档数据从 Firestore 导出到 GCS。
+  - 从 GCS 读取 Firestore 导出的数据，并根据数据类型加载到 BigQuery。
+- **schedule**：该应用以 1440 分钟的间隔检查并执行 `create_request_to_push`，通过 `time.sleep()` 维持运行。
