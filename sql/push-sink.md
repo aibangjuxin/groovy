@@ -398,7 +398,6 @@ gantt
     设置 24 小时任务间隔  :         des5, 2024-11-06, 1d
 ```
 
-````
 
 ### 5. 使用 Pie Chart 展示简单的数据分布（适合展示比例或分布情况）
 
@@ -413,7 +412,6 @@ pie
     "其他错误" : 10
 ```
 
-````
 
 ### 6. Entity Relationship Diagram（ERD）展示数据表结构或实体关系
 
@@ -444,6 +442,3 @@ erDiagram
     USER ||--o{ COMMENT : writes
 ```
 
-```
-
-```
