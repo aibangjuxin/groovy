@@ -190,3 +190,103 @@ WebClient.builder()
 从减少错误的角度来看，如果请求不频繁、对性能要求不高，每次创建新连接是最简单的方法。但如果请求频繁，建议调整连接池策略，减少空闲连接时间，并确保有失效连接的重试机制。
 
 这样做可以在减少错误的同时维持较高的请求性能。
+
+对于您描述的这种间歇性的连接关闭问题,我建议您可以从以下几个方面进行排查:
+
+1. 检查连接池配置:
+   - 确保连接池的大小足以支持并发请求
+   - 检查最大空闲连接时间和最大生命周期是否合理
+   - 确保连接回收策略不会导致过早关闭连接
+
+```java
+@Configuration
+public class WebClientConfig {
+    @Bean
+    public WebClient webClient() {
+        HttpClient httpClient = HttpClient.create()
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 30000)
+            .responseTimeout(Duration.ofSeconds(30))
+            .pool(ConnectionProvider.builder("custom")
+                .maxConnections(200)
+                .maxIdleTime(Duration.ofSeconds(60))
+                .maxLifeTime(Duration.ofSeconds(180))
+                .pendingAcquireTimeout(Duration.ofSeconds(60))
+                .build());
+
+        return WebClient.builder()
+            .clientConnector(new ReactorClientHttpConnector(httpClient))
+            .build();
+    }
+}
+```
+
+2. 添加重试和熔断机制:
+   - 在出现PrematureCloseException时,自动重试请求
+   - 使用断路器模式保护目标服务,防止级联故障
+
+```java
+@Service
+public class ExternalServiceClient {
+    private final WebClient webClient;
+    private final CircuitBreaker circuitBreaker;
+
+    public Mono<ResponseEntity<String>> callExternalService() {
+        return circuitBreaker.run(
+            webClient.get()
+                .uri("/your-endpoint")
+                .retrieve()
+                .toEntity(String.class)
+                .retryWhen(Retry.backoff(3, Duration.ofSeconds(1))
+                    .filter(throwable -> throwable instanceof PrematureCloseException)),
+            throwable -> Mono.just(ResponseEntity
+                .status(HttpStatus.SERVICE_UNAVAILABLE)
+                .body("Service temporarily unavailable")));
+    }
+}
+```
+
+3. 监控指标和告警:
+   - 监控连接池使用情况,如连接创建/关闭/活跃数等
+   - 监控PrematureCloseException错误计数
+   - 设置合理的告警阈值,及时发现问题
+
+```java
+@Component
+public class WebClientMetrics {
+    private final MeterRegistry registry;
+
+    public void recordWebClientMetrics(String endpoint, Timer.Sample sample, Throwable throwable) {
+        Tags tags = Tags.of(
+            Tag.of("endpoint", endpoint),
+            Tag.of("error", throwable != null ? throwable.getClass().getSimpleName() : "none")
+        );
+        
+        sample.stop(registry.timer("webclient.request", tags));
+        
+        if (throwable instanceof PrematureCloseException) {
+            registry.counter("webclient.premature.close", tags).increment();
+        }
+    }
+}
+```
+
+4. 排查网络与目标服务问题:
+   - 检查网络连通性,如DNS解析、SSL证书、防火墙等
+   - 测试目标服务的响应时间,确保在预期范围内
+   - 检查目标服务的健康状况和错误率
+
+```bash
+# 检查网络连通性
+kubectl exec -it <pod-name> -- ping <target-domain>
+kubectl exec -it <pod-name> -- openssl s_client -connect <target-domain>:443
+
+# 检查目标服务响应
+kubectl exec -it <pod-name> -- curl -w "\ntime_total: %{time_total}s\n" -o /dev/null -s https://<target-domain>
+```
+
+5. 优化配置并监控:
+   - 根据上述排查结果,调整连接池、超时时间等配置
+   - 持续监控指标,确保修复方案有效
+   - 设置合理的告警策略,及时发现新的问题
+
+请问这个排查思路是否清晰?还有哪些需要补充的地方吗?​​​​​​​​​​​​​​​​
