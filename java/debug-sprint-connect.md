@@ -133,3 +133,60 @@ graph TD;
 	•	在整个调用链中，使用分布式追踪工具（如OpenTracing或Jaeger）来追踪请求流和故障发生位置，提升故障定位的效率。
 
 以上这些措施将有助于在Java应用的WebClient与外部API集成时更好地监控和处理连接错误。
+
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/health
+aibang-int-brwm.hsbcbgtdgmds-ecp-280-cds-search-gry-hk-hbap-cert-internal-proxy/lient.builder()
+        .clientConnector(new ReactorClientHttpConnector(
+            HttpClient.create().option(ChannelOption.SO_KEEPALIVE, false)
+        ))
+        .build();
+
+2. 配置连接池清理和连接重试
+
+	•	空闲连接回收：可以在连接池配置中设置连接空闲时间，例如 maxIdleTime，让超时的连接自动从池中移除。
+	•	连接重试机制：确保客户端在遇到连接问题时有重试机制。比如在 WebClient 中可以通过 retry 操作符进行重试。
+
+示例代码：
+
+WebClient.builder()
+    .clientConnector(new ReactorClientHttpConnector(HttpClient.create()
+        .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5000)
+        .doOnConnected(conn ->
+            conn.addHandlerLast(new ReadTimeoutHandler(10))
+                .addHandlerLast(new WriteTimeoutHandler(10)))
+        .connectionProvider(ConnectionProvider.builder("custom")
+            .maxConnections(100) // 最大连接数
+            .maxIdleTime(Duration.ofSeconds(30)) // 最大空闲时间
+            .maxLifeTime(Duration.ofMinutes(5)) // 最大存活时间
+            .build())
+    ))
+    .build();
+
+3. 增加连接有效性检查
+
+	•	在使用连接前进行有效性检测，比如发送一个探测请求以确认连接仍然有效（类似于“心跳”机制），但这会增加请求前的检查开销。
+	•	某些库允许配置 keep-alive 机制，确保连接的健康状态。例如 OkHttp 中可以配置连接健康检查。
+
+4. 降低连接池容量
+
+	•	将连接池大小设置得较小，减少空闲连接数量，强制更多的请求使用新建连接。这虽然也有性能损耗，但可能对可靠性有帮助。
+
+5. 捕获和处理特定的连接错误
+
+	•	捕获 IOException 或其他连接失效异常，进行重试或释放连接。
+
+适用场景分析
+
+	•	不频繁请求：如果请求量不高，可以考虑每次创建新连接，这样能完全避免连接失效问题。
+	•	高并发高请求量：如果是高并发高请求场景，建议在保持连接池的前提下优化连接池设置，如缩短空闲时间、增加重试逻辑等。
+
+结论
+
+从减少错误的角度来看，如果请求不频繁、对性能要求不高，每次创建新连接是最简单的方法。但如果请求频繁，建议调整连接池策略，减少空闲连接时间，并确保有失效连接的重试机制。
+
+这样做可以在减少错误的同时维持较高的请求性能。
