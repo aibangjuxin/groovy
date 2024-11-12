@@ -29,11 +29,11 @@ graph TD
 
 |组件	|作用|
 | --- | --- |
-Harbor	镜像仓库管理，负责存储各版本镜像、扫描漏洞、管理镜像标签等。
-Airflow	负责调度部署工作流，可以自定义 DAG 以实现多环境自动化部署。
-CI/CD Pipeline	使用 GitLab CI、Jenkins 等工具，构建并推送镜像到 Harbor。
-Kubernetes 集群	多环境管理，支持开发、测试、预生产和生产环境的部署。
-监控与通知	结合 Prometheus + Grafana、Slack 或邮件通知发布状态。
+|Harbor|	镜像仓库管理，负责存储各版本镜像、扫描漏洞、管理镜像标签等。
+|Airflow|	负责调度部署工作流，可以自定义 DAG 以实现多环境自动化部署。
+|CI/CD |Pipeline	使用 GitLab CI、Jenkins 等工具，构建并推送镜像到 Harbor。
+|Kubernetes 集群|	多环境管理，支持开发、测试、预生产和生产环境的部署。
+|监控与通知|	结合 Prometheus + Grafana、Slack 或邮件通知发布状态。
 
 4. 可行性与优缺点
 
