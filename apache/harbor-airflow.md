@@ -9,7 +9,7 @@
 2. 自动化Release部署流程
 
 以下为基于 Harbor + Airflow 的自动化 Release 方案流程图：
-
+```mermaid
 graph TD
     A[开发者提交代码] --> B[CI/CD Pipeline 构建镜像]
     B --> C[镜像推送至 Harbor]
@@ -24,7 +24,7 @@ graph TD
     H --> J
     I --> J
     J --> K[通知部署结果 & 更新状态]
-
+```
 3. 架构组件
 
 组件	作用
