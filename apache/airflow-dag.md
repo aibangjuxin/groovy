@@ -72,3 +72,47 @@ graph TD
 4. Airflow DAG 的运行流程
 
 Airflow DAG 会根据任务依赖关系依次调度和执行各任务，确保每个任务都在其依赖的任务完成后再运行。例如，上述 DAG 会先执行 extract_task，然后 clean_task，最后执行 load_task。这样可以确保数据流处理按顺序完成。
+
+
+在 Markdown 中更好地展示 DAG 图表，可以通过以下几种方式来优化图形效果，使其更符合 DAG 特性：
+
+1. Mermaid with Subgraphs
+
+通过使用 Mermaid 的子图（subgraph） 功能，可以进一步分隔 DAG 的各阶段，增加层次感，提升可读性。Mermaid 支持 DAG 图，但需要明确节点间的方向，并避免环形关系。
+```mermaid
+graph TD
+    subgraph ETL Process
+        A[Extract Task] --> B[Clean Task] --> C[Load Task]
+    end
+```
+2. 使用样式和颜色提升可读性
+
+为每个任务添加颜色或样式，可以让图表更具区分度和视觉效果。示例代码如下：
+```mermaid
+graph TD
+    style A fill:#f9f,stroke:#333,stroke-width:2px
+    style B fill:#bbf,stroke:#333,stroke-width:2px
+    style C fill:#8fb,stroke:#333,stroke-width:2px
+    
+    A[Extract Task] --> B[Clean Task]
+    B --> C[Load Task]
+```
+3. 加入标注说明
+
+如果每个任务执行的内容不一，可以在图中加入注释（例如任务名称或关键参数），以增强图表的语义性：
+```mermaid
+graph TD
+    A[Extract Task: 数据提取] --> B[Clean Task: 数据清理]
+    B --> C[Load Task: 数据加载]
+    %% A 的说明
+    A:::task
+    %% B 的说明
+    B:::task
+    %% C 的说明
+    C:::task
+
+    classDef task fill:#ffd700,stroke:#000,stroke-width:2px;
+```
+4. DAG 表现方式的优劣
+
+在 Markdown 中直接使用 Mermaid 可以实现较为简单的 DAG 展示，但在复杂工作流的情况下，不够灵活。对于更复杂的 DAG，可能考虑通过 Airflow Web 界面或外部工具 导出图像，以获得更完整和易读的展示。
