@@ -13,6 +13,7 @@
 2. DAG 示例
 
 以下是一个典型的 Airflow DAG 例子，表示在每日凌晨定时执行以下任务：
+
 	1.	提取数据。
 
 	2.	清理数据。
@@ -53,8 +54,11 @@ load_task = PythonOperator(task_id='load', python_callable=load_data, dag=dag)
 extract_task >> clean_task >> load_task
 ```
 在上面的例子中：
+
 	•	extract_task 是第一个任务，提取数据。
+
 	•	clean_task 是第二个任务，清理数据，依赖于 extract_task 完成。
+
 	•	load_task 是第三个任务，加载数据，依赖于 clean_task 完成。
 
 3. 示例图示
