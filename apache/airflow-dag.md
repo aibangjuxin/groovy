@@ -2,16 +2,21 @@
 
 1. Airflow DAG 的核心概念
 
-	•	DAG：有向无环图，定义了一组任务以及任务之间的依赖关系。
-	•	Task：DAG 中的基本操作单元，可以是一个 Python 函数、Bash 脚本、SQL 查询等。
-	•	Operator：定义任务执行的操作，例如 PythonOperator、BashOperator 等。
-	•	Dependencies（依赖关系）：任务之间的依赖关系，即 Task A 需要在 Task B 之前完成，Airflow 会按照依赖顺序调度任务执行。
+•	DAG：有向无环图，定义了一组任务以及任务之间的依赖关系。
+
+•	Task：DAG 中的基本操作单元，可以是一个 Python 函数、Bash 脚本、SQL 查询等。
+
+•	Operator：定义任务执行的操作，例如 PythonOperator、BashOperator 等。
+
+•	Dependencies（依赖关系）：任务之间的依赖关系，即 Task A 需要在 Task B 之前完成，Airflow 会按照依赖顺序调度任务执行。
 
 2. DAG 示例
 
 以下是一个典型的 Airflow DAG 例子，表示在每日凌晨定时执行以下任务：
 	1.	提取数据。
+
 	2.	清理数据。
+
 	3.	加载数据。
 
 这些任务有依赖关系，需要按顺序执行。
