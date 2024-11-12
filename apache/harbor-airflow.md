@@ -27,7 +27,8 @@ graph TD
 ```
 3. 架构组件
 
-组件	作用
+|组件	|作用|
+| --- | --- |
 Harbor	镜像仓库管理，负责存储各版本镜像、扫描漏洞、管理镜像标签等。
 Airflow	负责调度部署工作流，可以自定义 DAG 以实现多环境自动化部署。
 CI/CD Pipeline	使用 GitLab CI、Jenkins 等工具，构建并推送镜像到 Harbor。
