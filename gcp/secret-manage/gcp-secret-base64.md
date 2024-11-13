@@ -25,14 +25,14 @@ echo -n "user:password" | openssl enc -aes-256-cbc -a -salt -pass pass:YOUR_SECR
 为了提升安全性和简化密钥管理流程，可以使用 GCP 的 Cloud Key Management Service (KMS) 来加密数据。在创建 Secret 之前，先使用 KMS 对数据加密，并将加密后的数据存入 Secret Manager。
 	•	步骤示例：
 	1.	使用 KMS 加密数据：
-
+```bash
 echo -n "user:password" | gcloud kms encrypt \
   --plaintext-file=- \
   --ciphertext-file=- \
   --location=global \
   --keyring=YOUR_KEYRING \
   --key=YOUR_KEY
-
+```
 
 	2.	将加密后的密文存入 Secret Manager：
 
@@ -40,20 +40,20 @@ echo "ENCRYPTED_DATA" | gcloud secrets create YOUR_SECRET_NAME --data-file=-
 
 
 	3.	应用程序从 Secret Manager 获取密文后，可以使用 KMS 解密来还原数据：
-
+```bash
 gcloud kms decrypt \
   --ciphertext-file=- \
   --plaintext-file=- \
   --location=global \
   --keyring=YOUR_KEYRING \
   --key=YOUR_KEY
-
+```
 
 
 4. 流程图示例
 
 以下是加密和存储 Secret 的流程图示例：
-
+```mermaid
 graph TD
     A[明文数据] --> B[使用 KMS 加密]
     B --> C[密文数据]
@@ -61,7 +61,7 @@ graph TD
     D --> E[从 Secret Manager 获取密文]
     E --> F[使用 KMS 解密]
     F --> G[明文数据]
-
+```
 总结
 
 在创建 Secret 前对数据进行加密，特别是通过 KMS，可以显著提升安全性。KMS 加密确保即便 Secret 泄露，数据也无法直接被解密，只有拥有解密权限的应用程序或用户才能恢复明文。这种方法比简单的 Base64 编码更为安全。
