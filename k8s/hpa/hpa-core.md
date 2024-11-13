@@ -288,3 +288,67 @@ kubectl describe deployment <your-deployment-name> -n <namespace>
 总结
 
 要彻底避免 VPA 对 Deployment 的干预，首先确保集群中没有安装 VPA 相关的组件和 CRD，其次手动删除并重新创建 Deployment，确保 managedFields 清理干净。
+
+
+如果你的部署是通过 PMU（假设是指 Package Manager Utility 或类似的管理工具）或 Helm 进行的，那么这些工具的确可能会对彻底清除 vpa-recommender 的影响产生一些影响。以下是如何处理的详细说明：
+
+1. 确认 Helm 或 PMU Chart 中是否包含 VPA 配置
+
+检查你的 Helm Chart 或 PMU 包配置，看看是否有与 VPA 相关的资源定义，特别是在 values.yaml 或模板文件（通常在 templates 目录下）中。可能会包含以下资源：
+	•	VerticalPodAutoscaler 资源定义
+	•	vpa-recommender、vpa-updater、vpa-admission-controller 等组件的 Deployment
+	•	任何其他与 VPA 配置相关的设置
+
+如果发现了这些配置，可以通过注释掉或删除相关的 VPA 定义，重新应用 Chart 或包。
+
+2. 更新 Helm 或 PMU Chart 配置文件
+
+为了彻底避免 VPA 的干预，建议在 values.yaml 中明确禁用与 VPA 相关的选项。例如，如果 Chart 中存在如下的 VPA 启用选项：
+
+vpa:
+  enabled: true
+
+可以将其更改为：
+
+vpa:
+  enabled: false
+
+修改后，重新应用 Helm Chart：
+
+helm upgrade <release-name> <chart-path> -f values.yaml
+
+这样可以确保 Deployment 的配置不会再被 VPA 影响到。
+
+3. 如果是 PMU 或其他工具，重新发布资源
+
+如果是通过 PMU 发布的资源，建议同样检查配置文件并移除任何与 VPA 相关的内容，然后重新发布资源。
+
+4. Helm 管理的资源中如何清理 managedFields
+
+如果你的资源是通过 Helm 管理的，Deployment 中的 managedFields 清理工作会稍有不同。因为 Helm 会记录资源的状态，如果直接删除 Helm 管理的 Deployment 并重新应用，可能会引起 Helm 状态的失同步（Helm 认为资源被外部更改）。
+
+你可以通过以下方式处理：
+	1.	导出 Deployment 配置并清理 managedFields：
+使用以下命令导出 Deployment 的配置文件：
+
+kubectl get deployment <your-deployment-name> -n <namespace> -o yaml > deployment.yaml
+
+
+	2.	删除 managedFields 并暂时移除 Helm 注释：
+删除 YAML 文件中的 managedFields 部分，并暂时移除带有 helm.sh/release 的注释，以避免 Helm 直接覆盖修改。
+	3.	手动应用修改后的 Deployment：
+直接应用修改后的 Deployment 配置：
+
+kubectl apply -f deployment.yaml
+
+
+	4.	通过 Helm 升级同步状态：
+之后，再通过 helm upgrade 重新应用 Chart 文件，使 Helm 管理的状态与集群内的实际状态同步。可以确保 Chart 中 values.yaml 文件的配置不再包含任何 VPA 相关配置。
+
+5. 最终确认
+
+在应用修改后的 Helm Chart 或 PMU 配置后，可以再次检查 Deployment 的 managedFields，确保没有 manager: vpa-recommender 相关的内容。
+
+总结
+
+使用 Helm 或 PMU 进行部署时，可能需要额外小心确保配置文件中没有 VPA 相关定义，并在清理 managedFields 后重新同步 Helm 状态。通过上述步骤，应该可以确保 Deployment 的扩展行为不再受到 VPA 的影响。
