@@ -194,7 +194,9 @@ HPA 与 VPA 的关系
 kubectl apply --server-side 命令本身不会直接触发 VPA 的 recommender，也不会直接引发 VPA 的相关行为。server-side 模式只是将资源变更的合并交给 Kubernetes API Server 来处理。
 
 但在以下情况下可能间接影响 HPA/VPA 的行为：
+
 	1.	配置冲突：server-side 模式可能会优先保留现有服务端配置，例如 VPA 的配置。如果 HPA 和 VPA 的配置在服务端产生冲突，server-side 模式会保留服务端的优先配置，这可能导致一些配置项在 HPA 中被忽略。
+
 	2.	强制覆盖可能重置字段：如果使用 --force-conflicts 参数强制覆盖配置，有可能覆盖一些 HPA 相关字段，使 VPA 的配置优先级更高，这会导致 via-recommender 的字段被保留。
 
 排查和验证步骤
