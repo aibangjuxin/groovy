@@ -122,6 +122,54 @@ Citations:
 4. **避免强制覆盖**  
    如果不确定配置是否被正确应用，建议在测试环境中使用标准的 `kubectl apply -f test.yaml`（不加 `--server-side` 和 `--force-conflicts` 参数），以确保配置完全来自客户端 YAML 文件，并避免意外的覆盖。
 
+根据你提供的 YAML 信息，格式化后的内容如下：
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  managedFields:
+    - apiVersion: apps/v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:spec:
+          f:replicas: 0
+      manager: vpa-recommender
+      operation: Update
+      subresource: scale
+```
+这个 YAML 文件片段显示 vpa-recommender 作为 manager，并且进行了 Update 操作，影响了 replicas 的配置。这表明 VPA 的 recommender 组件对该 Deployment 对象进行了管理和调整。
+
+从你提供的 Deployment YAML 片段来看，metadata.managedFields 中确实包含了一个 manager: vpa-recommender 的记录，并且 operation 是 Update，subresource 是 scale。这表明你的 Deployment 对象确实被一个名为 vpa-recommender 的组件所管理或影响，这通常表明你的环境中启用了 Vertical Pod Autoscaler (VPA)。
+
+在这种情况下，VPA 可能会影响 Pod 的资源配置和副本数，与 Horizontal Pod Autoscaler (HPA) 之间产生冲突。VPA 的 recommender 组件会动态调整 Pod 的资源请求（CPU 和内存）以优化资源使用，这可能会影响 HPA 的扩容逻辑，使得在 HPA 设定的阈值未达标时也触发扩容或缩容。
+
+进一步确认和解决方法
+
+	1.	确认 VPA 配置
+运行以下命令，确认是否存在针对该 Deployment 的 VPA 资源：
+
+kubectl get vpa -A
+
+查看是否有 VPA 资源与该 Deployment 绑定。可以通过 kubectl describe vpa <vpa-name> 查看 VPA 的具体配置。
+
+	2.	检查 VPA 和 HPA 的兼容性
+一般情况下，VPA 和 HPA 不能同时控制同一 Deployment 的扩容行为。如果你确实需要动态扩容，建议选择 HPA 而不是 VPA，或者将 VPA 的 UpdateMode 设置为 Off，以避免自动扩容调整。
+	3.	移除或禁用 VPA
+如果确认不需要 VPA，可以考虑删除 VPA 资源，或者修改其 UpdateMode 设置以避免影响 HPA。例如，将 UpdateMode 设为 Off，以禁用 VPA 的自动扩容：
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: <vpa-name>
+  namespace: <namespace>
+spec:
+  updatePolicy:
+    updateMode: "Off"
+```
+
+	4.	检查 kubectl apply --server-side 命令的影响
+使用 kubectl apply --server-side --force-conflicts -f test.yaml 可能会覆盖现有资源的配置。由于 VPA 资源是一个系统组件，它可能会在应用时对 Deployment 进行管理，生成 managedFields 的记录。为了避免 VPA 自动管理 Deployment，可以考虑删除 VPA 资源，或使用 kubectl apply --server-side 前先确认是否有冲突。
+
 ### 建议
 
 如果发现 HPA 配置项在 `server-side` 模式下被部分忽略，建议：
@@ -155,22 +203,24 @@ kubectl apply --server-side 命令本身不会直接触发 VPA 的 recommender�
 	1.	查看 VPA 配置
 查看是否为 Deployment 启用了 VPA，以及 recommender 是否有建议的配置：
 
+```bash
 kubectl get vpa -n <namespace> <your-deployment-name> -o yaml
-
+```
 
 	2.	检查 Deployment 和 HPA 配置
 检查 HPA 的配置是否符合预期，特别是 metrics 部分是否被 VPA 或其他管理器修改：
-
+```
 kubectl get hpa <your-hpa-name> -n <namespace> -o yaml
-
+```
 
 	3.	禁用或隔离测试
 如果确认 HPA 和 VPA 的配置有冲突，建议在测试环境中仅启用 HPA 或 VPA 进行测试，以观察扩容行为是否符合预期。
 	4.	事件日志和扩容触发记录
 查看 HPA 和 VPA 的事件日志，以确认是否有因冲突引起的调整记录：
-
+```
 kubectl describe hpa <your-hpa-name> -n <namespace>
 kubectl describe vpa <your-deployment-name> -n <namespace>
+```
 
 
 
