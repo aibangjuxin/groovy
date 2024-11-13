@@ -232,3 +232,59 @@ kubectl describe vpa <your-deployment-name> -n <namespace>
 	•	kubectl apply --server-side 本身不会触发 via-recommender 的行为，但可能因配置合并导致 VPA 配置生效，间接影响 HPA 的扩容逻辑。
 
 因此，建议在排查时先确认 HPA 和 VPA 是否有配置冲突，特别是确保 HPA 的目标资源配置（如 desiredMetricValue）未被 VPA 动态调整。
+
+
+如果你的环境中并没有显式创建 VPA（Vertical Pod Autoscaler）资源，但仍然在 Deployment 的 managedFields 中看到 vpa-recommender 作为 manager，这可能是因为：
+	1.	VPA 在集群中安装：虽然没有为具体的 Deployment 创建 VPA，但 VPA 的 recommender 可能在集群中全局存在，并自动检测并干预某些资源的管理。
+	2.	旧配置或历史记录：可能之前有过 VPA 资源管理这个 Deployment，即使删除了 VPA 配置，managedFields 中也可能会保留这个记录。
+
+为彻底避免 VPA 对 Deployment 的影响，你可以尝试以下方法：
+
+1. 确保集群中没有安装 VPA 组件
+
+可以通过以下命令检查是否安装了 VPA 组件：
+
+kubectl get deployments -n kube-system | grep vpa
+
+如果输出中看到 VPA 相关的组件（如 vpa-recommender、vpa-updater），说明集群安装了 VPA。如果不需要 VPA，可以通过 Helm 或其他方式删除 VPA 组件。
+
+2. 删除特定的 VPA CRD（Custom Resource Definitions）
+
+即使没有创建具体的 VPA 资源，集群中 VPA 的 CRD 可能会默认干预。如果你确定不需要 VPA，删除相关 CRD：
+
+kubectl delete crd verticalpodautoscalers.autoscaling.k8s.io
+kubectl delete crd verticalpodautoscalercheckpoints.autoscaling.k8s.io
+
+删除 CRD 后，所有 VPA 相关的自定义资源都将失效，从而避免其对现有资源的干预。
+
+3. 修改 Deployment 并清理 managedFields
+
+如果希望彻底清理 managedFields 中的 vpa-recommender 记录，你可以重新创建 Deployment：
+	1.	导出当前 Deployment 配置为 YAML 文件，并手动移除 managedFields 中的 vpa-recommender 信息。
+
+kubectl get deployment <your-deployment-name> -n <namespace> -o yaml > deployment.yaml
+
+
+	2.	编辑 deployment.yaml 文件，删除 managedFields 部分（或仅删除与 vpa-recommender 相关的记录）。
+	3.	删除当前 Deployment：
+
+kubectl delete deployment <your-deployment-name> -n <namespace>
+
+
+	4.	重新应用清理后的 YAML 文件：
+
+kubectl apply -f deployment.yaml
+
+
+
+4. 检查其他潜在的管理器
+
+在某些情况下，即便删除 VPA 相关的组件，可能还有其他资源或者配置项会触发 vpa-recommender 的出现。你可以使用以下命令进一步检查是否存在对该 Deployment 的管理记录：
+
+kubectl describe deployment <your-deployment-name> -n <namespace>
+
+如果 manager 字段中再次出现 vpa-recommender 或其他意外的 manager，可能需要进一步分析集群中其他可能的自动化管理工具。
+
+总结
+
+要彻底避免 VPA 对 Deployment 的干预，首先确保集群中没有安装 VPA 相关的组件和 CRD，其次手动删除并重新创建 Deployment，确保 managedFields 清理干净。
