@@ -32,3 +32,4 @@ View the network policy hit logs by querying the Stackdriver Logging API using t
 gcloud logging read "resource.type=k8s_container AND resource.labels.cluster_name=<cluster_name> AND resource.labels.namespace_name=<namespace_name> AND resource.labels.pod_name=<pod_name> AND jsonPayload.event.reason=NetworkPolicyMatch" --limit=<limit_value>
 This will return a list of logs indicating which network policies matched and affected the pod. You can
 ```
+- Edit the branch name to knowledge
