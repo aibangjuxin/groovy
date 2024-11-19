@@ -480,3 +480,62 @@ graph TD;
 - 如果您的系统使用了连接池，`idle` 状态连接占多数是正常的。
 - 需要警惕的是长时间未被清理的 `idle` 连接，因为它们会浪费数据库资源并可能导致连接不足。
 - 定期监控连接状态、优化连接池配置、并设置合理的空闲超时时间，可以有效防止问题发生。
+
+### **How to Optimize Excessive `idle` Connections**
+
+1. **Application-Side Optimization**:
+   - Ensure database connections are properly closed:
+     - In Java:
+       ```java
+       try (Connection connection = dataSource.getConnection()) {
+           // Execute queries
+       } // Connection is automatically closed
+       ```
+     - In Python:
+       ```python
+       with psycopg2.connect(conn_str) as conn:
+           with conn.cursor() as cursor:
+               # Execute queries
+       ```
+   - Optimize connection pool configuration:
+     - Set an appropriate connection pool size:
+       - Small instances: 5-10
+       - Medium instances: 20-50
+     - Configure idle connection timeout to minimize unused connections:
+       - Example (HikariCP):
+         ```java
+         config.setIdleTimeout(30000); // 30 seconds idle timeout
+         config.setMaxLifetime(1800000); // Max lifetime 30 minutes
+         ```
+
+2. **Database-Side Optimization**:
+   - Limit the lifespan of `idle` connections:
+     ```sql
+     ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';
+     ```
+     This forces transactions idle for more than 5 minutes to be terminated.
+
+3. **Use a Connection Pool Proxy**:
+   - Deploy tools like **PgBouncer** to reduce the number of direct connections to the database.
+   - Configure `pool_mode` to `transaction` mode to ensure efficient connection reuse.
+
+4. **Monitor and Clean Up Excessive `idle` Connections**:
+   - Create a scheduled task to terminate connections that have been idle for an extended period:
+     ```sql
+     SELECT pg_terminate_backend(pid) 
+     FROM pg_stat_activity 
+     WHERE state = 'idle' AND now() - state_change > interval '10 minutes';
+     ``` 
+
+--- 
+
+By implementing these measures, you can effectively manage `idle` connections, prevent resource waste, and ensure that your database operates efficiently.
+
+
+# A 
+- I filtered the logs of accessing this PostgreSQL in the recent 30 days. The number of occurrences of the corresponding API is referred to as shown in the chart. It seems that the number of requests is not particularly large, and the data for each day is relatively even.  
+- So I initially suspect that the Pod running in our environment has no direct relationship.  
+- Besides, it seems that the time point you provided is the log of October 11th? Currently, the corresponding meters for this part of the log cannot be seen in the corresponding project.
+- The following is the situation of the most recent Peak connections that I filtered, which was close to 1500.  
+- To sum up, it seems that the high value of this number is caused by the idle data?
+Also, the following possible optimization suggestions are for reference only.  
