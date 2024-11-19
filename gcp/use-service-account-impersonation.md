@@ -386,3 +386,101 @@ create_secret_version(project_id, secret_id, secret_value)
 3. 模拟凭据有效期默认为1小时，可以根据需要调整
 
 您需要我解释任何具体步骤吗？或者您有其他特定的使用场景需求？
+
+
+是的,我来帮您梳理这个流程,并提供 gcloud 命令行的实现方式。
+
+
+
+```mermaid
+flowchart TD
+    subgraph "第1步: 创建服务账户"
+        A[创建服务账户A] --> B[创建服务账户B]
+    end
+    
+    subgraph "第2步: 配置账户权限"
+        B --> C[给账户B授予 Secret Manager 管理员角色]
+        B --> D[给账户A授予 Secret Manager 访问者角色]
+    end
+    
+    subgraph "第3步: 配置账户模拟权限"
+        D --> E[给账户A授予模拟B的权限]
+    end
+    
+    subgraph "第4步: 使用模拟权限"
+        E --> F[使用gcloud命令进行模拟]
+        E --> G[使用SDK代码进行模拟]
+    end
+
+```
+
+下面是使用 gcloud 命令行实现整个流程的具体步骤：
+
+1. 创建服务账户
+```bash
+# 创建服务账户A
+gcloud iam service-accounts create sa-a \
+    --description="Service Account A" \
+    --display-name="Service Account A"
+
+# 创建服务账户B
+gcloud iam service-accounts create sa-b \
+    --description="Service Account B" \
+    --display-name="Service Account B"
+```
+
+2. 配置账户权限
+```bash
+# 给账户B授予Secret Manager管理员权限
+gcloud projects add-iam-policy-binding PROJECT_ID \
+    --member="serviceAccount:sa-b@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/secretmanager.secretVersionManager"
+
+# 给账户A授予Secret Manager访问者权限
+gcloud projects add-iam-policy-binding PROJECT_ID \
+    --member="serviceAccount:sa-a@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/secretmanager.secretAccessor"
+```
+
+3. 配置账户模拟权限
+```bash
+# 允许账户A模拟账户B
+gcloud iam service-accounts add-iam-policy-binding \
+    sa-b@PROJECT_ID.iam.gserviceaccount.com \
+    --member="serviceAccount:sa-a@PROJECT_ID.iam.gserviceaccount.com" \
+    --role="roles/iam.serviceAccountTokenCreator"
+```
+
+4. 使用模拟权限（有两种方式）
+
+方式1: 直接使用 gcloud 命令行模拟
+```bash
+# 使用账户A模拟账户B执行命令
+gcloud auth activate-service-account sa-a@PROJECT_ID.iam.gserviceaccount.com \
+    --key-file=sa-a-key.json
+
+gcloud secrets versions add YOUR_SECRET_NAME \
+    --impersonate-service-account=sa-b@PROJECT_ID.iam.gserviceaccount.com \
+    --data-file=/path/to/file
+```
+
+方式2: 使用临时凭证
+```bash
+# 获取模拟账户B的临时凭证
+gcloud auth print-access-token \
+    --impersonate-service-account=sa-b@PROJECT_ID.iam.gserviceaccount.com
+```
+
+注意事项：
+1. 所有命令中的 PROJECT_ID 需要替换为您的实际项目 ID
+2. 服务账户名称 (sa-a, sa-b) 可以根据您的需求修改
+3. 确保执行命令的用户有足够的权限
+4. 建议在测试环境先验证权限配置是否正确
+
+使用 gcloud 命令行和使用代码实现的主要区别是：
+- 命令行更适合临时或者一次性的操作
+- 代码实现更适合程序化、自动化的场景
+- 命令行操作更直观，便于调试和验证
+- 代码实现更灵活，可以集成到应用程序中
+
+您想了解哪个部分的更多细节，或者有特定的使用场景需要讨论吗？
