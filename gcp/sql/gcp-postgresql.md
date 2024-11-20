@@ -539,3 +539,125 @@ By implementing these measures, you can effectively manage `idle` connections, p
 - The following is the situation of the most recent Peak connections that I filtered, which was close to 1500.  
 - To sum up, it seems that the high value of this number is caused by the idle data?
 Also, the following possible optimization suggestions are for reference only.  
+
+
+
+
+# JDBC
+在 PostgreSQL 中，Connection count by application name 是通过 pg_stat_activity 视图记录的，每个连接都会包含 application_name 参数，表示该连接来源的应用程序名称。以下是对该参数及其高占用的理解和排查方法：
+
+如何理解 Connection count by application name
+
+	1.	来源：
+	•	每个连接请求都会携带一个 application_name，可以由客户端库（如 PostgreSQL JDBC Driver）设置，也可以通过应用程序配置手动定义。
+	•	默认情况下，PostgreSQL JDBC Driver 会在连接时将其 application_name 设置为 "PostgreSQL JDBC Driver"。
+	2.	作用：
+	•	通过 application_name，您可以区分连接来源（例如，哪些服务、工具或应用程序占用了数据库连接）。
+	•	它是诊断连接占用问题的重要指标，可帮助识别过多连接是否来自某个特定的应用或服务。
+	3.	高占用原因：
+	•	该 application_name 下连接数高，通常表明该应用程序（或其相关组件）是数据库的主要消费者。
+	•	如果连接数异常高，可能是：
+	•	连接池配置不当（如最大连接数过高或连接泄漏）。
+	•	应用程序执行了大量并发查询。
+	•	连接未正确关闭或释放，导致连接泄漏。
+
+如何排查高占用的 PostgreSQL JDBC Driver
+
+1. 检查连接状态和来源
+
+通过以下 SQL 查询，定位高占用的连接详细信息：
+
+SELECT application_name, state, COUNT(*) AS connection_count
+FROM pg_stat_activity
+GROUP BY application_name, state
+ORDER BY connection_count DESC;
+
+	•	重点字段：
+	•	application_name：确认占用连接的具体应用名称。
+	•	state：连接状态（如 active, idle）。
+	•	connection_count：每个应用的连接数量。
+
+2. 查看具体连接的客户端和用户
+
+进一步分析哪些客户端和用户占用了连接：
+
+SELECT client_addr, usename, state, COUNT(*) AS connection_count
+FROM pg_stat_activity
+WHERE application_name = 'PostgreSQL JDBC Driver'
+GROUP BY client_addr, usename, state
+ORDER BY connection_count DESC;
+
+	•	客户端 IP（client_addr）：确认具体的来源 IP。
+	•	用户名（usename）：检查是哪个数据库用户发起了这些连接。
+
+3. 分析连接池配置
+
+如果连接是由应用程序连接池管理（如 HikariCP），检查以下配置：
+	•	最大连接数（maxPoolSize）：
+	•	确保其与数据库的 max_connections 参数一致。
+	•	空闲连接超时时间（idleTimeout）：
+	•	过长的超时时间会导致大量连接长期处于 idle 状态。
+	•	连接泄漏检测：
+	•	启用泄漏检测（例如 HikariCP 的 leakDetectionThreshold 参数），可以识别未正确释放的连接。
+
+4. 查找长期未活动的连接
+
+通过以下 SQL，查找 PostgreSQL JDBC Driver 中空闲时间较长的连接：
+
+SELECT pid, usename, client_addr, state, state_change, query 
+FROM pg_stat_activity
+WHERE application_name = 'PostgreSQL JDBC Driver' AND state = 'idle'
+ORDER BY state_change ASC;
+
+	•	长时间空闲的连接：通常是未被释放的连接，可能需要手动清理。
+
+5. 监控并设置超时
+
+在 PostgreSQL 中，可以设置一些参数来管理和限制连接：
+	•	idle_in_transaction_session_timeout：限制事务空闲时间。
+
+ALTER SYSTEM SET idle_in_transaction_session_timeout = '5min';
+
+
+	•	statement_timeout：限制单个查询的执行时间。
+
+ALTER SYSTEM SET statement_timeout = '1min';
+
+
+	•	pg_terminate_backend：手动终止长时间未活动的连接。
+
+SELECT pg_terminate_backend(pid)
+FROM pg_stat_activity
+WHERE application_name = 'PostgreSQL JDBC Driver' AND state = 'idle' AND now() - state_change > interval '10 minutes';
+
+如何优化高占用的 PostgreSQL JDBC Driver
+
+	1.	优化连接池配置：
+	•	配置合理的连接池大小（避免过大）：
+	•	小型实例：5-10
+	•	中型实例：20-50
+	•	设置连接超时：
+
+config.setIdleTimeout(30000); // 30秒空闲超时
+config.setMaxLifetime(1800000); // 最大生命周期30分钟
+config.setLeakDetectionThreshold(20000); // 检测未关闭连接
+
+
+	2.	分布式连接管理：
+	•	如果多个服务或 Pod 使用相同的 PostgreSQL JDBC Driver 进行连接，确保它们的连接池总和未超过数据库 max_connections 限制。
+	3.	使用连接池代理：
+	•	使用 PgBouncer 等连接池代理工具，减少到数据库的直接连接数并提高效率。
+	4.	监控连接来源：
+	•	持续监控 pg_stat_activity 中 application_name 的连接情况，发现异常及时处理。
+	5.	优化应用程序查询：
+	•	确保查询执行效率高，避免长时间的占用。
+	•	在查询中避免使用未提交的事务，这可能导致连接一直保持活跃或 idle in transaction 状态。
+
+总结
+
+高占用的 PostgreSQL JDBC Driver 连接可能是正常的，但需要重点关注：
+	•	连接池配置是否合理
+	•	空闲连接是否被及时释放
+	•	应用程序查询是否高效
+
+通过监控连接状态、优化连接池和数据库参数设置，可以有效管理和降低高连接数的风险。
