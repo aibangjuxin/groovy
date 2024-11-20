@@ -1,9 +1,24 @@
 # Google服务账户模拟
 
+配置了服务账户模拟，
+
+使得主服务账户 service-account-a@project.iam.gserviceaccount.com
+
+能够生成目标服务账户environment-b-rt-sa@project.iam.gserviceaccount.com
+
+的访问令牌，并使用该令牌访问密钥和其他资源。
+
+这种方法可以在不直接授予主服多账户访问叔限的情况下安全的访问和管理GCP资源
+
+
 Google服务账户模拟
+
 https://cloud.google.com/docs/authentication/use-service-account-impersonation?hl=zh-cn
+
 如何使用 Google 服务账户模拟。
+
 使用 Google 服务账户模拟可以让一个服务账户（模拟账户）获取另一个 Google 账户（被模拟账户）的权限，从而代表被模拟账户执行操作
+
 给我一个具体的例子,比如一个A账户如何获取B账户的权限,从而代表B账户去执行只有B账户拥有的权限?
 
 
@@ -11,7 +26,9 @@ https://cloud.google.com/docs/authentication/use-service-account-impersonation?h
 
 
 我想实现的一个场景是
+
 B用户有 roles/secretmanager.secretVersionManager
+
 A用户有roles/secretmanager.secretAccessor 但是B用户没有roles/secretmanager.secretVersionManager
 
 
