@@ -380,7 +380,7 @@ gcloud compute health-checks describe [HEALTH_CHECK_NAME]
 
 	2.	分离 Health Check（如必要）
 	•	如果不同 Backend Service 的健康需求不同，建议为每个 Backend Service 配置独立的 Health Check。例如：
-
+```bash
 gcloud compute health-checks create http [HEALTH_CHECK_NAME_FOR_SERVICE1] \
     --port=8080 \
     --request-path="/service1/health"
@@ -388,7 +388,7 @@ gcloud compute health-checks create http [HEALTH_CHECK_NAME_FOR_SERVICE1] \
 gcloud compute health-checks create http [HEALTH_CHECK_NAME_FOR_SERVICE2] \
     --port=9090 \
     --request-path="/service2/health"
-
+```
 
 	3.	优化流量路由
 	•	为双网卡实例明确配置流量路由规则，确保每个 Backend Service 都能正确使用对应网卡和端口。
@@ -400,21 +400,21 @@ gcloud compute backend-services get-health [BACKEND_SERVICE_NAME] --global
 Mermaid 流程图示例
 
 以下是同一个 MIG 连接到两个 Backend Service 的结构示例：
-
+```mermaid
 graph TD
     A[MIG: 双网卡实例] --> B[Backend Service 1]
     A --> C[Backend Service 2]
     B --> D[Health Check 1]
     C --> D[Health Check 1]
-
+```
 如果不同 Backend Service 的健康检查需求不同，建议分离：
-
+```mermaid
 graph TD
     A[MIG: 双网卡实例] --> B[Backend Service 1]
     A --> C[Backend Service 2]
     B --> D[Health Check 1]
     C --> E[Health Check 2]
-
+```
 总结
 
 	•	使用同一个 Health Check 是正常的，但需要确保其配置适合所有关联的 Backend Service。
