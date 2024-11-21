@@ -92,3 +92,76 @@ else
     echo "Operation cancelled."
 fi
 ```
+
+
+从描述来看，你想删除远程分支（remotes/origin 下的分支），但直接使用 git branch -D 命令会报错，这是因为 git branch 默认操作的是本地分支，而 git branch -D 不能直接删除远程分支。
+
+下面是解决步骤，包括列出目标分支、删除它们，以及提交到 master 分支：
+
+1. 列出包含关键字的远程分支
+
+使用以下命令查看所有包含 181153 的远程分支：
+
+git fetch --all  # 确保同步远程分支信息
+git branch -r | grep 181153
+
+这会列出所有远程分支，例如：
+
+origin/181153-path-99
+origin/181153-path-101
+origin/181153-path-test
+
+2. 批量删除远程分支
+
+运行以下命令批量删除包含 181153 的远程分支：
+
+# 列出包含 181153 的分支并删除
+for branch in $(git branch -r | grep 181153 | sed 's|origin/||'); do
+    echo "Deleting remote branch: $branch"
+    git push origin --delete $branch
+done
+
+解释：
+	•	git branch -r: 列出所有远程分支。
+	•	grep 181153: 筛选包含关键字 181153 的分支。
+	•	sed 's|origin/||': 去掉 origin/ 前缀以获取真实分支名。
+	•	git push origin --delete <branch>: 删除远程分支。
+
+3. 切换到 master 分支并提交
+
+在完成远程分支的删除后，切换到 master 分支，合并更改并提交：
+
+# 确保在 master 分支上
+git checkout master
+
+# 拉取最新的 master 更新
+git pull origin master
+
+# 如果需要合并某些内容到 master，运行以下命令（根据实际需要调整）
+git merge <your-feature-branch>
+
+# 推送最新的 master 更新到远程
+git push origin master
+
+4. 附加：快速清理本地分支
+
+在删除远程分支后，可以清理本地无用分支（如果有）：
+
+# 列出所有本地包含 181153 的分支
+git branch | grep 181153
+
+# 删除本地分支（批量操作）
+for branch in $(git branch | grep 181153); do
+    echo "Deleting local branch: $branch"
+    git branch -D $branch
+done
+
+最终流程图
+
+graph TD;
+    A[列出远程分支] --> B[筛选包含181153的分支];
+    B --> C[删除远程分支];
+    C --> D[切换到master分支];
+    D --> E[提交并推送到master];
+
+通过以上步骤，你可以高效地完成远程分支清理和提交操作。
