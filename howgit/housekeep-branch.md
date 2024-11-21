@@ -101,26 +101,27 @@ fi
 1. 列出包含关键字的远程分支
 
 使用以下命令查看所有包含 181153 的远程分支：
-
+```bash
 git fetch --all  # 确保同步远程分支信息
 git branch -r | grep 181153
-
+```
 这会列出所有远程分支，例如：
-
+```bash
 origin/181153-path-99
 origin/181153-path-101
 origin/181153-path-test
-
+```
 2. 批量删除远程分支
 
 运行以下命令批量删除包含 181153 的远程分支：
 
 # 列出包含 181153 的分支并删除
+```
 for branch in $(git branch -r | grep 181153 | sed 's|origin/||'); do
     echo "Deleting remote branch: $branch"
     git push origin --delete $branch
 done
-
+```
 解释：
 	•	git branch -r: 列出所有远程分支。
 	•	grep 181153: 筛选包含关键字 181153 的分支。
@@ -132,13 +133,13 @@ done
 在完成远程分支的删除后，切换到 master 分支，合并更改并提交：
 
 # 确保在 master 分支上
-git checkout master
+`git checkout master`
 
 # 拉取最新的 master 更新
-git pull origin master
+`git pull origin master`
 
 # 如果需要合并某些内容到 master，运行以下命令（根据实际需要调整）
-git merge <your-feature-branch>
+`git merge <your-feature-branch>`
 
 # 推送最新的 master 更新到远程
 git push origin master
@@ -151,17 +152,18 @@ git push origin master
 git branch | grep 181153
 
 # 删除本地分支（批量操作）
+```bash
 for branch in $(git branch | grep 181153); do
     echo "Deleting local branch: $branch"
     git branch -D $branch
 done
-
+```
 最终流程图
-
+```mermaid
 graph TD;
     A[列出远程分支] --> B[筛选包含181153的分支];
     B --> C[删除远程分支];
     C --> D[切换到master分支];
     D --> E[提交并推送到master];
-
+```
 通过以上步骤，你可以高效地完成远程分支清理和提交操作。
