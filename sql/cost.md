@@ -156,7 +156,7 @@ WITH distinct_data AS (
         api.memory_limit, 
         api.cpu_limit, 
         MAX(api.pod_count) AS pod_count
-    FROM `${project}.cap_api_data.team_level_api_dev_historical_data`
+    FROM `${project}.aibang_api_data.team_level_api_dev_historical_data`
     CROSS JOIN UNNEST(apis) AS api 
     GROUP BY 
         teamName, 
@@ -267,7 +267,7 @@ WITH distinct_data AS (
         api.memory_limit, 
         api.cpu_limit, 
         MAX(api.pod_count) AS pod_count
-    FROM `${project}.cap_api_data.team_level_api_dev_historical_data`
+    FROM `${project}.aibang_api_data.team_level_api_dev_historical_data`
     CROSS JOIN UNNEST(apis) AS api 
     -- 添加分区和聚集索引条件
     WHERE DATE(backupTime) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
@@ -370,7 +370,7 @@ ORDER BY teamName, month;
 
 ```sql
 -- 第一步：创建视图
-CREATE OR REPLACE VIEW `${project}.cap_api_data.team_api_monthly_resources` AS
+CREATE OR REPLACE VIEW `${project}.aibang_api_data.team_api_monthly_resources` AS
 WITH distinct_data AS (
     SELECT 
         teamName, 
@@ -382,7 +382,7 @@ WITH distinct_data AS (
         api.memory_limit, 
         api.cpu_limit, 
         MAX(api.pod_count) AS pod_count
-    FROM `${project}.cap_api_data.team_level_api_dev_historical_data`
+    FROM `${project}.aibang_api_data.team_level_api_dev_historical_data`
     CROSS JOIN UNNEST(apis) AS api 
     WHERE DATE(backupTime) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR)
     GROUP BY 
@@ -447,7 +447,7 @@ SELECT
     SUM(cpu_total) AS total_cpu,
     SUM(cpu_total_cost) AS total_cpu_cost,
     SUM(memory_total_cost) AS total_memory_cost
-FROM `${project}.cap_api_data.team_api_monthly_resources`
+FROM `${project}.aibang_api_data.team_api_monthly_resources`
 GROUP BY teamName
 ORDER BY total_memory_mi DESC;
 ```
