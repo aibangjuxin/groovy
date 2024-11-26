@@ -472,5 +472,126 @@ ORDER BY total_memory_mi DESC;
 - 按环境类型汇总
 - 添加更多统计指标​​​​​​​​​​​​​​​​
 
+# ChatGPT 
+
+你的 SQL 语句在功能上是合理的，可以实现你期望的功能，但有一些细节可以进一步验证和优化以提高执行效率。
+
+验证语句准确性
+
+	1.	FORMAT_TIMESTAMP 和 PARSE_TIMESTAMP 的使用：
+	•	你对 backupTime 进行了格式化和解析，用于生成 month 和 backup_date。如果 backupTime 已是 TIMESTAMP 类型，DATE(backupTime) 和 FORMAT_TIMESTAMP('%Y-%m', backupTime) 更直接，性能也更优。
+	2.	REGEXP_REPLACE 和单位转换：
+	•	单位转换逻辑是合理的，但如果字段中有空值 (NULL)，CAST 或运算可能会失败。
+	•	建议： 添加 IFNULL 或 COALESCE 来处理潜在的空值：
+
+COALESCE(REGEXP_REPLACE(memory_limit, r'Gi', ''), '0')
+
+
+	3.	日期范围过滤：
+	•	WHERE DATE(backupTime) >= DATE_SUB(CURRENT_DATE(), INTERVAL 1 YEAR) 是正确的，但可以直接比较 TIMESTAMP 值以减少类型转换的成本：
+
+WHERE backupTime >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR)
+
+
+	4.	聚合逻辑验证：
+	•	MAX(api.pod_count) 的逻辑可能是为了取每天的最大值。这是合理的，但需确认这是否符合你的业务需求。
+
+性能优化建议
+
+1. 提前过滤数据
+
+	•	如果表 team_level_api_dev_historical_data 有大量历史数据，使用分区或聚簇索引字段优化过滤条件。比如如果 backupTime 是分区字段，查询中直接使用分区过滤：
+
+WHERE backupTime >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR)
+
+
+
+2. 减少复杂的字符串操作
+
+	•	REGEXP_REPLACE 和 REGEXP_CONTAINS 的计算成本较高，可以尝试用更简单的逻辑替代：
+	•	例如，将 memory_limit 的单位提前标准化为 Mi 存储在数据表中，避免每次查询时进行转换。
+	•	如果不能修改表结构，可以用以下优化逻辑：
+
+CASE
+    WHEN memory_limit LIKE '%Gi' THEN CAST(REPLACE(memory_limit, 'Gi', '') AS FLOAT64) * 1024
+    WHEN memory_limit LIKE '%Mi' THEN CAST(REPLACE(memory_limit, 'Mi', '') AS FLOAT64)
+    ELSE 0
+END
+
+
+
+3. 减少子查询的计算
+
+	•	将 distinct_data 和 aggregated_data 的逻辑合并成一个查询，可以减少中间步骤和重复扫描。
+
+4. 避免冗余字段计算
+
+	•	如果在结果中不需要 memory_total_mi 和 cpu_total，可以直接计算 avg_memory_per_day_mi 和 avg_cpu_per_day，减少传递的字段。
+
+优化后的 SQL 语句
+
+以下是经过优化后的版本：
+
+WITH aggregated_data AS (
+    SELECT 
+        teamName,
+        api.api_name, 
+        api.env, 
+        api.region,
+        FORMAT_TIMESTAMP('%Y-%m', backupTime) AS month,
+        COUNT(DISTINCT DATE(backupTime)) AS backup_count,
+        SUM(
+            CASE 
+                WHEN memory_limit LIKE '%Gi' THEN CAST(REPLACE(memory_limit, 'Gi', '') AS FLOAT64) * 1024
+                WHEN memory_limit LIKE '%Mi' THEN CAST(REPLACE(memory_limit, 'Mi', '') AS FLOAT64)
+                ELSE 0
+            END * MAX(api.pod_count)
+        ) AS memory_total_mi, 
+        SUM(
+            CASE 
+                WHEN cpu_limit LIKE '%m' THEN CAST(REPLACE(cpu_limit, 'm', '') AS FLOAT64) / 1000
+                ELSE CAST(cpu_limit AS FLOAT64)
+            END * MAX(api.pod_count)
+        ) AS cpu_total
+    FROM `${project}.aibang_api_data.team_level_api_dev_historical_data`,
+    UNNEST(apis) AS api
+    WHERE backupTime >= TIMESTAMP_SUB(CURRENT_TIMESTAMP(), INTERVAL 1 YEAR)
+    GROUP BY 
+        teamName, 
+        api.api_name, 
+        api.env, 
+        api.region, 
+        month
+)
+SELECT 
+    teamName, 
+    api_name, 
+    env, 
+    region,
+    month, 
+    backup_count, 
+    memory_total_mi, 
+    cpu_total, 
+    memory_total_mi / backup_count AS avg_memory_per_day_mi, 
+    cpu_total / backup_count AS avg_cpu_per_day, 
+    ROUND(cpu_total * 0.3, 2) AS cpu_total_cost, 
+    ROUND(memory_total_mi / 1024 * 0.3, 2) AS memory_total_cost
+FROM aggregated_data
+ORDER BY teamName, month;
+
+优化点总结
+
+	1.	减少字符串操作： 使用 LIKE 和 REPLACE 替代正则表达式，简化单位转换逻辑。
+	2.	提前过滤： 使用分区字段或直接过滤 TIMESTAMP 数据以减少类型转换。
+	3.	减少子查询： 合并 distinct_data 和 aggregated_data，避免多次扫描数据表。
+	4.	聚簇索引： 如果表未使用聚簇索引，可以将常用过滤字段如 backupTime 和 teamName 设置为聚簇索引字段。
+
+性能提升预期
+
+通过以上优化，查询时间可能显著降低，特别是在大数据量环境中。建议同时开启 BigQuery 的查询性能分析（如 Execution Details），验证优化效果。
+
+
+
+
 
 Only creat
