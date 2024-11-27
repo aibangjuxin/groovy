@@ -593,5 +593,215 @@ ORDER BY teamName, month;
 
 
 
+# by api
+```sql
+WITH distinct_data AS (
+    SELECT 
+        teamName, 
+        api.api_name, 
+        api.env, 
+        api.region,
+        FORMAT_TIMESTAMP('%Y-%m', PARSE_TIMESTAMP('%m/%d/%Y, %H:%M:%S', backupTime)) AS month,
+        DATE(PARSE_TIMESTAMP('%m/%d/%Y %H:%M:%S', backupTime)) AS backup_date,
+        api.memory_limit, 
+        api.cpu_limit, 
+        MAX(api.pod_count) AS pod_count
+    FROM `project.aibang_api_data.team_level_api_dev_historical_data`
+    CROSS JOIN UNNEST(apis) AS api
+    GROUP BY 
+        teamName, api.api_name, api.env, api.region, month, backup_date, api.memory_limit, api.cpu_limit
+),
+api_backup_counts AS (
+    SELECT 
+        teamName, 
+        api_name, 
+        env, 
+        region, 
+        month,
+        COUNT(DISTINCT backup_date) AS backup_count
+    FROM distinct_data
+    GROUP BY teamName, api_name, env, region, month
+),
+aggregated_data AS (
+    SELECT 
+        d.teamName,
+        d.api_name, 
+        d.env, 
+        d.region, 
+        t.month, 
+        t.backup_count,
+        SUM(CASE
+            WHEN REGEXP_CONTAINS(d.memory_limit, r'Gi') THEN CAST(REGEXP_REPLACE(d.memory_limit, r'Gi', '') AS FLOAT64) * 1024
+            WHEN REGEXP_CONTAINS(d.memory_limit, r'Mi') THEN CAST(REGEXP_REPLACE(d.memory_limit, r'Mi', '') AS FLOAT64)
+            ELSE 0 
+        END * d.pod_count) AS memory_total_mi,
+        SUM(CASE
+            WHEN REGEXP_CONTAINS(d.cpu_limit, r'm$') THEN CAST(REGEXP_REPLACE(d.cpu_limit, r'm$', '') AS FLOAT64) / 1000
+            ELSE CAST(d.cpu_limit AS FLOAT64)
+        END * d.pod_count) AS cpu_total
+    FROM distinct_data AS d
+    JOIN api_backup_counts AS t 
+        ON d.teamName = t.teamName 
+        AND d.api_name = t.api_name 
+        AND d.env = t.env 
+        AND d.region = t.region 
+        AND d.month = t.month
+    GROUP BY d.teamName, d.api_name, d.env, d.region, t.month, t.backup_count
+)
+SELECT 
+    teamName, 
+    api_name, 
+    env, 
+    region,
+    month, 
+    backup_count, 
+    memory_total_mi,
+    cpu_total,
+    memory_total_mi / backup_count AS avg_memory_per_day_mi,
+    cpu_total / backup_count AS avg_cpu_per_day,
+    ROUND(cpu_total * 0.3, 2) AS cpu_total_cost,
+    ROUND(memory_total_mi / 1024 * 0.3, 2) AS memory_total_cost
+FROM aggregated_data
+ORDER BY teamName, month;
+
+```
+
+
+我主要做了以下调整：
+
+* **合并了两个图片中的 SQL 代码片段**:  确保了 CTE（Common Table Expression）的定义完整，以及最终 SELECT 语句的正确性。
+* **添加了必要的连接条件**: 在 `aggregated_data` CTE 中，JOIN 条件现在包含了所有必要的字段，以确保连接的正确性。
+* **格式化和缩进**:  调整了代码的格式和缩进，使其更易于阅读和理解。
+
+
+
+这个合并后的 SQL 语句现在应该可以正确执行了.  请记住替换项目ID `project` 为你自己的项目ID。
+
+我来分析并给出优化建议：
+
+1. 性能优化点：
+```sql
+-- 优化建议1：减少重复解析和转换
+WITH distinct_data AS (
+    SELECT 
+        teamName, 
+        api.api_name, 
+        api.env, 
+        api.region,
+        -- 预计算日期和月份，避免多次重复解析
+        TIMESTAMP(backupTime) AS parsed_backup_time,
+        FORMAT_TIMESTAMP('%Y-%m', TIMESTAMP(backupTime)) AS month,
+        DATE(TIMESTAMP(backupTime)) AS backup_date,
+        api.memory_limit, 
+        api.cpu_limit, 
+        MAX(api.pod_count) AS pod_count
+    FROM `project.aibang_api_data.team_level_api_dev_historical_data`
+    CROSS JOIN UNNEST(apis) AS api
+    GROUP BY 
+        teamName, api.api_name, api.env, api.region, parsed_backup_time, month, backup_date, api.memory_limit, api.cpu_limit
+),
+```
+
+2. 内存和CPU转换优化：
+```sql
+-- 优化建议2：统一转换规则，提取公共函数
+CREATE TEMP FUNCTION convert_memory(memory_limit STRING) AS (
+    CASE
+        WHEN REGEXP_CONTAINS(memory_limit, r'Gi') THEN CAST(REGEXP_REPLACE(memory_limit, r'Gi', '') AS FLOAT64) * 1024
+        WHEN REGEXP_CONTAINS(memory_limit, r'Mi') THEN CAST(REGEXP_REPLACE(memory_limit, r'Mi', '') AS FLOAT64)
+        ELSE 0 
+    END
+);
+
+CREATE TEMP FUNCTION convert_cpu(cpu_limit STRING) AS (
+    CASE
+        WHEN REGEXP_CONTAINS(cpu_limit, r'm$') THEN CAST(REGEXP_REPLACE(cpu_limit, r'm$', '') AS FLOAT64) / 1000
+        ELSE CAST(cpu_limit AS FLOAT64)
+    END
+);
+```
+
+3. 性能优化总建议：
+- 创建合适的索引（如teamName, api_name, env, region, month）
+- 使用预计算和临时表减少重复计算
+- 考虑分区和聚簇策略
+- 避免不必要的复杂JOIN和子查询
+
+4. 最终优化SQL：
+```sql
+WITH distinct_data AS (
+    SELECT 
+        teamName, 
+        api.api_name, 
+        api.env, 
+        api.region,
+        TIMESTAMP(backupTime) AS parsed_backup_time,
+        FORMAT_TIMESTAMP('%Y-%m', TIMESTAMP(backupTime)) AS month,
+        DATE(TIMESTAMP(backupTime)) AS backup_date,
+        api.memory_limit, 
+        api.cpu_limit, 
+        MAX(api.pod_count) AS pod_count
+    FROM `project.aibang_api_data.team_level_api_dev_historical_data`
+    CROSS JOIN UNNEST(apis) AS api
+    GROUP BY 
+        teamName, api.api_name, api.env, api.region, parsed_backup_time, month, backup_date, api.memory_limit, api.cpu_limit
+),
+api_backup_counts AS (
+    SELECT 
+        teamName, 
+        api_name, 
+        env, 
+        region, 
+        month,
+        COUNT(DISTINCT backup_date) AS backup_count
+    FROM distinct_data
+    GROUP BY teamName, api_name, env, region, month
+),
+aggregated_data AS (
+    SELECT 
+        d.teamName,
+        d.api_name, 
+        d.env, 
+        d.region, 
+        t.month, 
+        t.backup_count,
+        SUM(convert_memory(d.memory_limit) * d.pod_count) AS memory_total_mi,
+        SUM(convert_cpu(d.cpu_limit) * d.pod_count) AS cpu_total
+    FROM distinct_data AS d
+    JOIN api_backup_counts AS t 
+        ON d.teamName = t.teamName 
+        AND d.api_name = t.api_name 
+        AND d.env = t.env 
+        AND d.region = t.region 
+        AND d.month = t.month
+    GROUP BY d.teamName, d.api_name, d.env, d.region, t.month, t.backup_count
+)
+SELECT 
+    teamName, 
+    api_name, 
+    env, 
+    region,
+    month, 
+    backup_count, 
+    memory_total_mi,
+    cpu_total,
+    memory_total_mi / backup_count AS avg_memory_per_day_mi,
+    cpu_total / backup_count AS avg_cpu_per_day,
+    ROUND(cpu_total * 0.3, 2) AS cpu_total_cost,
+    ROUND(memory_total_mi / 1024 * 0.3, 2) AS memory_total_cost
+FROM aggregated_data
+ORDER BY teamName, month;
+```
+
+主要优化点：
+1. 简化日期解析逻辑
+2. 统一内存和CPU转换规则
+3. 减少重复计算
+4. 使用函数简化复杂的条件转换
+
+建议在实际执行前：
+- 使用EXPLAIN分析执行计划
+- 在小数据集上测试性能
+- 根据实际数据特征调整索引策略
 
 Only creat
