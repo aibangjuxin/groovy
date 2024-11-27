@@ -531,7 +531,7 @@ END
 优化后的 SQL 语句
 
 以下是经过优化后的版本：
-
+```sql 
 WITH aggregated_data AS (
     SELECT 
         teamName,
@@ -578,7 +578,7 @@ SELECT
     ROUND(memory_total_mi / 1024 * 0.3, 2) AS memory_total_cost
 FROM aggregated_data
 ORDER BY teamName, month;
-
+``` 
 优化点总结
 
 	1.	减少字符串操作： 使用 LIKE 和 REPLACE 替代正则表达式，简化单位转换逻辑。
