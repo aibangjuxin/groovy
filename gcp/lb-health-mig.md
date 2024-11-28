@@ -1,11 +1,7 @@
 
 # flow diagram
 
-load balancing ==> aibang-core-proxy-cidmz-backend-dev ==> FrontendA ==> BackendServiceA ==> HealthCheck ==> InstanceGroupA
-load balancing ==> aibang-core-proxy-backend-europe-west2 ==> FrontendB ==> BackendServiceB ==> HealthCheck ==> InstanceGroupA
-
-
-根据您的要求，以下是按照两个完整流程绘制的流程图：
+以下是按照两个完整流程绘制的流程图：
 
 ```mermaid
 flowchart LR
@@ -50,7 +46,55 @@ flowchart LR
     classDef healthcheck fill:#fc9,stroke:#333,stroke-width:2px;
     classDef instancegroup fill:#ccf,stroke:#333,stroke-width:2px;
 ```
+- add forward rule
+- 在这里有个很重要的东西就是LoadBalancing其实就是backend service 
+```mermaid
+flowchart LR
+    subgraph ForwardRules["Forward Rules"]
+        FR1["Forward Rule 1"]:::forwardrule
+        FR2["Forward Rule 2"]:::forwardrule
+    end
+    subgraph LoadBalancing["Load Balancing"]
+        LB1["aibang-core-proxy-cidmz-backend-dev"]:::loadbalancer
+        LB2["aibang-core-proxy-backend-europe-west2"]:::loadbalancer
+    end
+    subgraph Frontends["Frontends"]
+        F1["Frontend A<br>IP: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2"]:::frontend
+        F2["Frontend B<br>IP: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core"]:::frontend
+    end
+    subgraph BackendServices["Backend Services"]
+        BA["Backend Service A<br>Name: aibang-core-proxy-cidmz-backend-dev<br>Network: aibang-beta-cidmz"]:::backendservice
+        BB["Backend Service B<br>Name: aibang-core-proxy-backend-europe-west2<br>Network: aibang-project-infor-cinternal-vpc1"]:::backendservice
+    end
+    subgraph HealthCheck["Health Check"]
+        HC["aibang-core-proxy-healthcheck-dev<br>Protocol: TCP"]:::healthcheck
+    end
+    subgraph InstanceGroup["Managed Instance Group"]
+        MIG["Name: aibang-core-proxy-europe-west2<br>Status: Shared"]:::instancegroup
+    end
+    
+    FR1 --> LB1
+    FR2 --> LB2
+    
+    %% Connections for Backend Service A
+    LB1 --> F1
+    F1 --> BA
+    BA --> HC
+    HC --> MIG
+    
+    %% Connections for Backend Service B
+    LB2 --> F2
+    F2 --> BB
+    BB --> HC
+    HC --> MIG
 
+    classDef forwardrule fill:#ffcc00,stroke:#333,stroke-width:2px;
+    classDef loadbalancer fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef frontend fill:#9cf,stroke:#333,stroke-width:2px;
+    classDef backendservice fill:#cfc,stroke:#333,stroke-width:2px;
+    classDef healthcheck fill:#fc9,stroke:#333,stroke-width:2px;
+    classDef instancegroup fill:#ccf,stroke:#333,stroke-width:2px;
+```
 # Q 
 对于我这个架构来说,我想了解下 因为其实aibang-core-proxy-cidmz-backend-dev后面的MIG的状态并不正常,我如何删除这个MIG的绑定关系,仅仅保留Frontend的部分
 那么我的IP: 192.168.251.232:3128这个是否还能提供服务?
