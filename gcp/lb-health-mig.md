@@ -95,7 +95,7 @@ flowchart LR
     classDef healthcheck fill:#fc9,stroke:#333,stroke-width:2px;
     classDef instancegroup fill:#ccf,stroke:#333,stroke-width:2px;
 ```
-# Q 
+# Q  about delete MIG binding
 对于我这个架构来说,我想了解下 因为其实aibang-core-proxy-cidmz-backend-dev后面的MIG的状态并不正常,我如何删除这个MIG的绑定关系,仅仅保留Frontend的部分
 那么我的IP: 192.168.251.232:3128这个是否还能提供服务?
 因为这个IP: 192.168.251.232:3128其实是我的一个Forward rule规则
