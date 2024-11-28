@@ -1,3 +1,5 @@
+Error creating RegionBackendService: googleapi: Error 400: Invalid value for field 'resource.backends[0].balancingMode': 'UTILIZATION'. Balancing mode must be CONNECTION for an INTERNAL backend service . Invalid
+
 这个错误是由于在创建内部后端服务（Internal Backend Service）时，后端的负载均衡模式（balancing mode）配置不正确导致的。
 
 具体来说，对于内部后端服务（INTERNAL类型），负载均衡模式（balancingMode）必须设置为 `CONNECTION`，而不能是 `UTILIZATION`。
