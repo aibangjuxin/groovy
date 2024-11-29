@@ -1,3 +1,21 @@
+- [flow diagram](#flow-diagram)
+- [Q  about delete MIG binding](#q--about-delete-mig-binding)
+- [A](#a)
+    - [**步骤：解除 MIG 和 Backend Service 的绑定**](#步骤解除-mig-和-backend-service-的绑定)
+    - [**保留 Forwarding Rule 的服务能力**](#保留-forwarding-rule-的服务能力)
+    - [**Forwarding Rule 如何转发流量？**](#forwarding-rule-如何转发流量)
+    - [**如果 MIG 被移除，IP 是否还能用？**](#如果-mig-被移除ip-是否还能用)
+    - [**总结建议**](#总结建议)
+- [Other](#other)
+    - [描述：](#描述)
+    - [优点：](#优点)
+    - [调整说明：](#调整说明)
+    - [解析：](#解析)
+    - [说明：](#说明)
+    - [关键点：](#关键点)
+    - [调整重点：](#调整重点)
+    - [关键特点：](#关键特点)
+- [flow](#flow)
 
 # flow diagram
 
