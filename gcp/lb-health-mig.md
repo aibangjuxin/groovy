@@ -11,8 +11,8 @@ flowchart LR
     end
 
     subgraph Frontends["Frontends"]
-        F1["Frontend A<br>IP: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2"]:::frontend
-        F2["Frontend B<br>IP: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core"]:::frontend
+        F1["Frontend A<br>IP: 172.18.0.221:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2"]:::frontend
+        F2["Frontend B<br>IP: 192,168.31.88:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core"]:::frontend
     end
 
     subgraph BackendServices["Backend Services"]
@@ -59,8 +59,8 @@ flowchart LR
         LB2["aibang-core-proxy-backend-europe-west2"]:::loadbalancer
     end
     subgraph Frontends["Frontends"]
-        F1["Frontend A<br>IP: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2"]:::frontend
-        F2["Frontend B<br>IP: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core"]:::frontend
+        F1["Frontend A<br>IP: 172.18.0.221:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2"]:::frontend
+        F2["Frontend B<br>IP: 192,168.31.88:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core"]:::frontend
     end
     subgraph BackendServices["Backend Services"]
         BA["Backend Service A<br>Name: aibang-core-proxy-cidmz-backend-dev<br>Network: aibang-beta-cidmz"]:::backendservice
@@ -97,11 +97,11 @@ flowchart LR
 ```
 # Q  about delete MIG binding
 对于我这个架构来说,我想了解下 因为其实aibang-core-proxy-cidmz-backend-dev后面的MIG的状态并不正常,我如何删除这个MIG的绑定关系,仅仅保留Frontend的部分
-那么我的IP: 192.168.251.232:3128这个是否还能提供服务?
-因为这个IP: 192.168.251.232:3128其实是我的一个Forward rule规则
+那么我的IP: 172.18.0.221:3128这个是否还能提供服务?
+因为这个IP: 172.18.0.221:3128其实是我的一个Forward rule规则
 那么我的这个Forward rule又怎么把请求转发到后面的MIG?
 # A 
-在您的架构中，`IP: 192.168.251.232:3128` 是由 Forwarding Rule（转发规则）绑定到 `aibang-core-proxy-cidmz-backend-dev` 的 Frontend 部分的。如果要解除 MIG 和 Backend Service 的绑定，同时保留 Frontend 和 Forwarding Rule，那么需要了解以下几个关键点：
+在您的架构中，`IP: 172.18.0.221:3128` 是由 Forwarding Rule（转发规则）绑定到 `aibang-core-proxy-cidmz-backend-dev` 的 Frontend 部分的。如果要解除 MIG 和 Backend Service 的绑定，同时保留 Frontend 和 Forwarding Rule，那么需要了解以下几个关键点：
 
 ---
 
@@ -148,7 +148,7 @@ flowchart LR
    - Backend Service 再通过其后端（如 MIG）提供服务。
 
 2. **流量路径**：
-   - 请求从客户端到 IP: 192.168.251.232:3128。
+   - 请求从客户端到 IP: 172.18.0.221:3128。
    - Forwarding Rule 接收到请求，并转发到 Frontend。
    - Frontend 根据配置将流量发送到 Backend Service。
    - Backend Service 会根据绑定的后端列表（MIG）和健康检查选择目标后端实例。
@@ -216,8 +216,8 @@ flowchart LR
     end
 
     subgraph Frontends["Frontends"]
-        F1["Frontend A<br>IP: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"] --> B1
-        F2["Frontend B<br>IP: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"] --> A1
+        F1["Frontend A<br>IP: 172.18.0.221:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"] --> B1
+        F2["Frontend B<br>IP: 192,168.31.88:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"] --> A1
     end
 
     subgraph HealthCheck["Health Check"]
@@ -239,11 +239,11 @@ flowchart LR
 ```mermaid
 flowchart LR
     subgraph FrontendA["Frontend A"]
-        F1["Name: aibangfqnd.lb.aibang-project-infor.internal<br>IP: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"]
+        F1["Name: aibangfqnd.lb.aibang-project-infor.internal<br>IP: 172.18.0.221:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"]
     end
 
     subgraph FrontendB["Frontend B"]
-        F2["Name: cinternal-vpc1-europe-west2-core<br>IP: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"]
+        F2["Name: cinternal-vpc1-europe-west2-core<br>IP: 192,168.31.88:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"]
     end
 
     subgraph BackendServiceA["Backend Service A"]
@@ -294,8 +294,8 @@ flowchart LR
    - 它们之间的区别主要体现在 **Frontend** 和 **Network** 配置。
 
 2. **明确 Frontend 和 Backend 对应关系**：
-   - **Frontend A**（`192.168.251.232:3128`）连接到 **Backend Service B**。
-   - **Frontend B**（`192.168.0.38:3128`）连接到 **Backend Service A**。
+   - **Frontend A**（`172.18.0.221:3128`）连接到 **Backend Service B**。
+   - **Frontend B**（`192,168.31.88:3128`）连接到 **Backend Service A**。
 
 3. **复用共享资源**：
    - **Health Check** 和 **Managed Instance Group** 是两个 Backend Services 的共享资源，用连接线统一指向。
@@ -335,7 +335,7 @@ flowchart LR
 flowchart TD
     subgraph LB_A["Load Balancer: aibang-core-proxy-cidmz-backend-dev"]
         direction TB
-        A_Frontend["Frontend A: 192.168.251.232:3128<br>Protocol: TCP<br>Subnetwork: aibang-beta-cidmz-europe-west2"]
+        A_Frontend["Frontend A: 172.18.0.221:3128<br>Protocol: TCP<br>Subnetwork: aibang-beta-cidmz-europe-west2"]
         A_Backend["Backend Service: aibang-core-proxy-cidmz-backend-dev<br>Health: 0/2 instances healthy<br>Network: aibang-beta-cidmz"]
         A_Frontend --> A_Backend
         A_Backend --> MIG1["Managed Instance Group: aibang-core-proxy-europe-west2<br>Unhealthy instances: 2<br>Subnetwork: aibang-beta-cidmz"]
@@ -343,7 +343,7 @@ flowchart TD
 
     subgraph LB_B["Load Balancer: aibang-core-proxy-backend-europe-west2"]
         direction TB
-        B_Frontend["Frontend B: 192.168.0.38:3128<br>Protocol: TCP<br>Subnetwork: cinternal-vpc1-europe-west2-core"]
+        B_Frontend["Frontend B: 192,168.31.88:3128<br>Protocol: TCP<br>Subnetwork: cinternal-vpc1-europe-west2-core"]
         B_Backend["Backend Service: aibang-core-proxy-backend-europe-west2<br>Health: 2/2 instances healthy<br>Network: aibang-project-infor-cinternal-vpc1"]
         B_Frontend --> B_Backend
         B_Backend --> MIG2["Managed Instance Group: aibang-core-proxy-europe-west2<br>Healthy instances: 2<br>Subnetwork: cinternal-vpc1-europe-west2-core"]
@@ -360,8 +360,8 @@ flowchart TD
 
 ### 关键点：
 1. **两个负载均衡器的前端：**
-   - **LB_A** 使用 `192.168.251.232:3128`，网络为 `aibang-beta-cidmz-europe-west2`。
-   - **LB_B** 使用 `192.168.0.38:3128`，网络为 `cinternal-vpc1-europe-west2-core`。
+   - **LB_A** 使用 `172.18.0.221:3128`，网络为 `aibang-beta-cidmz-europe-west2`。
+   - **LB_B** 使用 `192,168.31.88:3128`，网络为 `cinternal-vpc1-europe-west2-core`。
 
 2. **两个 Backend Service：**
    - **aibang-core-proxy-cidmz-backend-dev**:
@@ -386,8 +386,8 @@ flowchart TD
 flowchart LR
     subgraph Frontends["Frontends"]
         direction TB
-        F1["Frontend A<br>Name: 192.168.251.232:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"] --> BS1
-        F2["Frontend B<br>Name: 192.168.0.38:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"] --> BS2
+        F1["Frontend A<br>Name: 172.18.0.221:3128<br>Subnetwork: aibang-beta-cidmz-europe-west2<br>Protocol: TCP"] --> BS1
+        F2["Frontend B<br>Name: 192,168.31.88:3128<br>Subnetwork: cinternal-vpc1-europe-west2-core<br>Protocol: TCP"] --> BS2
     end
 
     subgraph Backends["Backend Services"]
@@ -427,8 +427,8 @@ flowchart LR
 flowchart LR
     subgraph Frontends["Frontends"]
         direction LR
-        A_Frontend["Frontend A: 192.168.251.232:3128<br>Protocol: TCP<br>Subnetwork: aibang-beta-cidmz-europe-west2"]
-        B_Frontend["Frontend B: 192.168.0.38:3128<br>Protocol: TCP<br>Subnetwork: cinternal-vpc1-europe-west2-core"]
+        A_Frontend["Frontend A: 172.18.0.221:3128<br>Protocol: TCP<br>Subnetwork: aibang-beta-cidmz-europe-west2"]
+        B_Frontend["Frontend B: 192,168.31.88:3128<br>Protocol: TCP<br>Subnetwork: cinternal-vpc1-europe-west2-core"]
     end
 
     subgraph Backends["Backend Services"]
@@ -468,10 +468,11 @@ flowchart LR
 3. **左右分区**：
    - 左边是网络的入口，右边是最终的实例组，强调从请求入口到服务的完整路径。
 
-如果需要进一步扩展，比如加上更多的诊断信息或健康检查细节，请随时告知！
 
 
-下面是我环境里面的两个backend-services 这两个都使用了同一组mig 
+
+- 下面是我环境里面的两个backend-services 这两个都使用了同一组mig 
+
 ```bash
 $ gcloud compute backend-services list|grep aibang-core-proxy 
 
@@ -479,9 +480,8 @@ aibang-core-proxy-backend-europe-west2   europe-west2/instanceGroups/aibang-core
 
 aibang-core-proxy-cidmz-backend-dev europe-west2/instanceGroups/aibang-core-proxy-europe-west2      TCP
 ```
-下面是两个backend services 的详情
-- 
-可以看到他们使用了同一个health check 
+- 下面是两个backend services 的详情
+- 可以看到他们使用了同一个health check 
 ```bash
 aibang-core-proxy-healthcheck-dev
 
@@ -579,7 +579,7 @@ The load balancer `aibang-core-proxy-cidmz-backend-dev` has the following config
 
 \* **Name:** `aibangfqnd.lb.aibang-project-infor.internal`
 
-\* **IP:Port:** `192.168.251.232:3128`
+\* **IP:Port:** `172.18.0.221:3128`
 
 \* **Protocol:** `TCP`
 
@@ -617,10 +617,6 @@ The load balancer `aibang-core-proxy-cidmz-backend-dev` has the following config
 
 
 
-
-
-
-
 **Load Balancer Name:** aibang-core-proxy-backend-europe-west2
 
 **Frontend Configuration:**
@@ -629,7 +625,7 @@ The load balancer `aibang-core-proxy-cidmz-backend-dev` has the following config
 * **IP Version:** IPv4
 * **Scope:** europe-west2
 * **Subnetwork:** cinternal-vpc1-europe-west2-core
-* **IP:Ports:** 192.168.0.38:3128
+* **IP:Ports:** 192,168.31.88:3128
 
 
 **Backend Configuration:**
@@ -652,11 +648,12 @@ The load balancer `aibang-core-proxy-cidmz-backend-dev` has the following config
 
 
 **Mermaid Diagram (Simplified):**
+```
 
 ```mermaid
 graph LR
     subgraph Frontend[Frontend]
-        A[TCP/IPv4] --> B(192.168.0.38:3128)
+        A[TCP/IPv4] --> B(192,168.31.88:3128)
     end
     subgraph Backend[Backend]
         C[Instance Group] --> D{Health Check}
@@ -671,43 +668,7 @@ graph LR
 
 
 
-**好的，以下是使用中文的资源关系和依赖关系解释：**
-
-
-
-****资源关系：****
-
-
-
-\```mermaid
-
-graph LR
-
-  subgraph **前端[**"**前端（入口点）**"**]**
-
-​    A**[**DNS **名称：**aibangfqnd.lb.aibang-project-infor.internal**]** --> B(IP:**端口** 192.168.251.232:3128)
-
-  end
-
-  **前端** --> C**[负载均衡器：**aibang-core-proxy-cidmz-backend-dev**]**
-
-  C --> subgraph **后端[**"**后端（目标服务器）**"**]**
-
-​    D**[实例组：**aibang-core-proxy-europe-west2**]**
-
-  end
-
-  D --> E**[健康检查：**aibang-core-proxy-healthcheck-dev**]**
-
-  D --> F{**虚拟机**}
-
-
-
-  style F fill:#ccf,stroke:#888,stroke-width:2px
-
-\```
-
-
+以下是使用中文的资源关系和依赖关系解释：**
 
 ****概念依赖关系和解释：****
 
@@ -739,94 +700,6 @@ graph LR
 
 4. ****健康检查** (aibang-core-proxy-healthcheck-dev)**：******负载均衡器使用它来确定后端实例组中实例的健康状态。如果实例未通过健康检查，负载均衡器将停止向其发送流量。这对于确保高可用性至关重要。在您的情况下，**0/2 **健康状态表示健康检查配置或后端实例本身存在问题。**
 
-
-
-
-
-****简而言之：******客户端通过** DNS **名称访问您的应用程序，该名称指向负载均衡器。然后，负载均衡器将流量转发到指定实例组内的健康实例。健康检查确保只有健康实例才能接收流量。**
-
-
-
-
-
-**这种结构将前端与后端解耦，从而实现可扩展性和弹性。如果一个虚拟机实例出现故障，负载均衡器会自动将流量定向到其他健康实例。**
-
-
-
-
-
-
-
-**根据你提供的信息，两个** Backend Services (`aibang-core-proxy-cidmz-backend-dev` **和** `aibang-core-proxy-backend-europe-west2`) **都使用了同一个** Health Check (`aibang-core-proxy-healthcheck-dev`)**，并且它们都关联到了同一个** Managed Instance Group (MIG) (`aibang-core-proxy-europe-west2`). **由于该** Instance Group **下的实例有两块网卡，可能导致健康检查的状态出现问题，从而影响负载均衡的健康状态。**
-
-
-
-**以下是你的架构的** Mermaid **流程图，展示了这些组件之间的关系：**
-
-
-
-\```mermaid
-
-graph TD;
-
-  A**[**Health Check: aibang-core-proxy-healthcheck-dev**]** -->|**使用**| B**[**Backend Service: aibang-core-proxy-cidmz-backend-dev**]**
-
-  A -->|**使用**| C**[**Backend Service: aibang-core-proxy-backend-europe-west2**]**
-
-   
-
-  B -->|**关联**| D**[**Instance Group: aibang-core-proxy-europe-west2**]**
-
-  C -->|**关联**| D
-
-   
-
-  D -->|**包含**| E**[**Instance 1: **服务器]**
-
-  D -->|**包含**| F**[**Instance 2: **服务器]**
-
-   
-
-  E -->|**网卡** 1 **状态**| G**[健康检查结果**: **健康**/**不健康]**
-
-  E -->|**网卡** 2 **状态**| H**[健康检查结果**: **健康**/**不健康]**
-
-   
-
-  F -->|**网卡** 1 **状态**| I**[健康检查结果**: **健康**/**不健康]**
-
-  F -->|**网卡** 2 **状态**| J**[健康检查结果**: **健康**/**不健康]**
-
-   
-
-  D -->|0 of 2 **实例健康**| K**[负载均衡器**: aibang-core-proxy-cidmz-backend-dev**]**
-
-   
-
-  style A fill:#f96,stroke:#333,stroke-width:2px;
-
-  style B fill:#bbf,stroke:#333,stroke-width:2px;
-
-  style C fill:#bbf,stroke:#333,stroke-width:2px;
-
-  style D fill:#bfb,stroke:#333,stroke-width:2px;
-
-  style K fill:#f82,stroke:#333,stroke-width:2px;
-
-\```
-
-
-
-\### **说明：**
-
-\- **Health Check** (`aibang-core-proxy-healthcheck-dev`) **是被两个** Backend Service **使用的。**
-
-\- **每个** Backend Service **关联到同一个** Instance Group (`aibang-core-proxy-europe-west2`)**。**
-
-\- **该** Instance Group **包含两个实例（**Instance 1 **和** Instance 2**），每个实例分别有两块网卡。**
-
-\- **导致负载均衡器（**`aibang-core-proxy-cidmz-backend-dev`**）的状态为** 0 **个实例健康的原因，可能是网卡的健康状态不正确。**
-```
 # flow
 
 **这个流程图展示了你环境中的组件及其相互关系，帮助你更好地理解问题的根源。**
