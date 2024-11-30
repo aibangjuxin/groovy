@@ -1,3 +1,25 @@
+# summary cost 
+- 计费原则
+  - env,region,api,cpu*$,memory*$
+- 首先基于源数据做数据清理,得到一个干净的数据源
+  - team_level_api_dev_historical_data
+  - 需要考虑采集数据的时间
+    - timestamp 可能会存在每天采集多次的情况,所以需要考虑怎么去取值
+    - 同一天如果多次采集到数据,按照API的Pod数量最大的那个来进行处理,也就是保留这个API的数据
+    - 同时需要注意API多个版本的问题,如果有多个版本，需要保留多个版本,因为环境中运行的可能是不同版本的API，需要保留多个版本的数据,去计费
+    - 同时需要注意API多个环境的问题，如果有多个环境，需要保留多个环境，因为环境中运行的可能是不同环境的API，需要保留多个环境的数据，去计费.最终累加在一起
+  - team_level_api_dev_historical_data ==> team_api_monthly_resources
+  - team_team_monthly_resources 
+
+```mermaid
+graph TD
+    A[team_level_api_dev_historical_data] --> |sort data |B[v_team_level_api_dev_historical_data]
+    B --> C[team_teams_monthly_resources]
+    B --> D[team_apis_monthly_resources]
+```
+
+# team_level_api_dev_historical_data
+
 SQL 和 JSON 提取及解释
 
 SQL 语句 1
