@@ -121,6 +121,109 @@
 
 这个流程提供了一个相对全面的解决方案。您可以根据实际情况进行调整和优化。希望对您有帮助！
 
+根据您的描述，我们可以设计一个基于Demand Tickets的Quota审核和更新流程。以下是一个详细的建议方案：
+
+### Quota审核和更新流程
+
+#### 1. 流程概览
+1. 用户在Demand Tickets中提交Quota调整申请
+2. PM直接在Demand Tickets中审核和确认
+3. 确认后自动触发Quota更新流程
+
+#### 2. 详细流程设计
+
+##### 2.1 申请提交
+- 用户在Demand Tickets中创建新的Ticket
+- Ticket模板包含以下关键字段：
+  - 当前Quota
+  - 申请调整的Quota数量
+  - 申请原因
+  - 业务背景说明
+
+##### 2.2 PM审核
+- PM收到Ticket通知
+- 审核考虑因素：
+  1. 业务合理性
+  2. 历史API使用情况
+  3. 申请理由的充分性
+  4. 团队过往信誉
+
+##### 2.3 审核确认机制
+- PM在Ticket中添加审核状态：
+  - 待审核
+  - 已批准
+  - 拒绝
+- 如果批准，在Ticket中直接更新最新的Quota值
+
+#### 3. 自动触发更新流程
+
+##### 3.1 Trigger机制
+- 当Ticket状态变更为"已批准"时
+- 系统自动检测到状态变更
+- 触发Quota更新Pipeline
+
+##### 3.2 Pipeline更新步骤
+1. 从Demand Tickets读取最新Quota值
+2. 更新Firestore中对应Teams的Quota
+3. 发送确认邮件给用户
+4. 记录变更日志
+
+#### 4. 技术实现建议
+
+```mermaid
+stateDiagram-v2
+    [*] --> TicketCreated : 用户创建Ticket
+    TicketCreated --> PMReview : PM审核
+    PMReview --> Approved : 批准
+    PMReview --> Rejected : 拒绝
+    Approved --> UpdateQuota : 触发更新流程
+    UpdateQuota --> NotifyUser : 通知用户
+    Rejected --> NotifyUser : 通知用户
+    NotifyUser --> [*]
+```
+
+#### 5. 邮件通知模板
+
+##### 5.1 批准通知
+```
+主题：Quota申请已批准 - [团队名称]
+
+尊敬的 [团队负责人]，
+
+您的Quota调整申请已获批：
+- 原Quota：[X]
+- 新Quota：[Y]
+- 批准日期：[日期]
+
+感谢您的申请！
+```
+
+##### 5.2 拒绝通知
+```
+主题：Quota申请未通过 - [团队名称]
+
+尊敬的 [团队负责人]，
+
+很抱歉，您的Quota调整申请未通过。
+- 原因：[简要说明]
+
+建议：
+1. 重新评估申请理由
+2. 优化API使用策略
+```
+
+#### 6. 额外建议
+1. 设置Quota变更的审计日志
+2. 提供Quota历史变更追溯
+3. 建立申诉机制
+
+#### 7. 风险控制
+- 设置Quota调整的上限阈值
+- 对频繁申请的团队设置特殊审核流程
+- 建立异常检测机制
+
+这个流程充分利用了现有的Demand Tickets系统，实现了低成本、高效率的Quota管理。PM可以便捷地进行审核，系统可以自动完成后续更新工作。
+
 
 
 
