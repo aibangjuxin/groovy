@@ -4,11 +4,13 @@
 
 OIDC（OpenID Connect） 是一种身份验证协议，基于 OAuth 2.0 构建，允许客户端验证用户身份并获取基本的用户信息（如 email、name 等）。
 在 Jenkins 和 Kong 中，OIDC 通常通过插件形式实现，用于：
+
 	1.	Jenkins OIDC Plugin:
 	•	允许 Jenkins 集成单点登录（SSO），通过 OIDC Provider 验证用户身份。
 	•	主要用途是用户登录和对特定用户/组执行授权控制。
 	•	在 Pipeline 中可以通过 OIDC 提供的身份信息执行更复杂的逻辑。
-	2.	Kong OIDC Plugin:
+
+  2.	Kong OIDC Plugin:
 	•	用于对 API 的访问进行身份验证和授权，确保请求者拥有正确的身份和权限。
 	•	Kong 会作为 Relying Party，与 OIDC Provider（如 Google、Keycloak）交互验证身份。
 	•	可以通过 Kong 提供的 Token 进行进一步的请求管理和授权控制。
