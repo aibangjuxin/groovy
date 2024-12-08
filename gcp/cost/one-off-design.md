@@ -346,6 +346,21 @@ graph TD;
 | Official | `OFFICIAL_ACTIVE` | 月度费用 | API正式上线 | 180 USD/API/月 |
 | Official | `OFFICIAL_SUSPENDED` | 暂停使用 | 暂停计费 |
 
+
+以下是根据简化逻辑绘制的流程图：
+
+```mermaid
+graph TD
+    A[创建API] -->|支付一次性基础费用 1400 USD/API| B[POC阶段]
+    B -->|部署API| C[POC月度费用 180 USD/API]
+    B -->|提交上线申请 补缴费用 1400 USD/API| D[Onboarding阶段]
+    D -->|部署API| E[Onboarding月度费用 180 USD/API]
+    D -->|完成上线| F[Official阶段]
+    F -->|继续使用| G[Official月度费用 180 USD/API]
+    F -->|暂停使用| H[暂停状态 不计费]
+```
+---
+
 ```mermaid
 flowchart TD
     A[POC阶段] -->|一次性基础费用 1400 USD/API| B[POC_INIT]
