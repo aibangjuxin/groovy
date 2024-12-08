@@ -337,6 +337,10 @@ graph TD;
 
 # Claude summary 
 
+我们是运行在Google平台上的API平台,我们负责接入不同Teamname的API,并且负责在Google Cloud上部署这些Teams对应的API.
+我们部署走的PMU将API的数据信息存储在GCP里面的Firestore数据库里面,比如会有apis apimetadatas等
+我们现在需要规划一个收费的标准，来决定如何收费。
+
 | 阶段 | 状态 | 收费机制 | 计费触发条件 | 费用详情 |
 |------|------|----------|--------------|----------|
 | POC | `POC_INIT` | 一次性基础费用 | 首次创建API | 1400 USD/API |
@@ -346,6 +350,19 @@ graph TD;
 | Official | `OFFICIAL_ACTIVE` | 月度费用 | API正式上线 | 180 USD/API/月 |
 | Official | `OFFICIAL_SUSPENDED` | 暂停使用 | 暂停计费 |
 
+
+| 阶段 | 状态 | 收费机制 | 计费触发条件 | 费用详情 |
+|---|---|---|---|---|
+| POC | POC_INIT | 一次性基础费用 | 用户创建API并完成支付 | 1400 USD/API |
+| POC | POC_DEPLOYED | 月度费用 + 按量计费 | API部署成功并产生流量 | 基础费用180 USD/月 + 超过配额部分按量计费 |
+| Onboarding | ONBOARDING_PENDING | 补缴费用 | 用户决定继续 | 1400 USD/API |
+| Onboarding | ONBOARDING_ACTIVE | 月度费用 + 按量计费 | API正式部署并产生流量 | 基础费用180 USD/月 + 超过配额部分按量计费 |
+| Official | OFFICIAL_ACTIVE | 月度费用 + 按量计费 | API正式上线并产生流量 | 基础费用180 USD/月 + 超过配额部分按量计费 |
+| Official | OFFICIAL_SUSPENDED | 暂停使用 | API停止接收请求 | 暂停计费 |
+
+参考我的这个阶段计费逻辑,应该怎么处理比较好?那样设计是否合理,从PMU控制和记录我的API的状态来分析
+另外比如我的这个状态改变可能是需要人工或者一个github的文件改动来实现这个状态修改.
+比如阶段1（POC这部分,是不是用户支付每个API的一次性基础费用之后可能并没有及时去做API的部署,那么这个时候是否要收费.所以我需要结合目前给出的三个阶段再思考下,如何计费比较合理?
 
 以下是根据简化逻辑绘制的流程图：
 
@@ -360,7 +377,21 @@ graph TD
     F -->|暂停使用| H[暂停状态 不计费]
 ```
 ---
+- the flow
+```mermaid
+stateDiagram-v2
+    [*] --> POC_INIT : 初始创建
+    POC_INIT --> POC_PENDING : 等待部署
+    POC_PENDING --> POC_ACTIVE : 成功部署
+    POC_ACTIVE --> ONBOARDING_PENDING : 申请上线
+    ONBOARDING_PENDING --> ONBOARDING_ACTIVE : 完成部署
+    ONBOARDING_ACTIVE --> OFFICIAL_ACTIVE : 正式上线
+    OFFICIAL_ACTIVE --> OFFICIAL_SUSPENDED : 暂停使用
+    OFFICIAL_SUSPENDED --> OFFICIAL_ACTIVE : 重新激活
+```
 
+---
+- the flowchart 
 ```mermaid
 flowchart TD
     A[POC阶段] -->|一次性基础费用 1400 USD/API| B[POC_INIT]
