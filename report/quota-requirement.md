@@ -185,7 +185,7 @@ stateDiagram-v2
 
 ```mermaid
 graph LR
-    A[Read APICLOUD<br>Jira Values] --> B[Precheck] --> C[Prepare Git<br>Repo] --> D[Process Team<br>Repo] --> E[Send<br>Welcome Mail] --> F[Auto Creating<br>Non-Prod<br>Environment<br>Preparation<br>Ticket] --> G[Change the<br>ticket status] --> H[Update APIs<br>Quota to BQ];
+    A[Read Tickets <br>Jira Values] --> B[Precheck] --> C[Prepare Git<br>Repo] --> D[Process Team<br>Repo] --> E[Send<br>Welcome Mail] --> F[Auto Creating<br>Non-Prod<br>Environment<br>Preparation<br>Ticket] --> G[Change the<br>ticket status] --> H[Update APIs<br>Quota to BQ];
 ```
 
 #### 5. 邮件通知模板
