@@ -7,12 +7,12 @@ Pod 数量信息直接与 API 的具体配置相关，因此可以存储在以�
 	•	将每个 API 的配置信息存储在数据库中，包含默认设置、环境类型（prod 或 non-prod）、Pod 数量限制等字段。
 	•	适合复杂系统，因为数据库易于扩展、查询和管理。
 示例数据库结构：
-
+``` 
 API_ID	API_NAME	ENV_TYPE	POD_LIMIT	NOTES
 api_001	UserService	prod	4	默认生产环境
 api_002	DataService	non-prod	2	非生产环境
 api_003	ReportAPI	prod	8	特殊生产环境，8 pods
-
+``` 
 	•	说明：
 	•	POD_LIMIT 字段记录每个 API 的最大 Pod 数量。
 	•	ENV_TYPE 用于区分环境。
@@ -22,7 +22,7 @@ api_003	ReportAPI	prod	8	特殊生产环境，8 pods
 	•	如果配置是临时的或主要供 Kubernetes 使用，可以将 Pod 数量限制存储在 ConfigMap 中。
 	•	每次部署时，Pod 控制器可以动态从 ConfigMap 中获取对应的 Pod 限制值。
 ConfigMap 示例：
-
+```yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -31,20 +31,20 @@ data:
   UserService: "4"
   DataService: "2"
   ReportAPI: "8"
-
+``` 
 
 	3.	API 配置文件（JSON 或 YAML 格式）
 	•	如果 API 信息存储在配置文件中（如 API Gateway 的配置文件或微服务定义），可以直接在配置文件中添加 Pod 数量限制字段。
 	•	适合小型系统，但不推荐用于复杂环境。
 JSON 配置示例：
-
+```json
 {
   "api_id": "api_001",
   "api_name": "UserService",
   "env_type": "prod",
   "pod_limit": 4
 }
-
+``` 
 处理逻辑建议
 	1.	按 API 定义 Pod 数量限制
 	•	每个 API 的 Pod 限制直接存储在数据库或配置文件中，允许根据需求进行动态调整。
@@ -55,13 +55,13 @@ JSON 配置示例：
 	•	在 API 部署时，读取数据库或配置文件中的 Pod 限制。
 	•	设置 HPA 的 maxReplicas 为 Pod 限制值。
 Mermaid 流程图：
-
+```mermaid
 graph TD
     A[API 部署请求] --> B[读取 API 配置]
     B --> C{是否有 Pod 限制?}
     C -->|是| D[设置 HPA maxReplicas]
     C -->|否| E[使用默认值]
-
+``` 
 
 	3.	自动化管理特殊情况
 	•	针对特殊用户的 API，可以在数据库中添加标记字段，例如 is_special_user，并基于此字段动态调整 Pod 限制。
