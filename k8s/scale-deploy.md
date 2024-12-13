@@ -1,7 +1,7 @@
 # Claude
 
 脚本功能总结
-
+```bash
 这个脚本用于自动化管理 Kubernetes 部署（Deployment）在节点间的分布，通过检查每个 Deployment 的 Pod 分布情况，对副本数量进行调整，并验证 Deployment 的状态。以下是脚本实现的主要功能：
 	1.	收集运行中 Pod 的 Deployment 信息：
 	•	脚本通过 kubectl 获取所有运行中的 Pod 信息。
@@ -17,16 +17,17 @@
 	•	在日志文件中记录每次检查的结果。
 	5.	日志记录：
 	•	将所有操作（如 Pod 分布检查、Deployment 副本调整和 Rollout 状态检查）的输出记录到日志文件 deployment_scale.log 中，以便后续排查和分析。
-
+```
+```
 脚本的用途
 
-这个脚本适用于 Kubernetes 集群的以下场景：
+- 这个脚本适用于 Kubernetes 集群的以下场景：
 	•	高可用性优化：
-确保 Deployment 的 Pod 分布在不同节点上，防止单点故障。
+- 确保 Deployment 的 Pod 分布在不同节点上，防止单点故障。
 	•	资源监控与调度：
-自动检查 Pod 的分布状态，动态调整 Deployment 的副本数量。
+- 自动检查 Pod 的分布状态，动态调整 Deployment 的副本数量。
 	•	自动化运维：
-减少手动检查和调整 Deployment 的操作，提高运维效率。
+- 减少手动检查和调整 Deployment 的操作，提高运维效率。
 
 总之，这个脚本为 Kubernetes 集群中的 Deployment 提供了一个高可用性监控和自动化调整的解决方案。
 
