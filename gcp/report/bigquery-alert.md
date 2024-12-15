@@ -49,6 +49,6 @@ def listen_for_alerts(event, context):
 在requirements.txt中，列出所需的依赖项：
 google-cloud-pubsub==2.14.0
 部署Cloud Function：
-gcloud functions deploy listen_for_alerts \   --runtime python310 \   --trigger-resource projects/YOUR_PROJECT_ID/subscriptions/bigquery-alerts \   --trigger-event google.pubsub.topic.publish
+gcloud functions deploy listen_for_alerts \  --runtime python310 \  --trigger-resource projects/YOUR_PROJECT_ID/subscriptions/bigquery-alerts \  --trigger-event google.pubsub.topic.publish
 将YOUR_PROJECT_ID替换为您的Google Cloud项目ID。
 现在，每当Scheduled Query执行并将结果导出到Pub/Sub时，Cloud Function都会接收到消息并根据消息内容发送告警。您可以根据需要调整查询条件和告警通知方式。
