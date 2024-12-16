@@ -1,3 +1,72 @@
+```bash
+#!/bin/bash
+
+# 设置Bucket路径
+BUCKET_PATH="gs://your-bucket/conf.d/"
+
+# 源IP和目标IP
+SOURCE_IP="192.168.31.185:443"
+TARGET_IP="192.168.31.186:443"
+
+# 临时工作目录
+WORK_DIR=$(mktemp -d)
+
+# 1. 列出所有包含 -ingress.conf 的文件
+echo "Finding files to process..."
+FILES=$(gsutil ls $BUCKET_PATH*-ingress.conf)
+
+# 处理每个匹配的文件
+for file in $FILES; do
+    # 提取文件名
+    filename=$(basename $file)
+    
+    # 构建新文件名（将-ingress替换为-gateway）
+    new_filename=$(echo $filename | sed 's/-ingress\.conf/-gateway.conf/')
+    
+    # 下载文件
+    echo "Downloading $file..."
+    gsutil cp "$file" "$WORK_DIR/$filename"
+    
+    # 替换IP地址
+    echo "Replacing IP in $filename..."
+    sed -i "s|proxy_pass $SOURCE_IP|proxy_pass $TARGET_IP|g" "$WORK_DIR/$filename"
+    
+    # 上传新文件
+    echo "Uploading $new_filename..."
+    gsutil cp "$WORK_DIR/$filename" "$BUCKET_PATH$new_filename"
+    
+    # 可选：删除原文件
+    gsutil rm "$file"
+done
+
+# 清理临时目录
+rm -rf "$WORK_DIR"
+
+echo "Configuration update complete."
+```
+
+这个脚本的关键改进：
+
+1. 动态查找所有 `-ingress.conf` 结尾的文件
+2. 支持处理多个文件
+3. 自动重命名文件（从 `-ingress.conf` 到 `-gateway.conf`）
+4. 使用临时目录避免直接在本地操作
+5. 添加了基本的日志输出
+
+使用注意事项：
+- 替换 `gs://your-bucket/conf.d/` 为你的实际Bucket路径
+- 替换 `SOURCE_IP` 和 `TARGET_IP` 为实际的IP地址
+- 确保脚本有执行权限
+- 建议先在测试环境验证
+
+额外建议：
+- 添加错误处理和回滚机制
+- 考虑使用更复杂的日志记录
+- 可以添加参数化，使脚本更灵活
+
+需要我针对你的具体环境做进一步优化吗？
+
+
 ```yaml
    server {
        listen 8081;
@@ -216,3 +285,126 @@ echo ">>> 配置更新完成！"
 *   **脚本化:**  通过 Shell 脚本实现自动化配置更新，减少人工操作的错误风险。
 
 希望以上方案可以帮助你解决问题，如果还有其他问题，请随时提出。
+
+
+
+
+```
+```bash
+以下是一个可以直接满足你的需求的脚本，完成以下任务：
+
+1. 在 **GCP Buckets** 中直接重命名包含 `-ingress.conf` 的文件。  
+2. 将这些文件从 **Buckets** 下载到本地，并替换 `proxy_pass` 的 IP 地址。  
+3. 将修改后的文件上传回 **Buckets**。
+
+---
+
+### 脚本实现
+
+```bash
+#!/bin/bash
+
+# 配置参数
+BUCKET_NAME="gs://your-bucket-name"
+LOCAL_DIR="./nginx_configs"
+OLD_IP="192.168.31.185:443"
+NEW_IP="192.168.31.186:443"
+
+# 创建本地临时目录
+mkdir -p "$LOCAL_DIR"
+
+echo ">>> Step 1: 查找并重命名 Buckets 中的文件..."
+FILES=$(gsutil ls "$BUCKET_NAME/conf.d/" | grep "-ingress.conf")
+
+for file in $FILES; do
+    # 提取文件名并生成新名称
+    base_name=$(basename "$file")
+    new_name=$(echo "$base_name" | sed 's/-ingress/-gateway/')
+    
+    # 重命名文件（拷贝后删除原文件模拟重命名）
+    gsutil cp "$file" "$BUCKET_NAME/conf.d/$new_name"
+    gsutil rm "$file"
+    echo "重命名: $base_name -> $new_name"
+done
+
+echo ">>> Step 2: 下载配置文件到本地..."
+gsutil -m cp "$BUCKET_NAME/conf.d/*-gateway.conf" "$LOCAL_DIR"
+
+echo ">>> Step 3: 替换 proxy_pass 地址..."
+for file in "$LOCAL_DIR"/*.conf; do
+    sed -i "s|proxy_pass $OLD_IP|proxy_pass $NEW_IP|g" "$file"
+    echo "替换完成: $file"
+done
+
+echo ">>> Step 4: 上传修改后的文件到 Buckets..."
+gsutil -m cp "$LOCAL_DIR"/*.conf "$BUCKET_NAME/conf.d/"
+
+echo ">>> 清理本地临时文件..."
+rm -rf "$LOCAL_DIR"
+
+echo ">>> 配置更新完成！"
+```
+
+---
+
+### 脚本分解说明
+
+1. **查找并重命名 Buckets 中的文件**：
+   - 使用 `gsutil ls` 查找包含 `-ingress.conf` 的文件。
+   - 用 `gsutil cp` 和 `gsutil rm` 模拟重命名操作（因为 GCS 不支持直接重命名）。
+
+2. **下载文件到本地**：
+   - 只下载已经被重命名为 `*-gateway.conf` 的文件到本地目录。
+
+3. **替换文件中的 IP 地址**：
+   - 使用 `sed` 替换 `proxy_pass` 指向的旧 IP 地址为新地址。
+
+4. **上传文件到 Buckets**：
+   - 将修改后的文件重新上传到 GCP Buckets 中的 `conf.d` 目录。
+
+5. **清理本地临时文件**：
+   - 删除脚本运行过程中生成的临时文件，保持环境整洁。
+
+---
+
+### 执行示例
+
+假设 Buckets 中的初始文件如下：
+```
+gs://your-bucket-name/conf.d/aibang-int-ingress.conf
+gs://your-bucket-name/conf.d/auxin-int-ingress.conf
+```
+
+#### 脚本完成后，结果为：
+1. 文件重命名：
+   ```
+   gs://your-bucket-name/conf.d/aibang-int-gateway.conf
+   gs://your-bucket-name/conf.d/auxin-int-gateway.conf
+   ```
+2. 文件内容中的 `proxy_pass` 地址被替换为新 IP 地址：
+   ```nginx
+   proxy_pass 192.168.31.186:443;
+   ```
+
+---
+
+### 注意事项
+
+1. **GCP 权限**：
+   确保运行脚本的用户拥有 `Storage Admin` 或 `Storage Object Admin` 权限，以允许重命名、下载和上传操作。
+
+2. **临时文件管理**：
+   本地临时文件目录 `./nginx_configs` 可根据需要自定义或动态生成。
+
+3. **测试**：
+   先在测试环境运行脚本，确认重命名和替换逻辑无误，再应用到生产环境。
+
+4. **高效操作**：
+   如果文件量较大，`gsutil -m` 将并行处理上传和下载任务，加快速度。
+
+---
+
+```
+
+```
+```
