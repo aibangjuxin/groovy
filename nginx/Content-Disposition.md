@@ -4,6 +4,98 @@ We might need to take the following steps:
 2. Verify the response header via Kong. Call the API of the Kong Gateway and check if the content-disposition exists.  
 
 
+# calude 
+针对这个问题，我们需要从多个层面进行排查：
+
+1. Kong Gateway 配置检查
+
+Kong可能会默认过滤某些响应头。可以尝试以下配置：
+
+```yaml
+# Kong Gateway 配置
+plugins:
+  - name: response-transformer
+    config:
+      add:
+        headers: 
+          - "Content-Disposition"
+      remove: {}
+```
+
+2. Kong Debug 排查步骤
+
+```bash
+# 抓取具体请求响应头
+kubectl logs <kong-pod-name> | grep -i "content-disposition"
+
+# 使用 Kong Admin API 检查插件配置
+curl http://localhost:8001/routes/<your-route-id>/plugins
+```
+
+3. 代码层面优化
+
+```java
+@GetMapping("/files/incoming/csv/download/{fileInfoId}")
+public ResponseEntity<Resource> downloadIncomingFile(@RequestParam("fileInfoId") Long fileInfoId) throws NoFileExistException {
+    BSMFileInfo fileInfo = fileSearchService.getIncomingFileById(fileInfoId);
+    InputStreamResource resource = fileSearchService.downloadIncomingFile(fileInfo);
+    
+    // 明确指定 Content-Disposition 头
+    return ResponseEntity.ok()
+        .header(HttpHeaders.CONTENT_DISPOSITION, 
+            "attachment; filename=\"" + URLEncoder.encode(fileInfo.getFileName(), StandardCharsets.UTF_8) + "\"")
+        .contentType(MediaType.parseMediaType(FileProcessorConstants.CSV_MEDIA_TYPE))
+        .body(resource);
+}
+```
+
+4. Nginx L4/L7 配置检查
+
+```nginx
+# 确保响应头透传
+proxy_pass_header Content-Disposition;
+proxy_hide_header Content-Disposition; # 如果需要重新设置
+```
+
+5. 前端请求处理调整
+
+```javascript
+.then(async (response) => {
+    // 更健壮的头部获取方式
+    const contentDisposition = response.headers['content-disposition'] 
+        || response.headers['Content-Disposition'];
+    
+    const fileName = contentDisposition 
+        ? contentDisposition.split('filename=')[1].replace(/"/g, '')
+        : 'download.csv';
+
+    const blob = new Blob([response.data], { 
+        type: 'text/plain;charset=utf-8' 
+    });
+    
+    downloadFile(blob, fileName, null);
+})
+```
+
+排查建议：
+1. 确认 Kong Gateway 版本和插件兼容性
+2. 检查所有网关层（Nginx L7/L4、Kong）的配置
+3. 使用 Wireshark 或 curl 抓包分析完整请求响应
+4. 检查 CORS 和安全策略是否影响头部传递
+
+定位问题的关键步骤：
+- 在 Spring 后端添加日志记录响应头
+- 在 Kong Gateway 日志中跟踪头部变化
+- 使用 curl 或 Postman 直接测试 API 响应
+
+如果问题仍然存在，建议：
+1. 提供完整的 Kong 插件配置
+2. 检查网关的响应头转换插件
+3. 确认是否有任何安全策略阻止特定响应头
+
+
+
+# Chatgpt
 针对 **`content-disposition` 头丢失** 的问题，Kong Gateway 作为 API 网关时，可能会过滤、丢弃或修改某些响应头，导致下游应用的响应头未能成功返回到客户端。
 
 ---
