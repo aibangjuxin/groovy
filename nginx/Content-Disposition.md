@@ -739,9 +739,10 @@ Content-Type: text/plain
 总结
 
 curl "https://url" -H 'Access-Control-Expose-Headers: Content-Disposition'  向指定 URL 发送了一个 HTTP 请求，并添加了 Access-Control-Expose-
+
 ```mermaid
 graph LR
-    A[Client (curl)] --> B{Server};
+    A[Client curl] --> B{Server};
     B --> C[Response with Access-Control-Expose-Headers];
 ```
 你的 curl 命令只是 发送 了 Access-Control-Expose-Headers 请求头，这并不代表服务器就一定会响应并允许访问 Content-Disposition。
