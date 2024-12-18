@@ -743,5 +743,40 @@ curl "https://url" -H 'Access-Control-Expose-Headers: Content-Disposition'  向�
 graph LR
     A[Client (curl)] --> B{Server};
     B --> C[Response with Access-Control-Expose-Headers];
-
 ```
+你的 curl 命令只是 发送 了 Access-Control-Expose-Headers 请求头，这并不代表服务器就一定会响应并允许访问 Content-Disposition。
+
+你的 curl 命令是在测试服务器的 CORS 配置。 服务器是否支持 Content-Disposition 取决于服务器的响应，而不是你的请求中的  Access-Control-Expose-Headers。
+
+为了验证服务器是否正确配置，你需要检查服务器的 响应头 是否包含 Access-Control-Expose-Headers: Content-Disposition (或包含 Content-Disposition 在内的多个允许的头)。
+
+你可以使用 curl -v  (verbose mode) 来查看完整的请求和响应信息，或者使用浏览器的开发者工具 (Network tab) 来检查响应头。
+
+示例：
+
+假设你使用 curl -v "https://url" -H 'Access-Control-Expose-Headers: 
+
+Access-Control-Expose-Headers: Content-Disposition, X-Custom-Header
+
+这表明服务器允许 JavaScript 访问 Content-Disposition 和 X-Custom-Header 这两个响应头。
+
+如果服务器响应头中 没有  Access-Control-Expose-Headers  或其中不包含 Content-Disposition，那么 JavaScript 就无法访问 Content-Disposition 头，即使你的请求中包含了 Access-Control-Expose-Headers: Content-Disposition。
+
+总结
+
+	•	客户端发送 Access-Control-Expose-Headers 请求头是为了 请求 服务器允许访问某些响应头。
+	•	服务器是否允许访问，取决于服务器的 响应头 中是否包含 Access-Control-Expose-Headers 以及其值。
+
+
+```mermaid
+graph LR
+    subgraph Client
+        A[Send Request with<br>Access-Control-Expose-Headers] --> B
+    end
+    subgraph Server
+        B --> C[Process Request]
+        C --> D[Send Response with<br>Access-Control-Expose-Headers]
+    end
+    D --> E[Client Checks Response Headers]
+```
+
