@@ -1,3 +1,17 @@
+- [summary](#summary)
+- [Linux compare tls](#linux-compare-tls)
+- [How to updated the error host cert](#how-to-updated-the-error-host-cert)
+		- [证书链的工作机制](#证书链的工作机制)
+		- [自动获取 `depth=1` 和 `depth=2`](#自动获取-depth1-和-depth2)
+			- [1. **`depth=1`（中间证书）**：](#1-depth1中间证书)
+			- [2. **`depth=2`（根证书）**：](#2-depth2根证书)
+		- [验证证书链示例](#验证证书链示例)
+			- [示例命令：](#示例命令)
+			- [输出说明：](#输出说明)
+		- [特殊情况](#特殊情况)
+		- [总结](#总结)
+
+# summary 
 邮件配置和报错信息已提取，主要问题是 Java 应用无法建立与邮件服务器的 TLS 连接，因为找不到有效的证书路径。 具体来说，PKIX path building failed 指示了证书链验证失败。 考虑到同一套代码在不同环境运行正常，问题很可能与当前环境的配置有关，而不是代码本身的问题。
 
 以下是可能的原因和排查步骤：
