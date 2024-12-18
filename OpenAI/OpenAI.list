@@ -33,5 +33,6 @@ DOMAIN-KEYWORD,openai
 DOMAIN-SUFFIX,perplexity.ai
 # groq
 DOMAIN-SUFFIX,groq.com
+DOMAIN-SUFFIX,labs.google
 
 
