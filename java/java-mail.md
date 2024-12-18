@@ -33,25 +33,25 @@ Debug 排错建议:
 
 
 - verify cacerts value Using md5sum 
-- $JAVA_HOME/lib/security/cacerts 我对比这个cacerts的文件的md5sum都是一样的
+- `$JAVA_HOME/lib/security/cacerts` 我对比这个cacerts的文件的md5sum都是一样的
 即使 $JAVA_HOME/lib/security/cacerts 文件的 MD5SUM 相同，仍然可能存在导致 PKIX path building failed 错误的其他原因。 这是因为 MD5SUM 只校验文件本身的完整性，并不反映证书库内容在不同环境中的有效性或适用性。
 
 以下是一些在 cacerts 文件 MD5SUM 相同的情况下，仍然需要进行的排查步骤：
 
 	1.	Java 版本差异: 即使 cacerts 文件相同，不同 Java 版本的实现细节可能导致证书验证行为不同。例如，不同 Java 版本支持的 TLS 协议版本和密码套件可能不同，这可能会影响与 SMTP 服务器的兼容性。
-	•	解决方案: 尝试在报错的环境中使用与正常环境相同的 Java 版本。
+		•	解决方案: 尝试在报错的环境中使用与正常环境相同的 Java 版本。
 	2.	操作系统信任库:  某些操作系统（例如，Linux）维护自己的系统范围的信任库。 Java 应用程序有时可能会使用这些系统信任库，而不是 $JAVA_HOME/lib/security/cacerts。 如果系统信任库缺少必要的证书，即使 cacerts 文件包含正确的证书，仍然会导致 PKIX 错误。
-	•	解决方案: 检查操作系统的信任库，并确保其中包含 SMTP 服务器的根证书和任何必要的中间证书。 操作系统信任库的位置和管理方式因操作系统而异。
+		•	解决方案: 检查操作系统的信任库，并确保其中包含 SMTP 服务器的根证书和任何必要的中间证书。 操作系统信任库的位置和管理方式因操作系统而异。
 	3.	自定义信任库: 你的应用程序可能被配置为使用自定义信任库，而不是默认的 cacerts 文件。 检查应用程序的配置，特别是与 SSL/TLS 相关的设置，以查看是否指定了自定义信任库。
-	•	解决方案: 如果使用了自定义信任库，确保它包含必要的证书。
+		•	解决方案: 如果使用了自定义信任库，确保它包含必要的证书。
 	4.	网络配置:  某些网络设备（例如，代理服务器、防火墙）可能会拦截和修改 SSL/TLS 流量，这可能会干扰证书验证过程。
-	•	解决方案:  暂时禁用这些网络设备，或配置它们以允许直接访问 SMTP 服务器。  使用网络监控工具（例如，tcpdump, Wireshark）检查网络流量，以确定是否存在任何干扰。
+		•	解决方案:  暂时禁用这些网络设备，或配置它们以允许直接访问 SMTP 服务器。  使用网络监控工具（例如，tcpdump, Wireshark）检查网络流量，以确定是否存在任何干扰。
 	5.	SMTP 服务器配置:  SMTP 服务器的配置可能存在问题，即使在其他环境中可以正常工作。例如，服务器的证书可能已过期、被吊销或配置不正确。
-	•	解决方案:  与 SMTP 服务器管理员联系，确认服务器配置正确，证书有效，并支持 Java 应用程序使用的 TLS 协议版本和密码套件。  检查服务器端的日志，以查找任何与 SSL/TLS 相关的错误。
+		•	解决方案:  与 SMTP 服务器管理员联系，确认服务器配置正确，证书有效，并支持 Java 应用程序使用的 TLS 协议版本和密码套件。  检查服务器端的日志，以查找任何与 SSL/TLS 相关的错误。
 	6.	代码中的配置错误:  检查代码中与 SSL/TLS 相关的配置，例如，是否正确设置了 javax.net.ssl.trustStore 和 javax.net.ssl.trustStorePassword 系统属性。  即使 cacerts 文件正确，代码中的错误配置也可能导致 PKIX 错误。
-	•	解决方案:  仔细检查代码，确保正确配置了 SSL/TLS 相关的设置。
+		•	解决方案:  仔细检查代码，确保正确配置了 SSL/TLS 相关的设置。
 	7.	证书路径中的名称不匹配:  证书链中的某个证书的主题备用名称 (SAN) 或通用名称 (CN) 可能与 SMTP 服务器的主机名不匹配。
-	•	解决方案:  使用 openssl 命令检查服务器证书，并确认其 SAN 或 CN 与应用程序尝试连接的主机名匹配。  如果需要，更新服务器证书以包含正确的主机名。
+		•	解决方案:  使用 openssl 命令检查服务器证书，并确认其 SAN 或 CN 与应用程序尝试连接的主机名匹配。  如果需要，更新服务器证书以包含正确的主机名。
 
 为了更有效地排查问题，建议在报错的环境中启用 SSL 调试日志记录 (javax.net.debug=ssl)，并仔细分析生成的日志。 这可以提供有关证书验证过程的详细信息，帮助你找到问题的根本原因。
 
@@ -70,33 +70,33 @@ Debug 排错建议:
 在 Linux 上，你可以使用 openssl 命令行工具来确认和对比两个主机连接 TLS 邮件服务的证书信息。  以下是一些方法：
 
 1. 直接连接 SMTP 服务器并获取证书信息:
-`openssl s_client -connect <smtp_server_hostname_or_IP>:<port> -starttls smtp`
+	`openssl s_client -connect <smtp_server_hostname_or_IP>:<port> -starttls smtp`
 
 将 <smtp_server_hostname_or_IP> 和 <port> 替换为 SMTP 服务器的主机名或 IP 地址和端口号 (通常是 587 或 465  for TLS).  -starttls smtp  参数指示 openssl 使用 STARTTLS 命令与服务器协商 TLS 连接。
 
 该命令将输出服务器的证书信息，包括证书链、证书主题、颁发者、有效期、公钥信息等。  你可以将两个主机的输出重定向到文件，然后使用 diff 命令比较差异:
 
-```bash
-openssl s_client -connect <host1>:<port> -starttls smtp > host1_cert.pem
-openssl s_client -connect <host2>:<port> -starttls smtp > host2_cert.pem
-diff host1_cert.pem host2_cert.pem
-```
+	```bash
+	openssl s_client -connect <host1>:<port> -starttls smtp > host1_cert.pem
+	openssl s_client -connect <host2>:<port> -starttls smtp > host2_cert.pem
+	diff host1_cert.pem host2_cert.pem
+	```
 2.  提取证书并进行比较:
 
 如果已经拥有服务器证书文件 (通常是 .pem 或 .crt 格式), 可以使用以下命令比较它们:
 
-```bash
-openssl x509 -in <certificate1.pem> -text -noout > cert1.txt
-openssl x509 -in <certificate2.pem> -text -noout > cert2.txt
-diff cert1.txt cert2.txt
-```
+	```bash
+	openssl x509 -in <certificate1.pem> -text -noout > cert1.txt
+	openssl x509 -in <certificate2.pem> -text -noout > cert2.txt
+	diff cert1.txt cert2.txt
+	```
 这将以文本格式输出证书的详细信息，并使用 diff 比较它们。
 
 3.  比较证书指纹:
 
 证书指纹是证书的唯一标识符。  你可以使用以下命令计算证书指纹:
 
-`openssl x509 -in <certificate.pem> -fingerprint -sha256  # 使用 SHA256 算法`
+	`openssl x509 -in <certificate.pem> -fingerprint -sha256  # 使用 SHA256 算法`
 
 比较两个证书的指纹，如果指纹不同，则证书不同。
 
@@ -104,7 +104,7 @@ diff cert1.txt cert2.txt
 
 如果证书存储在 Java keystore 中，可以使用 keytool 命令列出和比较证书:
 
-`keytool -list -v -keystore <keystore_file> -alias <alias_name>`
+	`keytool -list -v -keystore <keystore_file> -alias <alias_name>`
 
 重点:
 
@@ -122,10 +122,10 @@ openssl s_client 命令在连接成功后会保持连接打开，等待用户输
 
 这是最简单的方法。-prexit 选项会在连接建立后立即关闭连接。
 
-```bash
-openssl s_client -connect <host1>:<port> -starttls smtp -prexit > host1_cert.pem
-openssl s_client -connect <host2>:<port> -starttls smtp -prexit > host2_cert.pem
-```
+	```bash
+	openssl s_client -connect <host1>:<port> -starttls smtp -prexit > host1_cert.pem
+	openssl s_client -connect <host2>:<port> -starttls smtp -prexit > host2_cert.pem
+	```
 
 2. 发送 QUIT 命令:
 
@@ -317,15 +317,14 @@ sudo update-ca-certificates
 Mermaid 流程图示例，说明方案一：
 
 
-
 ```Mermaid
 graph LR
     A[开始] --> B{更新 ca-certificates 软件包};
-    B --> C{更新系统信任存储 (update-ca-certificates)};
+    B --> C{更新系统信任存储 update-ca-certificates};
     C --> D{问题解决？};
     D -- 是 --> E[结束，问题解决];
     D -- 否 --> F{手动添加中间证书};
-    F --> G{更新系统信任存储 (update-ca-certificates)};
+    F --> G{更新系统信任存储 update-ca-certificates};
     G --> H{再次测试连接};
     H --> I{问题解决？}
     I -- 是 --> J[结束，问题解决]
