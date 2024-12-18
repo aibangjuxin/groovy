@@ -703,3 +703,45 @@ graph LR
 总结
 
 通过以上步骤，您应该能够定位到 Content-Disposition 响应头丢失的原因，并根据具体情况选择合适的解决方案。请务必在生产环境中谨慎操作，并在修改配置后进行充分测试。如果问题依然存在，请提供更详细的日志和配置信息，以便进一步分析。
+
+
+
+# curl Example
+分解一下这个命令：
+
+	•	curl:  这是命令行工具，用于传输数据，支持多种协议，包括 HTTP。
+	•	"https://url": 这是目标 URL，curl 将向这个地址发送请求。  你需要将其替换为你实际的 URL。
+	•	-H 'Access-Control-Expose-Headers: Content-Disposition':  这个选项是 curl 的一个参数，用于添加自定义的 HTTP 请求头。 -H  代表 Header。  在这个例子中，它添加了一个名为 Access-Control-Expose-Headers 的请求头，其值为 Content-Disposition。
+
+Access-Control-Expose-Headers 头的作用
+
+Access-Control-Expose-Headers  主要用于跨域资源共享 (CORS) 场景。通常情况下，浏览器出于安全考虑，只允许 JavaScript 访问有限的几个响应头，例如 Cache-Control、Content-Language、Content-Type、Expires、Last-Modified 和 Pragma。
+
+如果你希望 JavaScript 代码能够访问其他的响应头，例如 Content-Disposition (通常用于指定下载文件名)，就需要服务器在响应中包含 Access-Control-Expose-Headers 头，并将其值设置为允许访问的响应头名称。
+
+示例场景
+
+假设你有一个服务器，当用户下载文件时，会在响应中包含 Content-Disposition 头，用于指定
+```
+HTTP/1.1 200 OK
+Content-Disposition: attachment; filename="myfile.txt"
+Content-Type: text/plain
+...
+```
+如果没有 Access-Control-Expose-Headers 头，浏览器会阻止 JavaScript 访问 Content-Disposition 头。因此，你需要在服务器的响应中添加如下头
+
+这样，JavaScript 代码就可以通过 XMLHttpRequest 或 fetch API 获取 Content-Disposition 头的值，并提取下载文件名。
+
+你的 curl 命令的作用
+
+你使用的 curl 命令模拟了浏览器发送请求，并添加了 Access-Control-Expose-Headers: Content-Disposition 请求头。这个命令本身并不会触发 CORS 机制，因为它不是浏览器发出的请求。  你使用这个命令的目的可能是为了测试服务器是否正确配置了 CORS 响应头。
+
+总结
+
+curl "https://url" -H 'Access-Control-Expose-Headers: Content-Disposition'  向指定 URL 发送了一个 HTTP 请求，并添加了 Access-Control-Expose-
+```mermaid
+graph LR
+    A[Client (curl)] --> B{Server};
+    B --> C[Response with Access-Control-Expose-Headers];
+
+```
